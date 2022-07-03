@@ -31,7 +31,10 @@ impl GameState {
         &self.captured_black_pieces
     }
 
-    pub fn add_piece(&mut self, piece: Box<dyn Piece>, position: Position) {
-        self.board[*position.line()][*position.col()] = Option::Some(piece);
+    pub fn add_piece(&mut self, piece: Box<dyn Piece>) {
+        let line = *piece.position().line();
+        let col = *piece.position().col();
+
+        self.board[line][col] = Option::Some(piece);
     }
 }

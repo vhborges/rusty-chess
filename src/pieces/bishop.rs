@@ -1,20 +1,21 @@
 use super::Piece;
 use crate::game_state::Board;
-use crate::utils::constants::board;
-use crate::utils::Color;
+use crate::utils::{constants::board, Color, Position};
 
 const SYMBOLS: [char; 2] = ['\u{2657}', '\u{265D}'];
 
 pub struct Bishop {
     symbol: char,
     color: Color,
+    position: Position,
 }
 
 impl Bishop {
-    pub fn new(color: Color) -> Self {
+    pub fn new(color: Color, position: Position) -> Self {
         Self {
             symbol: Self::get_symbol(SYMBOLS, &color),
             color,
+            position,
         }
     }
 }
@@ -26,6 +27,10 @@ impl Piece for Bishop {
 
     fn symbol(&self) -> &char {
         &self.symbol
+    }
+
+    fn position(&self) -> &Position {
+        &self.position
     }
 
     fn possible_movements(&self, board: Board) -> [[bool; board::SIZE]; board::SIZE] {

@@ -1,11 +1,13 @@
 use crate::game_state::Board;
 use crate::utils::constants::board;
-use crate::utils::Color;
+use crate::utils::{Color, Position};
 
 pub trait Piece {
     fn symbol(&self) -> &char;
 
     fn color(&self) -> &Color;
+
+    fn position(&self) -> &Position;
 
     fn possible_movements(&self, board: Board) -> [[bool; board::SIZE]; board::SIZE];
 
