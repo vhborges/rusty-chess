@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
 use std::process::Command;
 
-use super::constants;
+use crate::utils::constants;
 
 pub fn print_board(game_state: GameState) {
     Command::new("clear")

@@ -1,9 +1,11 @@
+mod board;
 mod game_state;
+mod io;
 mod pieces;
 mod utils;
 
 use game_state::GameState;
-use utils::{board, ui};
+use io::ui;
 
 fn main() {
     let mut game_state = GameState::new();

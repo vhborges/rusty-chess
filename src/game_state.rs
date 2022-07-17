@@ -1,5 +1,5 @@
+use crate::board::Board;
 use crate::pieces::Piece;
-use crate::utils::Board;
 
 pub struct GameState {
     board: Board,

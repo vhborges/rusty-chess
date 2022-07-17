@@ -1,13 +1,14 @@
 use super::{bishop, king, knight, pawn, queen, rook};
-use crate::utils::{constants::BOARD_SIZE, Board, Color, Position};
+use crate::board::Board;
+use crate::utils::{constants::BOARD_SIZE, Color, Position};
 
 pub enum PieceType {
-    King,
-    Queen,
     Bishop,
+    King,
     Knight,
-    Rook,
     Pawn,
+    Queen,
+    Rook,
 }
 
 impl TryFrom<char> for PieceType {
@@ -15,32 +16,16 @@ impl TryFrom<char> for PieceType {
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
-            'K' => Ok(PieceType::King),
-            'Q' => Ok(PieceType::Queen),
             'B' => Ok(PieceType::Bishop),
+            'K' => Ok(PieceType::King),
             'N' => Ok(PieceType::Knight),
-            'R' => Ok(PieceType::Rook),
             'P' => Ok(PieceType::Pawn),
+            'Q' => Ok(PieceType::Queen),
+            'R' => Ok(PieceType::Rook),
             _ => Err(format!("Invalid piece character: {}", value)),
         }
     }
 }
-
-// impl FromStr for PieceType {
-//     type Err = String;
-
-//     fn from_str(s: &str) -> Result<Self, Self::Err> {
-//         match s {
-//             "K" => Ok(PieceType::King),
-//             "Q" => Ok(PieceType::Queen),
-//             "B" => Ok(PieceType::Bishop),
-//             "N" => Ok(PieceType::Knight),
-//             "R" => Ok(PieceType::Rook),
-//             "P" => Ok(PieceType::Pawn),
-//             _ => Err(format!("Invalid piece character: {}", s)),
-//         }
-//     }
-// }
 
 pub struct Piece {
     symbol: char,
@@ -77,23 +62,23 @@ impl Piece {
 
     pub fn possible_movements(&self, board: Board) -> [[bool; BOARD_SIZE]; BOARD_SIZE] {
         match self.piece_type {
-            PieceType::King => king::possible_movements(board),
-            PieceType::Queen => queen::possible_movements(board),
             PieceType::Bishop => bishop::possible_movements(board),
+            PieceType::King => king::possible_movements(board),
             PieceType::Knight => knight::possible_movements(board),
-            PieceType::Rook => rook::possible_movements(board),
             PieceType::Pawn => pawn::possible_movements(board),
+            PieceType::Queen => queen::possible_movements(board),
+            PieceType::Rook => rook::possible_movements(board),
         }
     }
 
     fn get_symbol(piece_type: &PieceType, color: &Color) -> char {
         let symbols = match piece_type {
-            PieceType::King => king::SYMBOLS,
-            PieceType::Queen => queen::SYMBOLS,
             PieceType::Bishop => bishop::SYMBOLS,
+            PieceType::King => king::SYMBOLS,
             PieceType::Knight => knight::SYMBOLS,
-            PieceType::Rook => rook::SYMBOLS,
             PieceType::Pawn => pawn::SYMBOLS,
+            PieceType::Queen => queen::SYMBOLS,
+            PieceType::Rook => rook::SYMBOLS,
         };
 
         Self::get_symbol_for_color(color, symbols)
