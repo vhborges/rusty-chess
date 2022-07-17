@@ -10,6 +10,38 @@ pub enum PieceType {
     Pawn,
 }
 
+impl TryFrom<char> for PieceType {
+    type Error = String;
+
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        match value {
+            'K' => Ok(PieceType::King),
+            'Q' => Ok(PieceType::Queen),
+            'B' => Ok(PieceType::Bishop),
+            'N' => Ok(PieceType::Knight),
+            'R' => Ok(PieceType::Rook),
+            'P' => Ok(PieceType::Pawn),
+            _ => Err(format!("Invalid piece character: {}", value)),
+        }
+    }
+}
+
+// impl FromStr for PieceType {
+//     type Err = String;
+
+//     fn from_str(s: &str) -> Result<Self, Self::Err> {
+//         match s {
+//             "K" => Ok(PieceType::King),
+//             "Q" => Ok(PieceType::Queen),
+//             "B" => Ok(PieceType::Bishop),
+//             "N" => Ok(PieceType::Knight),
+//             "R" => Ok(PieceType::Rook),
+//             "P" => Ok(PieceType::Pawn),
+//             _ => Err(format!("Invalid piece character: {}", s)),
+//         }
+//     }
+// }
+
 pub struct Piece {
     symbol: char,
     piece_type: PieceType,
