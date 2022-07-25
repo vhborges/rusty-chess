@@ -1,9 +1,8 @@
+use crate::errors::MoveError;
 use crate::game_state::GameState;
-use crate::utils::{ChessPosition, Position};
+use crate::utils::{ChessPosition, Position, constants};
 use std::io::{stdin, stdout, Write};
 use std::process::Command;
-
-use crate::utils::constants;
 
 pub fn print_board(game_state: &GameState) {
     Command::new("clear")
@@ -42,25 +41,24 @@ pub fn print_board(game_state: &GameState) {
     println!()
 }
 
-pub fn read_move() -> Result<(Position, Position), String> {
+pub fn read_move() -> Result<(Position, Position), MoveError> {
     print!("Next move: ");
-    if let Err(err) = stdout().flush() {
-        return Err(format!("Unable to flush screen: {}", err));
-    }
+    stdout().flush().expect("Unable to flush screen.");
 
     let mut next_move = String::new();
-    if let Err(err) = stdin().read_line(&mut next_move) {
-        return Err(format!("Unable to read move: {}", err));
-    }
+    stdin().read_line(&mut next_move).expect("Unable to read move.");
 
     let moves: Vec<&str> = next_move.split(' ').collect();
     if moves.len() != 2 {
-        return Err("Expected source and destination, e.g. d2 e4.".to_string());
+        return Err(MoveError::InvalidMove);
     }
 
     let (source, dest) = (moves[0].trim(), moves[1].trim());
-    if source.len() != 2 || dest.len() != 2 {
-        return Err("Expected 2 characters for source and destination, e.g. d2 e4.".to_string());
+    if source.len() != 2 {
+        return Err(MoveError::InvalidSquare(source.to_string()));
+    }
+    if dest.len() != 2 {
+        return Err(MoveError::InvalidSquare(dest.to_string()));
     }
 
     let source_pos: Position = ChessPosition::new(

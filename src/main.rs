@@ -1,4 +1,5 @@
 mod board;
+mod errors;
 mod game_state;
 mod io;
 mod pieces;
@@ -19,8 +20,8 @@ fn main() {
             Ok((source, dest)) => {
                 game_state.move_piece(source, dest);
             }
-            Err(str) => {
-                println!("{}", str);
+            Err(move_err) => {
+                println!("{}", move_err);
                 continue;
             }
         }

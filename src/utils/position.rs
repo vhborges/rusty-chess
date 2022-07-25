@@ -1,4 +1,5 @@
 use super::constants::BOARD_SIZE;
+use crate::errors::PositionError;
 
 #[derive(Copy, Clone)]
 pub struct Position {
@@ -40,20 +41,14 @@ impl ChessPosition {
 }
 
 impl TryFrom<ChessPosition> for Position {
-    type Error = String;
+    type Error = PositionError;
 
     fn try_from(chess_pos: ChessPosition) -> Result<Position, Self::Error> {
         if !('1'..'9').contains(chess_pos.line()) {
-            return Err(format!(
-                "Chess line {} not in range [1, 8]",
-                chess_pos.line
-            ));
+            return Err(PositionError::InvalidLine(*chess_pos.line()));
         }
         if !('a'..'i').contains(chess_pos.col()) {
-            return Err(format!(
-                "Chess column {} not in range [a, h]",
-                chess_pos.col
-            ));
+            return Err(PositionError::InvalidColumn(*chess_pos.col()));
         }
 
         let chess_line = chess_pos.line.to_digit(10).unwrap();
