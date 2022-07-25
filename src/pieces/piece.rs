@@ -1,7 +1,10 @@
+use std::fmt::Display;
+
 use super::{bishop, king, knight, pawn, queen, rook};
 use crate::board::Board;
 use crate::utils::{constants::BOARD_SIZE, Color, Position};
 
+#[derive(Copy, Clone)]
 pub enum PieceType {
     Bishop,
     King,
@@ -27,6 +30,7 @@ impl TryFrom<char> for PieceType {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct Piece {
     symbol: char,
     piece_type: PieceType,
@@ -89,5 +93,11 @@ impl Piece {
             Color::White => symbols[0],
             Color::Black => symbols[1],
         }
+    }
+}
+
+impl Display for Piece {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.symbol)
     }
 }

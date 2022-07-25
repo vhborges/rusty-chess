@@ -1,5 +1,6 @@
 use super::constants::BOARD_SIZE;
 
+#[derive(Copy, Clone)]
 pub struct Position {
     line: usize,
     col: usize,

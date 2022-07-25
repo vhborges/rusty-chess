@@ -11,6 +11,20 @@ fn main() {
     let mut game_state = GameState::new();
 
     board::initialize(&mut game_state);
+    ui::print_board(&game_state);
 
-    ui::print_board(game_state);
+    loop {
+        let result = ui::read_move();
+        match result {
+            Ok((source, dest)) => {
+                game_state.move_piece(source, dest);
+            }
+            Err(str) => {
+                println!("{}", str);
+                continue;
+            }
+        }
+
+        ui::print_board(&game_state);
+    }
 }
