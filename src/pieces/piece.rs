@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use super::{bishop, king, knight, pawn, queen, rook};
-use crate::board::Board;
+use crate::utils::types::Board;
 use crate::utils::{constants::BOARD_SIZE, Color, Position};
 
 #[derive(Copy, Clone)]

@@ -1,5 +1,6 @@
 use crate::errors::MoveError;
 use crate::game_state::GameState;
+use crate::utils::types::Move;
 use crate::utils::{ChessPosition, Position, constants};
 use std::io::{stdin, stdout, Write};
 use std::process::Command;
@@ -41,7 +42,7 @@ pub fn print_board(game_state: &GameState) {
     println!()
 }
 
-pub fn read_move() -> Result<(Position, Position), MoveError> {
+pub fn read_move() -> Result<Move, MoveError> {
     print!("Next move: ");
     stdout().flush().expect("Unable to flush screen.");
 

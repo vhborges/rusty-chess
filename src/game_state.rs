@@ -1,6 +1,7 @@
-use crate::board::Board;
-use crate::pieces::Piece;
-use crate::utils::{Color, Position};
+use crate::io::{get_next_char, initial_positions};
+use crate::pieces::{Piece, PieceType};
+use crate::utils::types::Board;
+use crate::utils::{ChessPosition, Color, Position};
 
 pub struct GameState {
     board: Board,
@@ -59,4 +60,34 @@ impl GameState {
         self.board[source_line][source_col] = None;
         self.board[dest_line][dest_col] = source_piece;
     }
+
+    pub fn initialize(&mut self) {
+        for wrapped_line in initial_positions() {
+            let line = wrapped_line.expect("Error reading file line");
+            let mut chars = line.chars();
+
+            let piece_color: Color = get_next_char(&line, &mut chars)
+                .try_into()
+                .expect(format!("Could not parse color character from line {}", line).as_str());
+
+            let piece_type: PieceType = get_next_char(&line, &mut chars)
+                .try_into()
+                .expect(format!("Could not parse piece character from line {}", line).as_str());
+
+            let chess_col = get_next_char(&line, &mut chars);
+
+            let chess_line = get_next_char(&line, &mut chars);
+
+            let piece_position = ChessPosition::new(chess_line, chess_col).try_into().expect(
+                format!(
+                    "Could not convert ChessPosition {}{} to Position",
+                    chess_col, chess_line
+                )
+                .as_str(),
+            );
+
+            self.add_piece(Piece::new(piece_type, piece_color, piece_position))
+        }
+    }
+
 }

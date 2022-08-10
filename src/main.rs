@@ -1,4 +1,3 @@
-mod board;
 mod errors;
 mod game_state;
 mod io;
@@ -11,7 +10,7 @@ use io::ui;
 fn main() {
     let mut game_state = GameState::new();
 
-    board::initialize(&mut game_state);
+    game_state.initialize();
     ui::print_board(&game_state);
 
     loop {
