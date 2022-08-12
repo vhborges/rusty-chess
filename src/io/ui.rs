@@ -1,46 +1,7 @@
 use crate::errors::MoveError;
-use crate::game_state::GameState;
 use crate::utils::types::Move;
-use crate::utils::{ChessPosition, Position, constants};
+use crate::utils::{ChessPosition, Position};
 use std::io::{stdin, stdout, Write};
-use std::process::Command;
-
-pub fn print_board(game_state: &GameState) {
-    Command::new("clear")
-        .status()
-        .expect("Failed to clear screen");
-
-    for (line, line_chess) in game_state.board().iter().zip(constants::LINES.iter()) {
-        print!("{} ", line_chess);
-        for opt_piece in line {
-            match opt_piece {
-                Some(piece) => print!("{} ", piece),
-                None => print!("{} ", constants::BLANK_SQUARE),
-            }
-        }
-        println!();
-    }
-
-    print!("  ");
-
-    for col_chess in constants::COLUMNS {
-        print!("{} ", col_chess);
-    }
-
-    println!();
-
-    for piece in game_state.captured_white_pieces() {
-        print!("{} ", piece)
-    }
-
-    println!();
-
-    for piece in game_state.captured_black_pieces() {
-        print!("{} ", piece)
-    }
-
-    println!()
-}
 
 pub fn read_move() -> Result<Move, MoveError> {
     print!("Next move: ");

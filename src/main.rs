@@ -11,7 +11,7 @@ fn main() {
     let mut game_state = GameState::new();
 
     game_state.initialize();
-    ui::print_board(&game_state);
+    game_state.print();
 
     loop {
         let result = ui::read_move();
@@ -25,6 +25,6 @@ fn main() {
             }
         }
 
-        ui::print_board(&game_state);
+        game_state.print();
     }
 }

@@ -1,7 +1,9 @@
+use std::process::Command;
+
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
 use crate::utils::types::Board;
-use crate::utils::{ChessPosition, Color, Position};
+use crate::utils::{constants, ChessPosition, Color, Position};
 
 pub struct GameState {
     board: Board,
@@ -48,6 +50,7 @@ impl GameState {
 
         let dest_line = *dest.line();
         let dest_col = *dest.col();
+
         let dest_piece = self.board[dest_line][dest_col];
 
         if let Some(captured_piece) = dest_piece {
@@ -90,4 +93,40 @@ impl GameState {
         }
     }
 
+    pub fn print(&self) {
+        Command::new("clear")
+            .status()
+            .expect("Failed to clear screen");
+
+        for (line, line_chess) in self.board().iter().zip(constants::LINES.iter()) {
+            print!("{} ", line_chess);
+            for opt_piece in line {
+                match opt_piece {
+                    Some(piece) => print!("{} ", piece),
+                    None => print!("{} ", constants::BLANK_SQUARE),
+                }
+            }
+            println!();
+        }
+
+        print!("  ");
+
+        for col_chess in constants::COLUMNS {
+            print!("{} ", col_chess);
+        }
+
+        println!();
+
+        for piece in self.captured_white_pieces() {
+            print!("{} ", piece)
+        }
+
+        println!();
+
+        for piece in self.captured_black_pieces() {
+            print!("{} ", piece)
+        }
+
+        println!()
+    }
 }
