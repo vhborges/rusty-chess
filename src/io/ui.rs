@@ -5,10 +5,10 @@ use std::io::{stdin, stdout, Write};
 
 pub fn read_move() -> Result<Move, MoveError> {
     print!("Next move: ");
-    stdout().flush().expect("Unable to flush screen.");
+    stdout().flush()?;
 
     let mut next_move = String::new();
-    stdin().read_line(&mut next_move).expect("Unable to read move.");
+    stdin().read_line(&mut next_move)?;
 
     let moves: Vec<&str> = next_move.split(' ').collect();
     if moves.len() != 2 {

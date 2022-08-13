@@ -5,5 +5,4 @@ use super::Position;
 
 pub type Board = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
-// Move = (origin, destination)
-pub type Move = (Position, Position);
+pub type Move = String;

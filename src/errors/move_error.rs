@@ -24,7 +24,8 @@ impl Display for MoveError {
             Self::InvalidPosition(position_err) => write!(
                 f,
                 "Invalid position: {}",
-                position_err),
+                position_err
+            ),
         }
     }
 }
