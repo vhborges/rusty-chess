@@ -16,8 +16,8 @@ fn main() {
     loop {
         let result = ui::read_move();
         match result {
-            Ok((source, dest)) => {
-                game_state.move_piece(source, dest);
+            Ok(next_move) => {
+                game_state.move_piece(next_move);
             }
             Err(move_err) => {
                 println!("{}", move_err);

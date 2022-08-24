@@ -1,8 +1,9 @@
 use std::process::Command;
 
+use crate::errors::MoveError;
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
-use crate::utils::types::Board;
+use crate::utils::types::{Board, Move};
 use crate::utils::{constants, ChessPosition, Color, Position};
 
 pub struct GameState {
@@ -39,14 +40,32 @@ impl GameState {
         self.board[line][col] = Some(piece);
     }
 
-    pub fn move_piece(&mut self, source: Position, dest: Position) {
+    fn parse_move(str_move: String) -> Result<Move, MoveError> {
+        let mut chars = str_move.chars();
+
+        let piece_type: PieceType = chars.next().ok_or(MoveError::MissingPiece)?.try_into()?;
+
+        let dest_col: char = chars.next().ok_or(MoveError::InvalidSquare("Missing column".to_owned()))?;
+        let dest_line: char = chars.next().ok_or(MoveError::InvalidSquare("Missing line".to_owned()))?;
+
+        let destination: Position = ChessPosition::new(dest_line, dest_col).try_into()?;
+
+        Ok(Move::new(piece_type, destination))
+    }
+
+    fn find_piece_position(next_move: &Move) -> Option<Position> {
+        unimplemented!()
+    }
+
+    pub fn move_piece(&mut self, str_move: String) -> Result<(), MoveError> {
+        let next_move = Self::parse_move(str_move)?;
+
+        let source = Self::find_piece_position(&next_move).ok_or(MoveError::InvalidMove("No piece available for this move.".to_owned()))?;
+        let dest = next_move.position;
+
         let source_line = *source.line();
         let source_col = *source.col();
         let source_piece = self.board[source_line][source_col];
-
-        if source_piece.is_none() {
-            return;
-        }
 
         let dest_line = *dest.line();
         let dest_col = *dest.col();
@@ -62,6 +81,8 @@ impl GameState {
 
         self.board[source_line][source_col] = None;
         self.board[dest_line][dest_col] = source_piece;
+
+        Ok(())
     }
 
     pub fn initialize(&mut self) {
