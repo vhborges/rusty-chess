@@ -34,8 +34,8 @@ impl GameState {
     }
 
     pub fn add_piece(&mut self, piece: Piece) {
-        let line = *piece.position().line();
-        let col = *piece.position().col();
+        let line = *piece.position.line();
+        let col = *piece.position.col();
 
         self.board[line][col] = Some(piece);
     }
@@ -45,27 +45,55 @@ impl GameState {
 
         let piece_type: PieceType = chars.next().ok_or(MoveError::MissingPiece)?.try_into()?;
 
-        let dest_col: char = chars.next().ok_or(MoveError::InvalidSquare("Missing column".to_owned()))?;
-        let dest_line: char = chars.next().ok_or(MoveError::InvalidSquare("Missing line".to_owned()))?;
+        let dest_col: char = chars
+            .next()
+            .ok_or(MoveError::InvalidSquare("Missing column".to_owned()))?;
+        let dest_line: char = chars
+            .next()
+            .ok_or(MoveError::InvalidSquare("Missing line".to_owned()))?;
 
         let destination: Position = ChessPosition::new(dest_line, dest_col).try_into()?;
 
         Ok(Move::new(piece_type, destination))
     }
 
-    fn find_piece_position(next_move: &Move) -> Option<Position> {
-        unimplemented!()
+    fn find_piece_position(&self, next_move: &Move) -> Result<Position, MoveError> {
+        let mut matching_pieces = Vec::new();
+        for line in self.board {
+            for opt_piece in line {
+                if let Some(piece) = opt_piece {
+                    if piece.piece_type != next_move.piece_type {
+                        continue;
+                    }
+                    if piece.can_move(self.board, next_move.position) {
+                        matching_pieces.push(piece);
+                    }
+                }
+            }
+        }
+
+        if matching_pieces.is_empty() {
+            return Err(MoveError::InvalidMove(
+                "No piece available for this move".to_owned(),
+            ));
+        }
+        if matching_pieces.len() > 1 {
+            return Err(MoveError::InvalidMove(
+                "More than one piece available for this move".to_owned(),
+            ));
+        }
+
+        Ok(matching_pieces[0].position)
     }
 
     pub fn move_piece(&mut self, str_move: String) -> Result<(), MoveError> {
         let next_move = Self::parse_move(str_move)?;
 
-        let source = Self::find_piece_position(&next_move).ok_or(MoveError::InvalidMove("No piece available for this move.".to_owned()))?;
+        let source = self.find_piece_position(&next_move)?;
         let dest = next_move.position;
 
         let source_line = *source.line();
         let source_col = *source.col();
-        let source_piece = self.board[source_line][source_col];
 
         let dest_line = *dest.line();
         let dest_col = *dest.col();
@@ -73,11 +101,14 @@ impl GameState {
         let dest_piece = self.board[dest_line][dest_col];
 
         if let Some(captured_piece) = dest_piece {
-            match captured_piece.color() {
+            match captured_piece.color {
                 Color::White => self.captured_white_pieces.push(captured_piece),
                 Color::Black => self.captured_black_pieces.push(captured_piece),
             }
         }
+
+        let mut source_piece = self.board[source_line][source_col];
+        source_piece.as_mut().unwrap().position = Position::new(dest_line, dest_col);
 
         self.board[source_line][source_col] = None;
         self.board[dest_line][dest_col] = source_piece;

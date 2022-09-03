@@ -7,5 +7,5 @@ pub fn read_move() -> io::Result<String> {
     let mut next_move = String::new();
     stdin().read_line(&mut next_move)?;
 
-    Ok(next_move)
+    Ok(next_move.trim().to_owned())
 }

@@ -14,10 +14,12 @@ fn main() {
     game_state.print();
 
     loop {
-        let result = ui::read_move();
-        match result {
+        match ui::read_move() {
             Ok(next_move) => {
-                game_state.move_piece(next_move);
+                if let Err(move_err) = game_state.move_piece(next_move) {
+                    println!("{}", move_err);
+                    continue;
+                }
             }
             Err(move_err) => {
                 println!("{}", move_err);
