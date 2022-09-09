@@ -1,5 +1,4 @@
 use crate::pieces::PieceType;
-use crate::utils::constants::BOARD_SIZE;
 use crate::utils::types::Board;
 use crate::utils::Position;
 
@@ -15,5 +14,5 @@ pub fn can_move(origin: Position, destination: Position, board: Board) -> bool {
 
     let (dest_line, dest_col) = (*destination.line(), *destination.col());
 
-    dest_line == line + 1
+    dest_col == col && (dest_line as i8 - line as i8).abs() == 1
 }
