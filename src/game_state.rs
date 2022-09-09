@@ -43,7 +43,13 @@ impl GameState {
     fn parse_move(str_move: String) -> Result<Move, MoveError> {
         let mut chars = str_move.chars();
 
-        let piece_type: PieceType = chars.next().ok_or(MoveError::MissingPiece)?.try_into()?;
+        let piece_type: PieceType;
+        if str_move.len() == 2 {
+            piece_type = PieceType::Pawn;
+        }
+        else {
+            piece_type = chars.next().ok_or(MoveError::InvalidMove("Missing piece type or column".to_owned()))?.try_into()?;
+        }
 
         let dest_col: char = chars
             .next()

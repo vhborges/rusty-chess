@@ -19,12 +19,12 @@ impl TryFrom<char> for PieceType {
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
-            'B' | 'b' => Ok(PieceType::Bishop),
-            'K' | 'k' => Ok(PieceType::King),
-            'N' | 'n' => Ok(PieceType::Knight),
-            'P' | 'p' => Ok(PieceType::Pawn),
-            'Q' | 'q' => Ok(PieceType::Queen),
-            'R' | 'r' => Ok(PieceType::Rook),
+            'B' => Ok(PieceType::Bishop),
+            'K' => Ok(PieceType::King),
+            'N' => Ok(PieceType::Knight),
+            'P' => Ok(PieceType::Pawn),
+            'Q' => Ok(PieceType::Queen),
+            'R' => Ok(PieceType::Rook),
             _ => Err(format!("Invalid piece character: {}", value)),
         }
     }
@@ -53,7 +53,7 @@ impl Piece {
             PieceType::Bishop => bishop::can_move(board),
             PieceType::King => king::can_move(self.position, destination, board),
             PieceType::Knight => knight::can_move(board),
-            PieceType::Pawn => pawn::can_move(board),
+            PieceType::Pawn => pawn::can_move(self.position, destination, board),
             PieceType::Queen => queen::can_move(board),
             PieceType::Rook => rook::can_move(board),
         }
