@@ -22,7 +22,7 @@ impl TryFrom<char> for PieceType {
             'B' => Ok(PieceType::Bishop),
             'K' => Ok(PieceType::King),
             'N' => Ok(PieceType::Knight),
-            'P' => Ok(PieceType::Pawn),
+            'a'..='h' | 'P' => Ok(PieceType::Pawn),
             'Q' => Ok(PieceType::Queen),
             'R' => Ok(PieceType::Rook),
             _ => Err(format!("Invalid piece character: {}", value)),

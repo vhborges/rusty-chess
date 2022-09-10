@@ -1,12 +1,13 @@
 #[derive(Copy, Clone)]
+#[derive(PartialEq)]
 pub enum Color {
     White,
     Black,
 }
 
 impl Color {
-    fn flip(&self) -> Self {
-        match *self {
+    pub fn flip(&mut self) {
+        *self = match self {
             Color::Black => Color::White,
             Color::White => Color::Black,
         }

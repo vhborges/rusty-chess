@@ -6,15 +6,15 @@ use super::Position;
 pub type Board = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
 pub struct Move {
-    pub piece_type: PieceType,
-    pub position: Position,
+    pub source: Position,
+    pub destination: Position,
 }
 
 impl Move {
-    pub fn new(piece_type: PieceType, position: Position) -> Self {
+    pub fn new(origin: Position, destination: Position) -> Self {
         Self {
-            piece_type,
-            position,
+            source: origin,
+            destination,
         }
     }
 }
