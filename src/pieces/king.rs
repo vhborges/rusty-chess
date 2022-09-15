@@ -1,4 +1,3 @@
-use crate::pieces::PieceType;
 use crate::utils::constants::BOARD_SIZE;
 use crate::utils::types::Board;
 use crate::utils::Position;
@@ -7,11 +6,6 @@ pub const SYMBOLS: [char; 2] = ['\u{2654}', '\u{265A}'];
 
 pub fn can_move(origin: Position, destination: Position, board: Board) -> bool {
     let (line, col) = (*origin.line(), *origin.col());
-
-    assert!(
-        board[line][col].is_some() && board[line][col].unwrap().piece_type == PieceType::King,
-        "Internal error 01: Incorrect piece type or position"
-    );
 
     // TODO check if the King will capture a oposite-color piece
 
