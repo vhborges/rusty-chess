@@ -3,40 +3,24 @@ use crate::errors::{PositionError, ChessPositionError};
 
 #[derive(Copy, Clone)]
 pub struct Position {
-    line: usize,
-    col: usize,
+    pub line: usize,
+    pub col: usize,
 }
 
 impl Position {
     pub fn new(line: usize, col: usize) -> Self {
         Self { line, col }
     }
-
-    pub fn line(&self) -> &usize {
-        &self.line
-    }
-
-    pub fn col(&self) -> &usize {
-        &self.col
-    }
 }
 
 pub struct ChessPosition {
-    line: char,
-    col: char,
+    pub line: char,
+    pub col: char,
 }
 
 impl ChessPosition {
     pub fn new(line: char, col: char) -> Self {
         Self { line, col }
-    }
-
-    pub fn line(&self) -> &char {
-        &self.line
-    }
-
-    pub fn col(&self) -> &char {
-        &self.col
     }
 }
 
@@ -44,11 +28,11 @@ impl TryFrom<ChessPosition> for Position {
     type Error = ChessPositionError;
 
     fn try_from(chess_pos: ChessPosition) -> Result<Self, Self::Error> {
-        if !LINE_RANGE.contains(chess_pos.line()) {
-            return Err(ChessPositionError::InvalidLine(*chess_pos.line()));
+        if !LINE_RANGE.contains(&chess_pos.line) {
+            return Err(ChessPositionError::InvalidLine(chess_pos.line));
         }
-        if !COL_RANGE.contains(chess_pos.col()) {
-            return Err(ChessPositionError::InvalidColumn(*chess_pos.col()));
+        if !COL_RANGE.contains(&chess_pos.col) {
+            return Err(ChessPositionError::InvalidColumn(chess_pos.col));
         }
 
         let chess_line = chess_pos.line.to_digit(10).unwrap();

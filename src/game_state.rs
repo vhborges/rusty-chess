@@ -37,8 +37,8 @@ impl GameState {
     }
 
     pub fn add_piece(&mut self, piece: Piece) {
-        let line = *piece.position.line();
-        let col = *piece.position.col();
+        let line = piece.position.line;
+        let col = piece.position.col;
 
         self.board[line][col] = Some(piece);
     }
@@ -164,7 +164,7 @@ impl GameState {
             for i in 1..matching_pieces.len() {
                 let piece = matching_pieces[i];
                 let chess_pos: ChessPosition = piece.position.try_into()?;
-                if disambiguation.unwrap() != *chess_pos.line() && disambiguation.unwrap() != *chess_pos.col() {
+                if disambiguation.unwrap() != chess_pos.line && disambiguation.unwrap() != chess_pos.col {
                     matching_pieces.remove(i);
                 }
             }
@@ -181,11 +181,11 @@ impl GameState {
     pub fn move_piece(&mut self, str_move: String) -> Result<(), MoveError> {
         let next_move = self.parse_move(str_move)?;
 
-        let source_line = *next_move.source.line();
-        let source_col = *next_move.source.col();
+        let source_line = next_move.source.line;
+        let source_col = next_move.source.col;
 
-        let dest_line = *next_move.destination.line();
-        let dest_col = *next_move.destination.col();
+        let dest_line = next_move.destination.line;
+        let dest_col = next_move.destination.col;
 
         let dest_piece = self.board[dest_line][dest_col];
 

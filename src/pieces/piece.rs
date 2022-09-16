@@ -49,19 +49,19 @@ impl Piece {
     }
 
     pub fn can_move(&self, board: Board, destination: Position) -> bool {
-        let (line, col) = (*self.position.line(), *self.position.col());
+        let (line, col) = (self.position.line, self.position.col);
         assert!(
             board[line][col].is_some() && board[line][col].unwrap().piece_type == self.piece_type,
             "Internal error 01: Incorrect piece type or position"
         );
 
         match self.piece_type {
-            PieceType::Bishop => bishop::can_move(self.position, destination, board),
-            PieceType::King => king::can_move(self.position, destination, board),
-            PieceType::Knight => knight::can_move(self.position, destination, board),
-            PieceType::Pawn => pawn::can_move(self.position, destination, board),
-            PieceType::Queen => queen::can_move(self.position, destination, board),
-            PieceType::Rook => rook::can_move(self.position, destination, board),
+            PieceType::Bishop => bishop::can_move(*self, destination, board),
+            PieceType::King => king::can_move(*self, destination, board),
+            PieceType::Knight => knight::can_move(*self, destination, board),
+            PieceType::Pawn => pawn::can_move(*self, destination, board),
+            PieceType::Queen => queen::can_move(*self, destination, board),
+            PieceType::Rook => rook::can_move(*self, destination, board),
         }
     }
 
