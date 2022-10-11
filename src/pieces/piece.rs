@@ -4,7 +4,7 @@ use super::{bishop, king, knight, pawn, queen, rook};
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PieceType {
     Bishop,
     King,

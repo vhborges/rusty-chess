@@ -294,3 +294,83 @@ impl GameState {
         println!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::errors::MoveError;
+    use crate::utils::{Color, Position};
+    use crate::utils::types::Move;
+
+    use super::GameState;
+
+    #[test]
+    fn test_move_piece() {
+        let mut game_state = GameState::new();
+        game_state.initialize();
+
+        assert_eq!(game_state.turn, Color::White);
+        make_and_assert_move(&mut game_state, "e3", Position::new(6, 4), Position::new(5, 4));
+
+        assert_eq!(game_state.turn, Color::Black);
+        make_and_assert_move(&mut game_state, "e6", Position::new(1, 4), Position::new(2, 4));
+
+        assert_eq!(game_state.turn, Color::White);
+        make_and_assert_move(&mut game_state, "Bb5", Position::new(7, 5), Position::new(3, 1));
+
+        assert_eq!(game_state.turn, Color::Black);
+        make_and_assert_move(&mut game_state, "Nf6", Position::new(0, 6), Position::new(2, 5));
+
+        assert_eq!(game_state.turn, Color::White);
+        make_and_assert_move(&mut game_state, "Bxd7", Position::new(3, 1), Position::new(1, 3));
+
+        assert_eq!(game_state.turn, Color::Black);
+        make_and_assert_move(&mut game_state, "Qxd7", Position::new(0, 3), Position::new(1, 3));
+
+        assert_eq!(game_state.turn, Color::White);
+        make_and_assert_move(&mut game_state, "d4", Position::new(6, 3), Position::new(4, 3));
+
+        assert_eq!(game_state.turn, Color::Black);
+        make_and_assert_move(&mut game_state, "Bc5", Position::new(0, 5), Position::new(3, 2));
+
+        assert_eq!(game_state.turn, Color::White);
+        make_and_assert_move(&mut game_state, "dxc5", Position::new(4, 3), Position::new(3, 2));
+
+        assert_eq!(game_state.turn, Color::Black);
+        make_and_assert_move(&mut game_state, "Na6", Position::new(0, 1), Position::new(2, 0));
+
+        assert_eq!(game_state.turn, Color::White);
+        make_and_assert_move(&mut game_state, "Nc3", Position::new(7, 1), Position::new(5, 2));
+
+        assert_eq!(game_state.turn, Color::Black);
+        make_and_assert_move(&mut game_state, "Ne4", Position::new(2, 5), Position::new(4, 4));
+
+        assert_eq!(game_state.turn, Color::White);
+        make_and_assert_move(&mut game_state, "Qxd7+", Position::new(7, 3), Position::new(1, 3));
+
+        assert_eq!(game_state.turn, Color::Black);
+        make_and_assert_move(&mut game_state, "Kxd7", Position::new(0, 4), Position::new(1, 3));
+
+        assert_eq!(game_state.turn, Color::White);
+        make_and_assert_move(&mut game_state, "h4", Position::new(6, 7), Position::new(4, 7));
+
+        assert_eq!(game_state.turn, Color::Black);
+        make_and_assert_move(&mut game_state, "Naxc5", Position::new(2, 0), Position::new(3, 2));
+    }
+
+    fn make_and_assert_move(game_state: &mut GameState, str_move: &str, source: Position, destination: Position) {
+        let origin_piece = game_state.board[source.line][source.col];
+        assert!(origin_piece.is_some());
+
+        let result = game_state.move_piece(str_move.to_owned());
+        // TODO assert result is Ok
+        if let Err(error) = result {
+            println!("Move error: {}", error);
+            panic!();
+        }
+
+        let dest_piece = game_state.board[destination.line][destination.col];
+        assert!(dest_piece.is_some());
+        assert_eq!(origin_piece.unwrap().piece_type, dest_piece.unwrap().piece_type);
+        assert_eq!(origin_piece.unwrap().color, dest_piece.unwrap().color);
+    }
+}
