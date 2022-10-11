@@ -3,9 +3,9 @@ use std::process::Command;
 use crate::errors::MoveError;
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
-use crate::utils::constants::{LINE_RANGE, CAPTURE, COL_RANGE, LINES, BLANK_SQUARE, COLUMNS};
-use crate::utils::types::{Board, Move};
 use crate::utils::{ChessPosition, Color, Position};
+use crate::utils::constants::{BLANK_SQUARE, CAPTURE, COL_RANGE, COLUMNS, LINE_RANGE, LINES};
+use crate::utils::types::{Board, Move};
 
 pub struct GameState {
     board: Board,
@@ -20,7 +20,7 @@ impl GameState {
             board: Default::default(),
             captured_white_pieces: Vec::new(),
             captured_black_pieces: Vec::new(),
-            turn: Color::White
+            turn: Color::White,
         }
     }
 
@@ -89,7 +89,7 @@ impl GameState {
         }
         else if third.is_digit(10) && piece_type != PieceType::Pawn {
             if dest_col.is_none() {
-                return Err(MoveError::InvalidMove("Missing destination column".to_owned()))
+                return Err(MoveError::InvalidMove("Missing destination column".to_owned()));
             }
             dest_line = Some(third);
             destination = ChessPosition::new(dest_line.unwrap(), dest_col.unwrap()).try_into()?;
@@ -107,7 +107,7 @@ impl GameState {
         let fourth = chars.next().ok_or(MoveError::InvalidMove("Missing fourth character".to_owned()))?;
         if fourth.is_digit(10) && capture {
             if dest_col.is_none() {
-                return Err(MoveError::InvalidMove("Missing destination column".to_owned()))
+                return Err(MoveError::InvalidMove("Missing destination column".to_owned()));
             }
             dest_line = Some(fourth);
             destination = ChessPosition::new(dest_line.unwrap(), dest_col.unwrap()).try_into()?;
@@ -127,7 +127,7 @@ impl GameState {
             return Err(MoveError::InvalidCharacter(fifth));
         }
         if dest_col.is_none() {
-            return Err(MoveError::InvalidMove("Missing destination column".to_owned()))
+            return Err(MoveError::InvalidMove("Missing destination column".to_owned()));
         }
         dest_line = Some(fifth);
         destination = ChessPosition::new(dest_line.unwrap(), dest_col.unwrap()).try_into()?;
