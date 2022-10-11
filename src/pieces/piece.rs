@@ -2,9 +2,9 @@ use std::fmt::Display;
 
 use super::{bishop, king, knight, pawn, queen, rook};
 use crate::utils::types::Board;
-use crate::utils::{constants::BOARD_SIZE, Color, Position};
+use crate::utils::{Color, Position};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum PieceType {
     Bishop,
     King,
@@ -22,7 +22,7 @@ impl TryFrom<char> for PieceType {
             'B' => Ok(PieceType::Bishop),
             'K' => Ok(PieceType::King),
             'N' => Ok(PieceType::Knight),
-            'P' => Ok(PieceType::Pawn),
+            'a'..='h' | 'P' => Ok(PieceType::Pawn),
             'Q' => Ok(PieceType::Queen),
             'R' => Ok(PieceType::Rook),
             _ => Err(format!("Invalid piece character: {}", value)),
@@ -33,9 +33,9 @@ impl TryFrom<char> for PieceType {
 #[derive(Copy, Clone)]
 pub struct Piece {
     symbol: char,
-    piece_type: PieceType,
-    color: Color,
-    position: Position,
+    pub piece_type: PieceType,
+    pub color: Color,
+    pub position: Position,
 }
 
 impl Piece {
@@ -48,30 +48,20 @@ impl Piece {
         }
     }
 
-    pub fn symbol(&self) -> &char {
-        &self.symbol
-    }
+    pub fn can_move(&self, board: Board, destination: Position) -> bool {
+        let (line, col) = (self.position.line, self.position.col);
+        assert!(
+            board[line][col].is_some() && board[line][col].unwrap().piece_type == self.piece_type,
+            "Internal error 01: Incorrect piece type or position"
+        );
 
-    pub fn color(&self) -> &Color {
-        &self.color
-    }
-
-    pub fn position(&self) -> &Position {
-        &self.position
-    }
-
-    pub fn piece_type(&self) -> &PieceType {
-        &self.piece_type
-    }
-
-    pub fn possible_movements(&self, board: Board) -> [[bool; BOARD_SIZE]; BOARD_SIZE] {
         match self.piece_type {
-            PieceType::Bishop => bishop::possible_movements(board),
-            PieceType::King => king::possible_movements(board),
-            PieceType::Knight => knight::possible_movements(board),
-            PieceType::Pawn => pawn::possible_movements(board),
-            PieceType::Queen => queen::possible_movements(board),
-            PieceType::Rook => rook::possible_movements(board),
+            PieceType::Bishop => bishop::can_move(*self, destination, board),
+            PieceType::King => king::can_move(*self, destination, board),
+            PieceType::Knight => knight::can_move(*self, destination, board),
+            PieceType::Pawn => pawn::can_move(*self, destination, board),
+            PieceType::Queen => queen::can_move(*self, destination, board),
+            PieceType::Rook => rook::can_move(*self, destination, board),
         }
     }
 
