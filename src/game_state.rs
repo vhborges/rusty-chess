@@ -3,9 +3,9 @@ use std::process::Command;
 use crate::errors::MoveError;
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
-use crate::utils::{ChessPosition, Color, Position};
-use crate::utils::constants::{BLANK_SQUARE, CAPTURE, COL_RANGE, COLUMNS, LINE_RANGE, LINES};
+use crate::utils::constants::{BLANK_SQUARE, CAPTURE, COLUMNS, COL_RANGE, LINES, LINE_RANGE};
 use crate::utils::types::{Board, Move};
+use crate::utils::{ChessPosition, Color, Position};
 
 pub struct GameState {
     board: Board,
@@ -52,14 +52,18 @@ impl GameState {
         let mut chars = str_move.chars();
 
         // First: Piece Type, Disambiguation (if Pawn and second = Capture)
-        let first = chars.next().ok_or(MoveError::InvalidMove("Empty input".to_owned()))?;
+        let first = chars
+            .next()
+            .ok_or(MoveError::InvalidMove("Empty input".to_owned()))?;
         let piece_type = first.try_into()?;
         if piece_type == PieceType::Pawn {
             dest_col = Some(first);
         }
 
         // Second: Disambiguation, Line, Column, Capture
-        let second = chars.next().ok_or(MoveError::InvalidMove("Missing second character".to_owned()))?;
+        let second = chars.next().ok_or(MoveError::InvalidMove(
+            "Missing second character".to_owned(),
+        ))?;
         if second.is_digit(10) && dest_col.is_some() {
             dest_line = Some(second);
             destination = ChessPosition::new(dest_line.unwrap(), dest_col.unwrap()).try_into()?;
@@ -71,63 +75,70 @@ impl GameState {
             if piece_type == PieceType::Pawn {
                 disambiguation = Some(first);
             }
-        }
-        else if str_move.len() > 3 && piece_type != PieceType::Pawn && (LINE_RANGE.contains(&second) || COL_RANGE.contains(&second)) {
+        } else if str_move.len() > 3
+            && piece_type != PieceType::Pawn
+            && (LINE_RANGE.contains(&second) || COL_RANGE.contains(&second))
+        {
             disambiguation = Some(second);
-        }
-        else if second.is_lowercase() {
+        } else if second.is_lowercase() {
             dest_col = Some(second);
-        }
-        else {
+        } else {
             return Err(MoveError::InvalidCharacter(second));
         }
 
         // Third: Capture, Line, Column
-        let third = chars.next().ok_or(MoveError::InvalidMove("Missing third character".to_owned()))?;
+        let third = chars
+            .next()
+            .ok_or(MoveError::InvalidMove("Missing third character".to_owned()))?;
         if third == CAPTURE {
             capture = true;
-        }
-        else if third.is_digit(10) && piece_type != PieceType::Pawn {
+        } else if third.is_digit(10) && piece_type != PieceType::Pawn {
             if dest_col.is_none() {
-                return Err(MoveError::InvalidMove("Missing destination column".to_owned()));
+                return Err(MoveError::InvalidMove(
+                    "Missing destination column".to_owned(),
+                ));
             }
             dest_line = Some(third);
             destination = ChessPosition::new(dest_line.unwrap(), dest_col.unwrap()).try_into()?;
             origin = self.find_piece_position(piece_type, destination, disambiguation)?;
             return Ok(Move::new(origin, destination));
-        }
-        else if third.is_lowercase() {
+        } else if third.is_lowercase() {
             dest_col = Some(third);
-        }
-        else {
+        } else {
             return Err(MoveError::InvalidCharacter(third));
         }
 
         // Fourth: Line (if capture), Column (if not Pawn and capture and disambiguation = Some)
-        let fourth = chars.next().ok_or(MoveError::InvalidMove("Missing fourth character".to_owned()))?;
+        let fourth = chars.next().ok_or(MoveError::InvalidMove(
+            "Missing fourth character".to_owned(),
+        ))?;
         if fourth.is_digit(10) && capture {
             if dest_col.is_none() {
-                return Err(MoveError::InvalidMove("Missing destination column".to_owned()));
+                return Err(MoveError::InvalidMove(
+                    "Missing destination column".to_owned(),
+                ));
             }
             dest_line = Some(fourth);
             destination = ChessPosition::new(dest_line.unwrap(), dest_col.unwrap()).try_into()?;
             origin = self.find_piece_position(piece_type, destination, disambiguation)?;
             return Ok(Move::new(origin, destination));
-        }
-        else if fourth.is_lowercase() {
+        } else if fourth.is_lowercase() {
             dest_col = Some(fourth);
-        }
-        else {
+        } else {
             return Err(MoveError::InvalidCharacter(fourth));
         }
 
         //Fifth: Line
-        let fifth = chars.next().ok_or(MoveError::InvalidMove("Missing fifth character".to_owned()))?;
+        let fifth = chars
+            .next()
+            .ok_or(MoveError::InvalidMove("Missing fifth character".to_owned()))?;
         if !fifth.is_digit(10) {
             return Err(MoveError::InvalidCharacter(fifth));
         }
         if dest_col.is_none() {
-            return Err(MoveError::InvalidMove("Missing destination column".to_owned()));
+            return Err(MoveError::InvalidMove(
+                "Missing destination column".to_owned(),
+            ));
         }
         dest_line = Some(fifth);
         destination = ChessPosition::new(dest_line.unwrap(), dest_col.unwrap()).try_into()?;
@@ -135,7 +146,12 @@ impl GameState {
         return Ok(Move::new(origin, destination));
     }
 
-    fn find_piece_position(&self, piece_type: PieceType, destination: Position, disambiguation: Option<char>) -> Result<Position, MoveError> {
+    fn find_piece_position(
+        &self,
+        piece_type: PieceType,
+        destination: Position,
+        disambiguation: Option<char>,
+    ) -> Result<Position, MoveError> {
         let mut matching_pieces = Vec::new();
         for line in self.board {
             for opt_piece in line {
@@ -164,7 +180,9 @@ impl GameState {
             for i in 1..matching_pieces.len() {
                 let piece = matching_pieces[i];
                 let chess_pos: ChessPosition = piece.position.try_into()?;
-                if disambiguation.unwrap() != chess_pos.line && disambiguation.unwrap() != chess_pos.col {
+                if disambiguation.unwrap() != chess_pos.line
+                    && disambiguation.unwrap() != chess_pos.col
+                {
                     matching_pieces.remove(i);
                 }
             }
