@@ -1,12 +1,11 @@
 use crate::utils::constants::BOARD_SIZE;
-use crate::utils::types::Board;
 use crate::utils::Position;
 
 use super::Piece;
 
 pub const SYMBOLS: [char; 2] = ['\u{2654}', '\u{265A}'];
 
-pub fn can_move(piece: Piece, destination: Position, board: Board) -> bool {
+pub fn can_move(piece: Piece, destination: Position) -> bool {
     let (line, col) = (piece.position.line, piece.position.col);
 
     // TODO check if the King will capture a oposite-color piece
@@ -24,9 +23,7 @@ pub fn can_move(piece: Piece, destination: Position, board: Board) -> bool {
             {
                 continue;
             }
-            if (line as i8 + i, col as i8 + j)
-                == (destination.line as i8, destination.col as i8)
-            {
+            if (line as i8 + i, col as i8 + j) == (destination.line as i8, destination.col as i8) {
                 return true;
             }
         }

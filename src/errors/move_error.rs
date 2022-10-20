@@ -1,9 +1,9 @@
 use std::error::Error;
 use std::fmt::Display;
 
-use super::{PositionError, ChessPositionError};
+use super::{ChessPositionError, PositionError};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum MoveError {
     InvalidMove(String),
     InvalidCharacter(char),
@@ -17,21 +17,11 @@ impl Display for MoveError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::InvalidMove(err) => write!(f, "Invalid move: {}", err),
-            Self::InvalidCharacter(square) => write!(
-                f,
-                "Invalid character: {}",
-                square
-            ),
-            Self::InvalidPosition(position_err) => write!(
-                f,
-                "Invalid position: {}",
-                position_err
-            ),
-            Self::InvalidChessPosition(chess_position_err) => write!(
-                f,
-                "Invalid Chess position: {}",
-                chess_position_err
-            ),
+            Self::InvalidCharacter(square) => write!(f, "Invalid character: {}", square),
+            Self::InvalidPosition(position_err) => write!(f, "Invalid position: {}", position_err),
+            Self::InvalidChessPosition(chess_position_err) => {
+                write!(f, "Invalid Chess position: {}", chess_position_err)
+            }
         }
     }
 }
