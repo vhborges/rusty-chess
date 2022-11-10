@@ -3,9 +3,9 @@ use std::process::Command;
 use crate::errors::MoveError;
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
-use crate::utils::constants::{BLANK_SQUARE, CAPTURE, COLUMNS, COL_RANGE, LINES, LINE_RANGE};
-use crate::utils::types::{Board, Move};
 use crate::utils::{ChessPosition, Color, Position};
+use crate::utils::constants::{BLANK_SQUARE, CAPTURE, COL_RANGE, COLUMNS, LINE_RANGE, LINES};
+use crate::utils::types::{Board, Move};
 
 pub struct GameState {
     board: Board,
@@ -113,11 +113,11 @@ impl GameState {
             return Err(MoveError::InvalidCharacter(next_char));
         }
 
-        // Fourth: Line (if capture), Column (if not Pawn and capture and disambiguation = Some)
+        // Fourth: Line (if capture or disambiguation), Column (if not Pawn and capture and disambiguation = Some)
         next_char = chars.next().ok_or(MoveError::InvalidMove(
             "Missing fourth character".to_owned(),
         ))?;
-        if next_char.is_digit(10) && capture {
+        if next_char.is_digit(10) && (capture || disambiguation.is_some()) {
             if let Some(col) = dest_col {
                 dest_line = next_char;
                 destination = ChessPosition::new(dest_line, col).try_into()?;
@@ -184,15 +184,12 @@ impl GameState {
                     "More than one piece available for this move".to_owned(),
                 ));
             }
-            for i in 1..matching_pieces.len() {
-                let piece = matching_pieces[i];
-                let chess_pos: ChessPosition = piece.position.try_into()?;
-                if disambiguation.unwrap() != chess_pos.line
-                    && disambiguation.unwrap() != chess_pos.col
-                {
-                    matching_pieces.remove(i);
-                }
-            }
+            matching_pieces.retain(|piece| -> bool {
+                let chess_pos: ChessPosition = piece.position.try_into()
+                    .expect("Internal error 02: Invalid piece position");
+                disambiguation.unwrap() == chess_pos.line
+                    || disambiguation.unwrap() == chess_pos.col
+            });
             if matching_pieces.len() != 1 {
                 return Err(MoveError::InvalidMove(
                     "More than one piece available for this move".to_owned(),
@@ -261,6 +258,7 @@ impl GameState {
         }
     }
 
+    // TODO move to io module
     pub fn print(&self) {
         Command::new("clear")
             .status()
@@ -441,6 +439,14 @@ mod tests {
             Position::new(3, 2),
         )?;
 
+        assert_eq!(game_state.turn, Color::White);
+        make_and_validate_move(
+            &mut game_state,
+            "Rh2",
+            Position::new(7, 7),
+            Position::new(6, 7),
+        )?;
+
         Ok(())
     }
 
@@ -449,18 +455,63 @@ mod tests {
         let mut game_state = GameState::new();
         game_state.initialize();
 
+        let mut result = game_state.move_piece("Kd5".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidMove("No piece available for this move".to_owned())
+        );
+
         game_state
             .move_piece("e4".to_owned())
             .expect("Something's wrong: e4 is not a invalid move!");
         game_state
             .move_piece("c5".to_owned())
             .expect("Something's wrong: c5 is not a invalid move!");
-        let result = game_state.move_piece("exc5".to_owned());
+        result = game_state.move_piece("exc5".to_owned());
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
             MoveError::InvalidMove("No piece available for this move".to_owned())
-        )
+        );
+
+        game_state
+            .move_piece("d4".to_owned())
+            .expect("Something's wrong: d4 is not a invalid move!");
+        game_state
+            .move_piece("cxd4".to_owned())
+            .expect("Something's wrong: cxd4 is not a invalid move!");
+        game_state
+            .move_piece("Nf3".to_owned())
+            .expect("Something's wrong: Nf3 is not a invalid move!");
+        game_state
+            .move_piece("e5".to_owned())
+            .expect("Something's wrong: e5 is not a invalid move!");
+        result = game_state.move_piece("Nd2".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidMove("More than one piece available for this move".to_owned())
+        );
+
+        game_state
+            .move_piece("Nbd2".to_owned())
+            .expect("Something's wrong: Nbd2 is not a invalid move!");
+        game_state
+            .move_piece("Bd6".to_owned())
+            .expect("Something's wrong: Bd6 is not a invalid move!");
+        game_state
+            .move_piece("Nxd4".to_owned())
+            .expect("Something's wrong: Nxd4 is not a invalid move!");
+        game_state
+            .move_piece("Nc6".to_owned())
+            .expect("Something's wrong: Nc6 is not a invalid move!");
+        result = game_state.move_piece("Ndb3".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidMove("More than one piece available for this move".to_owned())
+        );
     }
 
     #[test]
@@ -474,6 +525,75 @@ mod tests {
             result.unwrap_err(),
             MoveError::InvalidMove("Invalid capture".to_owned())
         )
+    }
+
+    #[test]
+    fn test_invalid_pgn_string() {
+        let mut game_state = GameState::new();
+        game_state.initialize();
+
+        let mut result = game_state.move_piece("e".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidMove("Missing second character".to_owned())
+        );
+
+        result = game_state.move_piece("eK".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidCharacter('K')
+        );
+
+        result = game_state.move_piece("Kx5".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidMove("Missing destination column".to_owned())
+        );
+
+        result = game_state.move_piece("KxI".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidCharacter('I')
+        );
+
+        result = game_state.move_piece("Kxc".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidMove("Missing fourth character".to_owned())
+        );
+
+        result = game_state.move_piece("Kxx7".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidMove("Missing destination column".to_owned())
+        );
+
+        result = game_state.move_piece("KxdL".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidCharacter('L')
+        );
+
+        result = game_state.move_piece("KdxcM".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidCharacter('M')
+        );
+
+        result = game_state.move_piece("Le5".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidMove("Invalid piece character: L".to_owned())
+        );
     }
 
     fn make_and_validate_move(

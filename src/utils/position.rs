@@ -48,10 +48,10 @@ impl TryFrom<Position> for ChessPosition {
     type Error = PositionError;
 
     fn try_from(position: Position) -> Result<Self, Self::Error> {
-        if !(1..=BOARD_SIZE).contains(&position.line) {
+        if !(0..BOARD_SIZE).contains(&position.line) {
             return Err(PositionError::InvalidLine(position.line));
         }
-        if !(1..=BOARD_SIZE).contains(&position.col) {
+        if !(0..BOARD_SIZE).contains(&position.col) {
             return Err(PositionError::InvalidColumn(position.col));
         }
 

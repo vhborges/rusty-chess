@@ -16,6 +16,7 @@ pub enum PieceType {
 }
 
 impl TryFrom<char> for PieceType {
+    // TODO create pgn_error
     type Error = String;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
