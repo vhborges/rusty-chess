@@ -5,6 +5,7 @@ use super::{ChessPositionError, PositionError};
 
 #[derive(Debug, PartialEq)]
 pub enum MoveError {
+    // TODO convert to &str
     InvalidMove(String),
     InvalidCharacter(char),
     InvalidPosition(PositionError),
