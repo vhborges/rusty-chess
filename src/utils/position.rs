@@ -1,7 +1,7 @@
 use super::constants::{BOARD_SIZE, LINE_RANGE, COL_RANGE};
 use crate::errors::{PositionError, ChessPositionError};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Position {
     pub line: usize,
     pub col: usize,
@@ -48,10 +48,10 @@ impl TryFrom<Position> for ChessPosition {
     type Error = PositionError;
 
     fn try_from(position: Position) -> Result<Self, Self::Error> {
-        if !(1..=BOARD_SIZE).contains(&position.line) {
+        if !(0..BOARD_SIZE).contains(&position.line) {
             return Err(PositionError::InvalidLine(position.line));
         }
-        if !(1..=BOARD_SIZE).contains(&position.col) {
+        if !(0..BOARD_SIZE).contains(&position.col) {
             return Err(PositionError::InvalidColumn(position.col));
         }
 

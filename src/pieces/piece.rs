@@ -1,10 +1,11 @@
 use std::fmt::Display;
 
 use super::{bishop, king, knight, pawn, queen, rook};
+use crate::errors::MoveError;
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PieceType {
     Bishop,
     King,
@@ -15,6 +16,7 @@ pub enum PieceType {
 }
 
 impl TryFrom<char> for PieceType {
+    // TODO create pgn_error
     type Error = String;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
@@ -48,7 +50,19 @@ impl Piece {
         }
     }
 
-    pub fn can_move(&self, board: Board, destination: Position) -> bool {
+    pub fn can_move(
+        &self,
+        board: Board,
+        destination: Position,
+        capture: bool,
+    ) -> Result<bool, MoveError> {
+        if capture {
+            let dest_piece = board[destination.line][destination.col];
+            if dest_piece.is_none() || dest_piece.unwrap().color == self.color {
+                return Err(MoveError::InvalidMove("Invalid capture".to_owned()));
+            }
+        }
+
         let (line, col) = (self.position.line, self.position.col);
         assert!(
             board[line][col].is_some() && board[line][col].unwrap().piece_type == self.piece_type,
@@ -56,12 +70,12 @@ impl Piece {
         );
 
         match self.piece_type {
-            PieceType::Bishop => bishop::can_move(*self, destination, board),
-            PieceType::King => king::can_move(*self, destination, board),
-            PieceType::Knight => knight::can_move(*self, destination, board),
-            PieceType::Pawn => pawn::can_move(*self, destination, board),
-            PieceType::Queen => queen::can_move(*self, destination, board),
-            PieceType::Rook => rook::can_move(*self, destination, board),
+            PieceType::Bishop => Ok(bishop::can_move(*self, destination)),
+            PieceType::King => Ok(king::can_move(*self, destination)),
+            PieceType::Knight => Ok(knight::can_move(*self, destination)),
+            PieceType::Pawn => Ok(pawn::can_move(*self, destination, capture)),
+            PieceType::Queen => Ok(queen::can_move(*self, destination)),
+            PieceType::Rook => Ok(rook::can_move(*self, destination)),
         }
     }
 
