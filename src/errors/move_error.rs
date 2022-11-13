@@ -6,7 +6,7 @@ use super::{ChessPositionError, PositionError};
 #[derive(Debug, PartialEq)]
 pub enum MoveError {
     // TODO convert to &str
-    InvalidMove(String),
+    InvalidMove(&'static str),
     InvalidCharacter(char),
     InvalidPosition(PositionError),
     InvalidChessPosition(ChessPositionError),
@@ -39,8 +39,8 @@ impl From<ChessPositionError> for MoveError {
     }
 }
 
-impl From<String> for MoveError {
-    fn from(err: String) -> Self {
+impl From<&str> for MoveError {
+    fn from(err: &str) -> Self {
         Self::InvalidMove(err)
     }
 }

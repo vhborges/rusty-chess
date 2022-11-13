@@ -6,7 +6,7 @@ use crate::utils::types::Board;
 use crate::utils::{Color, Position};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum PieceType {
+pub enum PieceType<'a> {
     Bishop,
     King,
     Knight,
@@ -15,9 +15,9 @@ pub enum PieceType {
     Rook,
 }
 
-impl TryFrom<char> for PieceType {
+impl<'a> TryFrom<char> for PieceType<'a> {
     // TODO create pgn_error
-    type Error = String;
+    type Error = &'a str;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
@@ -35,7 +35,7 @@ impl TryFrom<char> for PieceType {
 #[derive(Copy, Clone)]
 pub struct Piece {
     symbol: char,
-    pub piece_type: PieceType,
+    pub piece_type: PieceType<'a>,
     pub color: Color,
     pub position: Position,
 }
@@ -59,7 +59,7 @@ impl Piece {
         if capture {
             let dest_piece = board[destination.line][destination.col];
             if dest_piece.is_none() || dest_piece.unwrap().color == self.color {
-                return Err(MoveError::InvalidMove("Invalid capture".to_owned()));
+                return Err(MoveError::InvalidMove("Invalid capture"));
             }
         }
 
