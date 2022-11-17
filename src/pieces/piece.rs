@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use super::{bishop, king, knight, pawn, queen, rook};
-use crate::errors::MoveError;
+use crate::errors::{MoveError, PgnError};
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};
 
@@ -16,8 +16,7 @@ pub enum PieceType {
 }
 
 impl TryFrom<char> for PieceType {
-    // TODO create pgn_error
-    type Error = String;
+    type Error = PgnError;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
@@ -27,7 +26,7 @@ impl TryFrom<char> for PieceType {
             'a'..='h' | 'P' => Ok(PieceType::Pawn),
             'Q' => Ok(PieceType::Queen),
             'R' => Ok(PieceType::Rook),
-            _ => Err(format!("Invalid piece character: {}", value)),
+            _ => Err(PgnError::InvalidPiece(value)),
         }
     }
 }
@@ -58,8 +57,13 @@ impl Piece {
     ) -> Result<bool, MoveError> {
         if capture {
             let dest_piece = board[destination.line][destination.col];
-            if dest_piece.is_none() || dest_piece.unwrap().color == self.color {
-                return Err(MoveError::InvalidMove("Invalid capture".to_owned()));
+            if dest_piece.is_none() {
+                return Err(MoveError::InvalidCapture("destination square is empty"));
+            }
+            if dest_piece.unwrap().color == self.color {
+                return Err(MoveError::InvalidCapture(
+                    "cannot capture a piece of the same color",
+                ));
             }
         }
 

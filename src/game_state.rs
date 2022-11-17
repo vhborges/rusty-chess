@@ -1,11 +1,11 @@
 use std::process::Command;
 
-use crate::errors::MoveError;
+use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
-use crate::utils::{ChessPosition, Color, Position};
-use crate::utils::constants::{BLANK_SQUARE, CAPTURE, COL_RANGE, COLUMNS, LINE_RANGE, LINES};
+use crate::utils::constants::{BLANK_SQUARE, CAPTURE, COLUMNS, COL_RANGE, LINES, LINE_RANGE};
 use crate::utils::types::{Board, Move};
+use crate::utils::{ChessPosition, Color, Position};
 
 pub struct GameState {
     board: Board,
@@ -53,18 +53,14 @@ impl GameState {
         let mut chars = str_move.chars();
 
         // First: Piece Type, Disambiguation (if Pawn and second = Capture)
-        let first = chars
-            .next()
-            .ok_or(MoveError::InvalidMove("Empty input".to_owned()))?;
+        let first = chars.next().ok_or(PgnError::EmptyInput)?;
         let piece_type = first.try_into()?;
         if piece_type == PieceType::Pawn {
             dest_col = Some(first);
         }
 
         // Second: Disambiguation, Line, Column, Capture
-        let mut next_char = chars.next().ok_or(MoveError::InvalidMove(
-            "Missing second character".to_owned(),
-        ))?;
+        let mut next_char = chars.next().ok_or(PgnError::MissingCharacter("second"))?;
         if next_char.is_digit(10) {
             if let Some(col) = dest_col {
                 dest_line = next_char;
@@ -87,13 +83,11 @@ impl GameState {
         } else if next_char.is_lowercase() {
             dest_col = Some(next_char);
         } else {
-            return Err(MoveError::InvalidCharacter(next_char));
+            return Err(PgnError::InvalidCharacter(next_char).into());
         }
 
         // Third: Capture, Line, Column
-        next_char = chars
-            .next()
-            .ok_or(MoveError::InvalidMove("Missing third character".to_owned()))?;
+        next_char = chars.next().ok_or(PgnError::MissingCharacter("third"))?;
         if next_char == CAPTURE {
             capture = true;
         } else if next_char.is_digit(10) && piece_type != PieceType::Pawn {
@@ -104,19 +98,15 @@ impl GameState {
                     self.find_piece_position(piece_type, destination, disambiguation, capture)?;
                 return Ok(Move::new(origin, destination));
             }
-            return Err(MoveError::InvalidMove(
-                "Missing destination column".to_owned(),
-            ));
+            return Err(ChessPositionError::MissingDestinationColumn.into());
         } else if next_char.is_lowercase() {
             dest_col = Some(next_char);
         } else {
-            return Err(MoveError::InvalidCharacter(next_char));
+            return Err(PgnError::InvalidCharacter(next_char).into());
         }
 
         // Fourth: Line (if capture or disambiguation), Column (if not Pawn and capture and disambiguation = Some)
-        next_char = chars.next().ok_or(MoveError::InvalidMove(
-            "Missing fourth character".to_owned(),
-        ))?;
+        next_char = chars.next().ok_or(PgnError::MissingCharacter("fourth"))?;
         if next_char.is_digit(10) && (capture || disambiguation.is_some()) {
             if let Some(col) = dest_col {
                 dest_line = next_char;
@@ -125,21 +115,17 @@ impl GameState {
                     self.find_piece_position(piece_type, destination, disambiguation, capture)?;
                 return Ok(Move::new(origin, destination));
             }
-            return Err(MoveError::InvalidMove(
-                "Missing destination column".to_owned(),
-            ));
+            return Err(ChessPositionError::MissingDestinationColumn.into());
         } else if next_char.is_lowercase() {
             dest_col = Some(next_char);
         } else {
-            return Err(MoveError::InvalidCharacter(next_char));
+            return Err(PgnError::InvalidCharacter(next_char).into());
         }
 
         //Fifth: Line
-        next_char = chars
-            .next()
-            .ok_or(MoveError::InvalidMove("Missing fifth character".to_owned()))?;
+        next_char = chars.next().ok_or(PgnError::MissingCharacter("fifth"))?;
         if !next_char.is_digit(10) {
-            return Err(MoveError::InvalidCharacter(next_char));
+            return Err(PgnError::InvalidCharacter(next_char).into());
         }
         if let Some(col) = dest_col {
             dest_line = next_char;
@@ -147,9 +133,7 @@ impl GameState {
             origin = self.find_piece_position(piece_type, destination, disambiguation, capture)?;
             return Ok(Move::new(origin, destination));
         }
-        return Err(MoveError::InvalidMove(
-            "Missing destination column".to_owned(),
-        ));
+        return Err(ChessPositionError::MissingDestinationColumn.into());
     }
 
     fn find_piece_position(
@@ -174,26 +158,22 @@ impl GameState {
         }
 
         if matching_pieces.is_empty() {
-            return Err(MoveError::InvalidMove(
-                "No piece available for this move".to_owned(),
-            ));
+            return Err(MoveError::NoPieceAvailable);
         }
         if matching_pieces.len() > 1 {
             if disambiguation.is_none() {
-                return Err(MoveError::InvalidMove(
-                    "More than one piece available for this move".to_owned(),
-                ));
+                return Err(MoveError::MoreThanOnePieceAvailable);
             }
             matching_pieces.retain(|piece| -> bool {
-                let chess_pos: ChessPosition = piece.position.try_into()
+                let chess_pos: ChessPosition = piece
+                    .position
+                    .try_into()
                     .expect("Internal error 02: Invalid piece position");
                 disambiguation.unwrap() == chess_pos.line
                     || disambiguation.unwrap() == chess_pos.col
             });
             if matching_pieces.len() != 1 {
-                return Err(MoveError::InvalidMove(
-                    "More than one piece available for this move".to_owned(),
-                ));
+                return Err(MoveError::MoreThanOnePieceAvailable);
             }
         }
 
@@ -300,7 +280,7 @@ impl GameState {
 #[cfg(test)]
 mod tests {
     use crate::{
-        errors::MoveError,
+        errors::{ChessPositionError, MoveError, PgnError},
         utils::{Color, Position},
     };
 
@@ -457,10 +437,7 @@ mod tests {
 
         let mut result = game_state.move_piece("Kd5".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidMove("No piece available for this move".to_owned())
-        );
+        assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
 
         game_state
             .move_piece("e4".to_owned())
@@ -470,10 +447,7 @@ mod tests {
             .expect("Something's wrong: c5 is not a invalid move!");
         result = game_state.move_piece("exc5".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidMove("No piece available for this move".to_owned())
-        );
+        assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
 
         game_state
             .move_piece("d4".to_owned())
@@ -489,10 +463,7 @@ mod tests {
             .expect("Something's wrong: e5 is not a invalid move!");
         result = game_state.move_piece("Nd2".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidMove("More than one piece available for this move".to_owned())
-        );
+        assert_eq!(result.unwrap_err(), MoveError::MoreThanOnePieceAvailable);
 
         game_state
             .move_piece("Nbd2".to_owned())
@@ -508,10 +479,7 @@ mod tests {
             .expect("Something's wrong: Nc6 is not a invalid move!");
         result = game_state.move_piece("Ndb3".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidMove("More than one piece available for this move".to_owned())
-        );
+        assert_eq!(result.unwrap_err(), MoveError::MoreThanOnePieceAvailable);
     }
 
     #[test]
@@ -523,7 +491,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            MoveError::InvalidMove("Invalid capture".to_owned())
+            MoveError::InvalidCapture("destination square is empty")
         )
     }
 
@@ -536,64 +504,49 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            MoveError::InvalidMove("Missing second character".to_owned())
+            PgnError::MissingCharacter("second").into()
         );
 
         result = game_state.move_piece("eK".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidCharacter('K')
-        );
+        assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('K').into());
 
         result = game_state.move_piece("Kx5".to_owned());
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            MoveError::InvalidMove("Missing destination column".to_owned())
+            ChessPositionError::MissingDestinationColumn.into()
         );
 
         result = game_state.move_piece("KxI".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidCharacter('I')
-        );
+        assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('I').into());
 
         result = game_state.move_piece("Kxc".to_owned());
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            MoveError::InvalidMove("Missing fourth character".to_owned())
+            PgnError::MissingCharacter("fourth").into()
         );
 
         result = game_state.move_piece("Kxx7".to_owned());
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            MoveError::InvalidMove("Missing destination column".to_owned())
+            ChessPositionError::MissingDestinationColumn.into()
         );
 
         result = game_state.move_piece("KxdL".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidCharacter('L')
-        );
+        assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('L').into());
 
         result = game_state.move_piece("KdxcM".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidCharacter('M')
-        );
+        assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('M').into());
 
         result = game_state.move_piece("Le5".to_owned());
         assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err(),
-            MoveError::InvalidMove("Invalid piece character: L".to_owned())
-        );
+        assert_eq!(result.unwrap_err(), PgnError::InvalidPiece('L').into());
     }
 
     fn make_and_validate_move(
