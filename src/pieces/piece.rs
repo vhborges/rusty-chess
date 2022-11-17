@@ -1,12 +1,12 @@
 use std::fmt::Display;
 
 use super::{bishop, king, knight, pawn, queen, rook};
-use crate::errors::MoveError;
+use crate::errors::{MoveError, PgnError};
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum PieceType<'a> {
+pub enum PieceType {
     Bishop,
     King,
     Knight,
@@ -15,9 +15,8 @@ pub enum PieceType<'a> {
     Rook,
 }
 
-impl<'a> TryFrom<char> for PieceType<'a> {
-    // TODO create pgn_error
-    type Error = &'a str;
+impl TryFrom<char> for PieceType {
+    type Error = PgnError;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
@@ -27,7 +26,7 @@ impl<'a> TryFrom<char> for PieceType<'a> {
             'a'..='h' | 'P' => Ok(PieceType::Pawn),
             'Q' => Ok(PieceType::Queen),
             'R' => Ok(PieceType::Rook),
-            _ => Err(format!("Invalid piece character: {}", value)),
+            _ => Err(PgnError::InvalidPiece(value)),
         }
     }
 }
@@ -35,7 +34,7 @@ impl<'a> TryFrom<char> for PieceType<'a> {
 #[derive(Copy, Clone)]
 pub struct Piece {
     symbol: char,
-    pub piece_type: PieceType<'a>,
+    pub piece_type: PieceType,
     pub color: Color,
     pub position: Position,
 }
@@ -58,8 +57,13 @@ impl Piece {
     ) -> Result<bool, MoveError> {
         if capture {
             let dest_piece = board[destination.line][destination.col];
-            if dest_piece.is_none() || dest_piece.unwrap().color == self.color {
-                return Err(MoveError::InvalidMove("Invalid capture"));
+            if dest_piece.is_none() {
+                return Err(MoveError::InvalidCapture("destination square is empty"));
+            }
+            if dest_piece.unwrap().color == self.color {
+                return Err(MoveError::InvalidCapture(
+                    "cannot capture a piece of the same color",
+                ));
             }
         }
 

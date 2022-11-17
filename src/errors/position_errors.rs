@@ -22,6 +22,7 @@ impl Display for PositionError {
 pub enum ChessPositionError {
     InvalidLine(char),
     InvalidColumn(char),
+    MissingDestinationColumn,
 }
 
 impl Error for ChessPositionError {}
@@ -29,12 +30,9 @@ impl Error for ChessPositionError {}
 impl Display for ChessPositionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ChessPositionError::InvalidLine(line) => {
-                write!(f, "Line '{}' not in range [1, 8]", line)
-            }
-            ChessPositionError::InvalidColumn(col) => {
-                write!(f, "Column '{}' not in range [a, h]", col)
-            }
+            Self::InvalidLine(line) => write!(f, "Line '{}' not in range [1, 8]", line),
+            Self::InvalidColumn(col) => write!(f, "Column '{}' not in range [a, h]", col),
+            Self::MissingDestinationColumn => write!(f, "Missing destination column"),
         }
     }
 }

@@ -1,15 +1,14 @@
 use std::error::Error;
 use std::fmt::Display;
 
-use super::{ChessPositionError, PositionError};
+use super::{ChessPositionError, PgnError, PositionError};
 
 #[derive(Debug, PartialEq)]
 pub enum MoveError {
-    // TODO convert to &str
-    InvalidMove(&'static str),
-    InvalidCharacter(char),
-    InvalidPosition(PositionError),
-    InvalidChessPosition(ChessPositionError),
+    NoPieceAvailable,
+    MoreThanOnePieceAvailable,
+    InvalidCapture(&'static str),
+    InvalidPgn(PgnError),
 }
 
 impl Error for MoveError {}
@@ -17,30 +16,30 @@ impl Error for MoveError {}
 impl Display for MoveError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::InvalidMove(err) => write!(f, "Invalid move: {}", err),
-            Self::InvalidCharacter(square) => write!(f, "Invalid character: {}", square),
-            Self::InvalidPosition(position_err) => write!(f, "Invalid position: {}", position_err),
-            Self::InvalidChessPosition(chess_position_err) => {
-                write!(f, "Invalid Chess position: {}", chess_position_err)
+            Self::NoPieceAvailable => write!(f, "No piece available for this move"),
+            Self::MoreThanOnePieceAvailable => {
+                write!(f, "More than one piece available for this move")
             }
+            Self::InvalidCapture(err) => write!(f, "Invalid capture: {}", err),
+            Self::InvalidPgn(err) => write!(f, "Invalid PGN: {}", err),
         }
     }
 }
 
-impl From<PositionError> for MoveError {
-    fn from(position_err: PositionError) -> Self {
-        Self::InvalidPosition(position_err)
+impl From<PgnError> for MoveError {
+    fn from(err: PgnError) -> Self {
+        Self::InvalidPgn(err)
     }
 }
 
 impl From<ChessPositionError> for MoveError {
-    fn from(chess_position_err: ChessPositionError) -> Self {
-        Self::InvalidChessPosition(chess_position_err)
+    fn from(err: ChessPositionError) -> Self {
+        return Into::<PgnError>::into(err).into();
     }
 }
 
-impl From<&str> for MoveError {
-    fn from(err: &str) -> Self {
-        Self::InvalidMove(err)
+impl From<PositionError> for MoveError {
+    fn from(err: PositionError) -> Self {
+        return Into::<PgnError>::into(err).into();
     }
 }
