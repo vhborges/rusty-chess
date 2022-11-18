@@ -23,6 +23,7 @@ pub enum ChessPositionError {
     InvalidLine(char),
     InvalidColumn(char),
     MissingDestinationColumn,
+    MissingDestinationLine,
 }
 
 impl Error for ChessPositionError {}
@@ -33,6 +34,7 @@ impl Display for ChessPositionError {
             Self::InvalidLine(line) => write!(f, "Line '{}' not in range [1, 8]", line),
             Self::InvalidColumn(col) => write!(f, "Column '{}' not in range [a, h]", col),
             Self::MissingDestinationColumn => write!(f, "Missing destination column"),
+            Self::MissingDestinationLine => write!(f, "Missing destination line"),
         }
     }
 }

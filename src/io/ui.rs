@@ -1,4 +1,4 @@
-use std::io::{stdin, stdout, Write, self};
+use std::io::{self, stdin, stdout, Write};
 
 pub fn read_move() -> io::Result<String> {
     print!("Next move: ");
