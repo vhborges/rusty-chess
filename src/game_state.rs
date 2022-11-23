@@ -1,16 +1,14 @@
-use std::process::Command;
-
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
-use crate::utils::constants::{BLANK_SQUARE, CAPTURE, COLUMNS, COL_RANGE, LINES, LINE_RANGE};
+use crate::utils::constants::{CAPTURE, COL_RANGE, LINE_RANGE};
 use crate::utils::types::{Board, Move};
 use crate::utils::{ChessPosition, Color, Position};
 
 pub struct GameState {
-    board: Board,
-    captured_white_pieces: Vec<Piece>,
-    captured_black_pieces: Vec<Piece>,
+    pub board: Board,
+    pub captured_white_pieces: Vec<Piece>,
+    pub captured_black_pieces: Vec<Piece>,
     turn: Color,
 }
 
@@ -22,18 +20,6 @@ impl GameState {
             captured_black_pieces: Vec::new(),
             turn: Color::White,
         }
-    }
-
-    pub fn board(&self) -> &Board {
-        &self.board
-    }
-
-    pub fn captured_white_pieces(&self) -> &Vec<Piece> {
-        &self.captured_white_pieces
-    }
-
-    pub fn captured_black_pieces(&self) -> &Vec<Piece> {
-        &self.captured_black_pieces
     }
 
     pub fn add_piece(&mut self, piece: Piece) {
@@ -244,44 +230,6 @@ impl GameState {
 
             self.add_piece(Piece::new(piece_type, piece_color, piece_position))
         }
-    }
-
-    // TODO move to io module
-    pub fn print(&self) {
-        Command::new("clear")
-            .status()
-            .expect("Failed to clear screen");
-
-        for (line, line_chess) in self.board().iter().zip(LINES.iter()) {
-            print!("{} ", line_chess);
-            for opt_piece in line {
-                match opt_piece {
-                    Some(piece) => print!("{} ", piece),
-                    None => print!("{} ", BLANK_SQUARE),
-                }
-            }
-            println!();
-        }
-
-        print!("  ");
-
-        for col_chess in COLUMNS {
-            print!("{} ", col_chess);
-        }
-
-        println!();
-
-        for piece in self.captured_white_pieces() {
-            print!("{} ", piece)
-        }
-
-        println!();
-
-        for piece in self.captured_black_pieces() {
-            print!("{} ", piece)
-        }
-
-        println!()
     }
 }
 
@@ -550,7 +498,10 @@ mod tests {
 
         result = game_state.move_piece("KdxcM".to_owned());
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), ChessPositionError::MissingDestinationLine.into());
+        assert_eq!(
+            result.unwrap_err(),
+            ChessPositionError::MissingDestinationLine.into()
+        );
 
         result = game_state.move_piece("Le5".to_owned());
         assert!(result.is_err());

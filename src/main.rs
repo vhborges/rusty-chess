@@ -5,16 +5,16 @@ mod pieces;
 mod utils;
 
 use game_state::GameState;
-use io::ui;
+use io::ui::{print_game, read_move};
 
 fn main() {
     let mut game_state = GameState::new();
 
     game_state.initialize();
-    game_state.print();
+    print_game(&game_state);
 
     loop {
-        match ui::read_move() {
+        match read_move() {
             Ok(next_move) => {
                 if let Err(move_err) = game_state.move_piece(next_move) {
                     println!("{}", move_err);
@@ -27,6 +27,6 @@ fn main() {
             }
         }
 
-        game_state.print();
+        print_game(&game_state);
     }
 }
