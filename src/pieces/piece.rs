@@ -84,8 +84,11 @@ impl Piece {
                 ));
             }
         }
-        else if dest_piece.is_some() {
+        else if dest_piece.is_some() && dest_piece.unwrap().color != self.color {
             return Err(PgnError::MissingCaptureCharacter.into());
+        }
+        else if dest_piece.is_some() && dest_piece.unwrap().color == self.color {
+            return Err(MoveError::SquareOccupied);
         }
         Ok(())
     }

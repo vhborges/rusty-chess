@@ -288,6 +288,8 @@ mod tests {
         let mut game_state = GameState::new();
         game_state.initialize();
 
+        // TODO segregate below tests into multiple functions
+
         let mut result = game_state.move_piece("Kd5".to_owned());
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
@@ -336,22 +338,43 @@ mod tests {
     }
 
     #[test]
+    fn test_square_occupied_error() {
+        let mut game_state = GameState::new();
+        game_state.initialize();
+
+        let result = game_state.move_piece("Ke2".to_owned());
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), MoveError::SquareOccupied);
+    }
+
+    #[test]
     fn test_invalid_capture() {
         let mut game_state = GameState::new();
         game_state.initialize();
+
+        // TODO segregate below tests into multiple functions
 
         let result = game_state.move_piece("exd3".to_owned());
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
             MoveError::InvalidCapture("Destination square is empty")
-        )
+        );
+
+        let result = game_state.move_piece("Kxe2".to_owned());
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            MoveError::InvalidCapture("Cannot capture a piece of the same color")
+        );
     }
 
     #[test]
     fn test_invalid_pgn_string() {
         let mut game_state = GameState::new();
         game_state.initialize();
+
+        // TODO segregate below tests into multiple functions
 
         let mut result = game_state.move_piece("e".to_owned());
         assert!(result.is_err());
@@ -418,7 +441,10 @@ mod tests {
             .expect("Something's wrong: Nf6 is not a invalid move!");
         result = game_state.move_piece("Nd5".to_owned());
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), PgnError::MissingCaptureCharacter.into());
+        assert_eq!(
+            result.unwrap_err(),
+            PgnError::MissingCaptureCharacter.into()
+        );
     }
 
     fn make_and_validate_move(

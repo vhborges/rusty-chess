@@ -9,6 +9,7 @@ pub enum MoveError {
     MoreThanOnePieceAvailable,
     InvalidCapture(&'static str),
     InvalidPgn(PgnError),
+    SquareOccupied,
 }
 
 impl Error for MoveError {}
@@ -22,6 +23,7 @@ impl Display for MoveError {
             }
             Self::InvalidCapture(err) => write!(f, "Invalid capture: {}", err),
             Self::InvalidPgn(err) => write!(f, "Invalid PGN: {}", err),
+            Self::SquareOccupied => write!(f, "Cannot move to a square already occupied"),
         }
     }
 }
