@@ -8,12 +8,10 @@ pub const SYMBOLS: [char; 2] = ['\u{2654}', '\u{265A}'];
 pub fn can_move(piece: Piece, destination: Position) -> bool {
     let (line, col) = (piece.position.line, piece.position.col);
 
-    // TODO check if the King will capture a oposite-color piece
-
     for i in -1..2_i8 {
         for j in -1..2_i8 {
             if i == 0 && j == 0 {
-                // don't allow the piece to stay where it is
+                // Don't allow the King to stay where it is
                 continue;
             }
             if (line as i8 + i) < 0

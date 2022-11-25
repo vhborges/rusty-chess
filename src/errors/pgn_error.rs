@@ -1,6 +1,8 @@
 use std::error::Error;
 use std::fmt::Display;
 
+use crate::utils::constants::CAPTURE;
+
 use super::{ChessPositionError, PositionError};
 
 #[derive(Debug, PartialEq)]
@@ -11,6 +13,7 @@ pub enum PgnError {
     InvalidCharacter(char),
     InvalidPosition(PositionError),
     InvalidChessPosition(ChessPositionError),
+    MissingCaptureCharacter,
 }
 
 impl Error for PgnError {}
@@ -24,6 +27,7 @@ impl Display for PgnError {
             Self::InvalidCharacter(character) => write!(f, "Invalid character: {}", character),
             Self::InvalidPosition(err) => write!(f, "Invalid position: {}", err),
             Self::InvalidChessPosition(err) => write!(f, "Invalid chess position: {}", err),
+            Self::MissingCaptureCharacter => write!(f, "Attempted to capture a piece without the '{}' PGN character", CAPTURE),
         }
     }
 }

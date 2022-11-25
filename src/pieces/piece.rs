@@ -55,17 +55,7 @@ impl Piece {
         destination: Position,
         capture: bool,
     ) -> Result<bool, MoveError> {
-        if capture {
-            let dest_piece = board[destination.line][destination.col];
-            if dest_piece.is_none() {
-                return Err(MoveError::InvalidCapture("destination square is empty"));
-            }
-            if dest_piece.unwrap().color == self.color {
-                return Err(MoveError::InvalidCapture(
-                    "cannot capture a piece of the same color",
-                ));
-            }
-        }
+        self.validate_capture(&board[destination.line][destination.col], capture)?;
 
         let (line, col) = (self.position.line, self.position.col);
         assert!(
@@ -81,6 +71,23 @@ impl Piece {
             PieceType::Queen => Ok(queen::can_move(*self, destination)),
             PieceType::Rook => Ok(rook::can_move(*self, destination)),
         }
+    }
+
+    fn validate_capture(&self, dest_piece: &Option<Piece>, capture: bool) -> Result<(), MoveError> {
+        if capture {
+            if dest_piece.is_none() {
+                return Err(MoveError::InvalidCapture("Destination square is empty"));
+            }
+            if dest_piece.unwrap().color == self.color {
+                return Err(MoveError::InvalidCapture(
+                    "Cannot capture a piece of the same color",
+                ));
+            }
+        }
+        else if dest_piece.is_some() {
+            return Err(PgnError::MissingCaptureCharacter.into());
+        }
+        Ok(())
     }
 
     fn get_symbol(piece_type: &PieceType, color: &Color) -> char {

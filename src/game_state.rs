@@ -344,7 +344,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(
             result.unwrap_err(),
-            MoveError::InvalidCapture("destination square is empty")
+            MoveError::InvalidCapture("Destination square is empty")
         )
     }
 
@@ -403,6 +403,22 @@ mod tests {
         result = game_state.move_piece("Le5".to_owned());
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), PgnError::InvalidPiece('L').into());
+
+        game_state
+            .move_piece("e4".to_owned())
+            .expect("Something's wrong: e4 is not a invalid move!");
+        game_state
+            .move_piece("d5".to_owned())
+            .expect("Something's wrong: d5 is not a invalid move!");
+        game_state
+            .move_piece("Nc3".to_owned())
+            .expect("Something's wrong: Nc3 is not a invalid move!");
+        game_state
+            .move_piece("Nf6".to_owned())
+            .expect("Something's wrong: Nf6 is not a invalid move!");
+        result = game_state.move_piece("Nd5".to_owned());
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), PgnError::MissingCaptureCharacter.into());
     }
 
     fn make_and_validate_move(
