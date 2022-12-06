@@ -283,6 +283,17 @@ mod tests {
         Ok(())
     }
 
+    macro_rules! setup_board {
+        ( $game_state:expr, $( $x:expr ),* ) => {
+            {
+                $(
+                    $game_state.move_piece($x.to_owned())
+                        .expect(format!("Something's wrong, {} is not a invalid move!", $x).as_str());
+                )*
+            }
+        };
+    }
+
     #[test]
     fn test_invalid_move() {
         let mut game_state = GameState::new();
@@ -294,44 +305,17 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
 
-        game_state
-            .move_piece("e4".to_owned())
-            .expect("Something's wrong: e4 is not a invalid move!");
-        game_state
-            .move_piece("c5".to_owned())
-            .expect("Something's wrong: c5 is not a invalid move!");
+        setup_board!(game_state, "e4", "c5");
         result = game_state.move_piece("exc5".to_owned());
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
 
-        game_state
-            .move_piece("d4".to_owned())
-            .expect("Something's wrong: d4 is not a invalid move!");
-        game_state
-            .move_piece("cxd4".to_owned())
-            .expect("Something's wrong: cxd4 is not a invalid move!");
-        game_state
-            .move_piece("Nf3".to_owned())
-            .expect("Something's wrong: Nf3 is not a invalid move!");
-        game_state
-            .move_piece("e5".to_owned())
-            .expect("Something's wrong: e5 is not a invalid move!");
+        setup_board!(game_state, "d4", "cxd4", "Nf3", "e5");
         result = game_state.move_piece("Nd2".to_owned());
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), MoveError::MoreThanOnePieceAvailable);
 
-        game_state
-            .move_piece("Nbd2".to_owned())
-            .expect("Something's wrong: Nbd2 is not a invalid move!");
-        game_state
-            .move_piece("Bd6".to_owned())
-            .expect("Something's wrong: Bd6 is not a invalid move!");
-        game_state
-            .move_piece("Nxd4".to_owned())
-            .expect("Something's wrong: Nxd4 is not a invalid move!");
-        game_state
-            .move_piece("Nc6".to_owned())
-            .expect("Something's wrong: Nc6 is not a invalid move!");
+        setup_board!(game_state, "Nbd2", "Bd6", "Nxd4", "Nc6");
         result = game_state.move_piece("Ndb3".to_owned());
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), MoveError::MoreThanOnePieceAvailable);
@@ -427,18 +411,7 @@ mod tests {
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), PgnError::InvalidPiece('L').into());
 
-        game_state
-            .move_piece("e4".to_owned())
-            .expect("Something's wrong: e4 is not a invalid move!");
-        game_state
-            .move_piece("d5".to_owned())
-            .expect("Something's wrong: d5 is not a invalid move!");
-        game_state
-            .move_piece("Nc3".to_owned())
-            .expect("Something's wrong: Nc3 is not a invalid move!");
-        game_state
-            .move_piece("Nf6".to_owned())
-            .expect("Something's wrong: Nf6 is not a invalid move!");
+        setup_board!(game_state, "e4", "d5", "Nc3", "Nf6");
         result = game_state.move_piece("Nd5".to_owned());
         assert!(result.is_err());
         assert_eq!(
