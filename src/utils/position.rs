@@ -37,8 +37,8 @@ impl TryFrom<ChessPosition> for Position {
 
         let chess_line = chess_pos.line.to_digit(10).unwrap();
 
-        let line = BOARD_SIZE - chess_line as usize;
-        let col = chess_pos.col as usize - 'a' as usize;
+        let line = BOARD_SIZE - (chess_line as usize);
+        let col = (chess_pos.col as usize) - ('a' as usize);
 
         Ok(Position::new(line, col))
     }
@@ -56,7 +56,7 @@ impl TryFrom<Position> for ChessPosition {
         }
 
         let chess_line = char::from((BOARD_SIZE - position.line) as u8);
-        let chess_col = (position.col as u8 + 'a' as u8) as char;
+        let chess_col = ((position.col as u8) + ('a' as u8)) as char;
 
         Ok(ChessPosition::new(chess_line, chess_col))
     }

@@ -36,6 +36,7 @@ pub struct Piece {
     symbol: char,
     pub piece_type: PieceType,
     pub color: Color,
+    // TODO study the possibility of removing this attribute and only constructing the Position from the board indexes
     pub position: Position,
 }
 
