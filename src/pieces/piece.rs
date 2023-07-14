@@ -36,41 +36,33 @@ pub struct Piece {
     symbol: char,
     pub piece_type: PieceType,
     pub color: Color,
-    // TODO study the possibility of removing this attribute and only constructing the Position from the board indexes
-    pub position: Position,
 }
 
 impl Piece {
-    pub fn new(piece_type: PieceType, color: Color, position: Position) -> Self {
+    pub fn new(piece_type: PieceType, color: Color) -> Self {
         Self {
             symbol: Self::get_symbol(&piece_type, &color),
             piece_type,
             color,
-            position,
         }
     }
 
     pub fn can_move(
         &self,
         board: Board,
+        origin: Position,
         destination: Position,
         capture: bool,
     ) -> Result<bool, MoveError> {
         self.validate_capture(&board[destination.line][destination.col], capture)?;
 
-        let (line, col) = (self.position.line, self.position.col);
-        assert!(
-            board[line][col].is_some() && board[line][col].unwrap().piece_type == self.piece_type,
-            "Internal error 01: Incorrect piece type or position"
-        );
-
         match self.piece_type {
-            PieceType::Bishop => Ok(bishop::can_move(*self, destination)),
-            PieceType::King => Ok(king::can_move(*self, destination)),
-            PieceType::Knight => Ok(knight::can_move(*self, destination)),
-            PieceType::Pawn => Ok(pawn::can_move(*self, destination, capture)),
-            PieceType::Queen => Ok(queen::can_move(*self, destination)),
-            PieceType::Rook => Ok(rook::can_move(*self, destination)),
+            PieceType::Bishop => Ok(bishop::can_move(origin, destination)),
+            PieceType::King => Ok(king::can_move(origin, destination)),
+            PieceType::Knight => Ok(knight::can_move(origin, destination)),
+            PieceType::Pawn => Ok(pawn::can_move(self, origin, destination, capture)),
+            PieceType::Queen => Ok(queen::can_move(origin, destination)),
+            PieceType::Rook => Ok(rook::can_move(origin, destination)),
         }
     }
 

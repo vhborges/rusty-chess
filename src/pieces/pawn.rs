@@ -4,8 +4,8 @@ use super::Piece;
 
 pub const SYMBOLS: [char; 2] = ['\u{2659}', '\u{265F}'];
 
-pub fn can_move(piece: Piece, destination: Position, capture: bool) -> bool {
-    let (src_line, src_col) = (piece.position.line as i8, piece.position.col as i8);
+pub fn can_move(piece: &Piece, origin: Position, destination: Position, capture: bool) -> bool {
+    let (src_line, src_col) = (origin.line as i8, origin.col as i8);
     let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
 
     let mut allow_two_rows = false;

@@ -20,11 +20,8 @@ impl GameState {
         }
     }
 
-    pub fn add_piece(&mut self, piece: Piece) {
-        let line = piece.position.line;
-        let col = piece.position.col;
-
-        self.board[line][col] = Some(piece);
+    pub fn add_piece(&mut self, piece: Piece, pos: Position) {
+        self.board[pos.line][pos.col] = Some(piece);
     }
 
     pub fn find_piece_position(
@@ -34,43 +31,43 @@ impl GameState {
         opt_disambiguation: Option<char>,
         capture: bool,
     ) -> Result<Position, MoveError> {
-        let mut matching_pieces = Vec::new();
-        for line in self.board {
-            for opt_piece in line {
+        let mut matching_positions = Vec::new();
+        for (line_index, line) in self.board.iter().enumerate() {
+            for (col_index, opt_piece) in line.iter().enumerate() {
                 if let Some(piece) = opt_piece {
+                    let origin = Position::new(line_index, col_index);
                     if piece.piece_type == piece_type
                         && piece.color == self.turn
-                        && piece.can_move(self.board, destination, capture)?
+                        && piece.can_move(self.board, origin, destination, capture)?
                     {
-                        matching_pieces.push(piece);
+                        matching_positions.push(origin);
                     }
                 }
             }
         }
 
-        if matching_pieces.is_empty() {
+        if matching_positions.is_empty() {
             return Err(MoveError::NoPieceAvailable);
         }
-        if matching_pieces.len() > 1 {
+        if matching_positions.len() > 1 {
             let Some(disambiguation) = opt_disambiguation else {
                 return Err(MoveError::MoreThanOnePieceAvailable);
             };
 
-            matching_pieces.retain(|piece| -> bool {
-                let chess_pos: ChessPosition = piece
-                    .position
+            matching_positions.retain(|pos| -> bool {
+                let chess_pos: ChessPosition = (*pos)
                     .try_into()
                     .expect("Internal error 02: Invalid piece position");
 
                 return disambiguation == chess_pos.line || disambiguation == chess_pos.col;
             });
 
-            if matching_pieces.len() != 1 {
+            if matching_positions.len() != 1 {
                 return Err(MoveError::MoreThanOnePieceAvailable);
             }
         }
 
-        Ok(matching_pieces[0].position)
+        Ok(matching_positions[0])
     }
 
     pub fn move_piece(&mut self, str_move: String) -> Result<(), MoveError> {
@@ -92,8 +89,6 @@ impl GameState {
         }
 
         self.board[dest_line][dest_col] = self.board[source_line][source_col];
-        self.board[dest_line][dest_col].as_mut().unwrap().position =
-            Position::new(dest_line, dest_col);
         self.board[source_line][source_col] = None;
 
         self.turn.flip();
@@ -127,7 +122,7 @@ impl GameState {
                         chess_col, chess_line
                     ));
 
-            self.add_piece(Piece::new(piece_type, piece_color, piece_position))
+            self.add_piece(Piece::new(piece_type, piece_color), piece_position);
         }
     }
 }
