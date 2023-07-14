@@ -1,6 +1,6 @@
-pub mod move_error;
-pub mod pgn_error;
-pub mod position_errors;
+mod move_error;
+mod pgn_error;
+mod position_errors;
 
 pub use move_error::MoveError;
 pub use pgn_error::PgnError;

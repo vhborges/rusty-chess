@@ -1,7 +1,7 @@
 use crate::errors::MoveError;
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
-use crate::utils::{pgn_utils::parse_move, types::Board, ChessPosition, Color, Position};
+use crate::utils::{pgn::pgn_utils::parse_move, types::Board, ChessPosition, Color, Position};
 
 pub struct GameState {
     pub board: Board,
@@ -38,9 +38,10 @@ impl GameState {
         for line in self.board {
             for opt_piece in line {
                 if let Some(piece) = opt_piece {
-                    if piece.piece_type == piece_type &&
-                        piece.color == self.turn &&
-                        piece.can_move(self.board, destination, capture)? {
+                    if piece.piece_type == piece_type
+                        && piece.color == self.turn
+                        && piece.can_move(self.board, destination, capture)?
+                    {
                         matching_pieces.push(piece);
                     }
                 }
@@ -56,8 +57,10 @@ impl GameState {
             };
 
             matching_pieces.retain(|piece| -> bool {
-                let chess_pos: ChessPosition =
-                    piece.position.try_into().expect("Internal error 02: Invalid piece position");
+                let chess_pos: ChessPosition = piece
+                    .position
+                    .try_into()
+                    .expect("Internal error 02: Invalid piece position");
 
                 return disambiguation == chess_pos.line || disambiguation == chess_pos.col;
             });
@@ -89,7 +92,8 @@ impl GameState {
         }
 
         self.board[dest_line][dest_col] = self.board[source_line][source_col];
-        self.board[dest_line][dest_col].as_mut().unwrap().position = Position::new(dest_line, dest_col);
+        self.board[dest_line][dest_col].as_mut().unwrap().position =
+            Position::new(dest_line, dest_col);
         self.board[source_line][source_col] = None;
 
         self.turn.flip();
@@ -102,13 +106,14 @@ impl GameState {
             let line = wrapped_line.expect("Error reading file line");
             let mut chars = line.chars();
 
-            let piece_color: Color = get_next_char(&line, &mut chars)
-                .try_into()
-                .expect(&format!("Could not parse color character from line {}", line));
+            let piece_color: Color = get_next_char(&line, &mut chars).try_into().expect(&format!(
+                "Could not parse color character from line {}",
+                line
+            ));
 
-            let piece_type: PieceType = get_next_char(&line, &mut chars)
-                .try_into()
-                .expect(&format!("Could not parse piece character from line {}", line));
+            let piece_type: PieceType = get_next_char(&line, &mut chars).try_into().expect(
+                &format!("Could not parse piece character from line {}", line),
+            );
 
             let chess_col = get_next_char(&line, &mut chars);
 
@@ -116,9 +121,11 @@ impl GameState {
 
             let piece_position =
                 ChessPosition::new(chess_line, chess_col)
-                    .try_into().expect(
-                    &format!("Could not convert ChessPosition {}{} to Position",
-                             chess_col, chess_line));
+                    .try_into()
+                    .expect(&format!(
+                        "Could not convert ChessPosition {}{} to Position",
+                        chess_col, chess_line
+                    ));
 
             self.add_piece(Piece::new(piece_type, piece_color, piece_position))
         }

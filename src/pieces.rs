@@ -1,10 +1,10 @@
-pub mod bishop;
-pub mod king;
-pub mod knight;
-pub mod pawn;
-pub mod piece;
-pub mod queen;
-pub mod rook;
+mod bishop;
+mod king;
+mod knight;
+mod pawn;
+mod piece;
+mod queen;
+mod rook;
 
 pub use piece::Piece;
 pub use piece::PieceType;
