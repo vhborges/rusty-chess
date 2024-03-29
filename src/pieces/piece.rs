@@ -36,6 +36,7 @@ pub struct Piece {
     symbol: char,
     pub piece_type: PieceType,
     pub color: Color,
+    // possible_moves: PossibleMoves,
 }
 
 impl Piece {
@@ -44,12 +45,28 @@ impl Piece {
             symbol: Self::get_symbol(&piece_type, &color),
             piece_type,
             color,
+            // possible_moves: Default::default(),
         }
     }
 
+    // pub fn update_possible_moves(
+    //     &mut self,
+    //     board: &Board,
+    //     origin: Position,
+    // ) {
+    //     match self.piece_type {
+    //         PieceType::Bishop => self.possible_moves = bishop::get_possible_moves(board, origin),
+    //         PieceType::King => self.possible_moves = king::get_possible_moves(board, origin),
+    //         PieceType::Knight => self.possible_moves = knight::get_possible_moves(board, origin),
+    //         PieceType::Pawn => self.possible_moves = pawn::get_possible_moves(board, origin),
+    //         PieceType::Queen => self.possible_moves = queen::get_possible_moves(board, origin),
+    //         PieceType::Rook => self.possible_moves = rook::get_possible_moves(board, origin),
+    //     }
+    // }
+    //
     pub fn can_move(
         &self,
-        board: Board,
+        board: &Board,
         origin: Position,
         destination: Position,
         capture: bool,
@@ -57,12 +74,28 @@ impl Piece {
         self.validate_capture(&board[destination.line][destination.col], capture)?;
 
         match self.piece_type {
-            PieceType::Bishop => Ok(bishop::can_move(origin, destination)),
+            PieceType::Bishop => Ok(bishop::can_move(board, origin, destination)),
             PieceType::King => Ok(king::can_move(origin, destination)),
             PieceType::Knight => Ok(knight::can_move(origin, destination)),
-            PieceType::Pawn => Ok(pawn::can_move(self, origin, destination, capture)),
-            PieceType::Queen => Ok(queen::can_move(origin, destination)),
-            PieceType::Rook => Ok(rook::can_move(origin, destination)),
+            PieceType::Pawn => Ok(pawn::can_move(board, self, origin, destination, capture)),
+            PieceType::Queen => Ok(queen::can_move(board, origin, destination)),
+            PieceType::Rook => Ok(rook::can_move(board, origin, destination)),
+        }
+    }
+
+    pub fn attacks(
+        &self,
+        board: &Board,
+        origin: Position,
+        destination: Position,
+    ) -> bool {
+        match self.piece_type {
+            PieceType::Bishop => bishop::attacks(board, origin, destination),
+            PieceType::King => king::attacks(origin, destination),
+            PieceType::Knight => knight::attacks(origin, destination),
+            PieceType::Pawn => pawn::attacks(self.color, origin, destination),
+            PieceType::Queen => queen::attacks(board, origin, destination),
+            PieceType::Rook => rook::attacks(board, origin, destination),
         }
     }
 

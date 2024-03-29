@@ -28,3 +28,7 @@ pub fn can_move(origin: Position, destination: Position) -> bool {
 
     false
 }
+
+pub fn attacks(origin: Position, destination: Position) -> bool {
+    can_move(origin, destination)
+}

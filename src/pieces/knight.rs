@@ -12,3 +12,7 @@ pub fn can_move(origin: Position,  destination: Position) -> bool {
     (vertical_distance == 1 && horizontal_distance == 2) ||
         (vertical_distance == 2 && horizontal_distance == 1)
 }
+
+pub fn attacks(origin: Position, destination: Position) -> bool {
+    can_move(origin, destination)
+}

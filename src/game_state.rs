@@ -2,12 +2,15 @@ use crate::errors::MoveError;
 use crate::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
 use crate::utils::{pgn::pgn_utils::parse_move, types::Board, ChessPosition, Color, Position};
+use crate::utils::types::Move;
 
 pub struct GameState {
     pub board: Board,
     pub captured_white_pieces: Vec<Piece>,
     pub captured_black_pieces: Vec<Piece>,
     turn: Color,
+    white_king_position: Position,
+    black_king_position: Position,
 }
 
 impl GameState {
@@ -17,6 +20,8 @@ impl GameState {
             captured_white_pieces: Vec::new(),
             captured_black_pieces: Vec::new(),
             turn: Color::White,
+            white_king_position: Default::default(),
+            black_king_position: Default::default(),
         }
     }
 
@@ -36,9 +41,7 @@ impl GameState {
             for (col_index, opt_piece) in line.iter().enumerate() {
                 if let Some(piece) = opt_piece {
                     let origin = Position::new(line_index, col_index);
-                    if piece.piece_type == piece_type
-                        && piece.color == self.turn
-                        && piece.can_move(self.board, origin, destination, capture)?
+                    if self.piece_matches(piece, piece_type, origin, destination, capture)?
                     {
                         matching_positions.push(origin);
                     }
@@ -70,6 +73,12 @@ impl GameState {
         Ok(matching_positions[0])
     }
 
+    fn piece_matches(&self, piece: &Piece, piece_type: PieceType, origin: Position, destination: Position, capture: bool) -> Result<bool, MoveError> {
+        Ok(piece.piece_type == piece_type
+            && piece.color == self.turn
+            && piece.can_move(&self.board, origin, destination, capture)?)
+    }
+
     pub fn move_piece(&mut self, str_move: String) -> Result<(), MoveError> {
         let next_move = parse_move(&self, str_move)?;
 
@@ -79,21 +88,88 @@ impl GameState {
         let dest_line = next_move.destination.line;
         let dest_col = next_move.destination.col;
 
-        let dest_piece = self.board[dest_line][dest_col];
+        self.verify_king_in_check(&next_move, dest_line, dest_col)?;
 
+        self.update_king_position(&next_move, source_line, source_col);
+
+        self.update_captured_pieces_list(dest_line, dest_col);
+
+        Self::perform_move(&next_move, &mut self.board);
+
+        self.turn.flip();
+
+        Ok(())
+    }
+
+    fn verify_king_in_check(&mut self, next_move: &Move, dest_line: usize, dest_col: usize) -> Result<(), MoveError> {
+        let mut temporary_board = self.board.clone();
+        Self::perform_move(&next_move, &mut temporary_board);
+
+        let king_pos = self.get_king_pos(dest_line, dest_col, temporary_board);
+
+        if self.is_king_in_check(&temporary_board, king_pos) {
+            return Err(MoveError::KingWouldBeInCheck);
+        }
+        
+        Ok(())
+    }
+
+    fn update_captured_pieces_list(&mut self, dest_line: usize, dest_col: usize) {
+        let dest_piece = self.board[dest_line][dest_col];
         if let Some(captured_piece) = dest_piece {
             match captured_piece.color {
                 Color::White => self.captured_white_pieces.push(captured_piece),
                 Color::Black => self.captured_black_pieces.push(captured_piece),
             }
         }
+    }
 
-        self.board[dest_line][dest_col] = self.board[source_line][source_col];
-        self.board[source_line][source_col] = None;
+    fn update_king_position(&mut self, next_move: &Move, source_line: usize, source_col: usize) {
+        let source_piece = self.board[source_line][source_col].unwrap();
+        if source_piece.piece_type == PieceType::King {
+            match self.turn {
+                Color::White => self.white_king_position = next_move.destination,
+                Color::Black => self.black_king_position = next_move.destination,
+            }
+        }
+    }
 
-        self.turn.flip();
+    fn get_king_pos(&self, dest_line: usize, dest_col: usize, temporary_board: [[Option<Piece>; 8]; 8]) -> Position {
+        let king_pos =
+            if temporary_board[dest_line][dest_col].unwrap().piece_type == PieceType::King {
+                Position::new(dest_line, dest_col)
+            } else {
+                match self.turn {
+                    Color::White => self.white_king_position,
+                    Color::Black => self.black_king_position,
+                }
+            };
+        king_pos
+    }
 
-        Ok(())
+    fn perform_move(_move: &Move, temporary_board: &mut Board) {
+        temporary_board[_move.destination.line][_move.destination.col] = temporary_board[_move.source.line][_move.source.col];
+        temporary_board[_move.source.line][_move.source.col] = None;
+    }
+
+    fn is_king_in_check(&self, board: &Board, king_pos: Position) -> bool {
+        for (line_index, line) in board.iter().enumerate() {
+            for (col_index, opt_piece) in line.iter().enumerate() {
+                if let Some(piece) = opt_piece {
+                    if piece.color == self.turn {
+                        continue
+                    }
+
+                    let piece_pos = Position::new(line_index, col_index);
+
+                    if piece.attacks(board, piece_pos, king_pos) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        false
     }
 
     pub fn initialize(&mut self) {
@@ -121,12 +197,20 @@ impl GameState {
                         "Could not convert ChessPosition {}{} to Position",
                         chess_col, chess_line
                     ));
+            
+            if piece_type == PieceType::King {
+                match piece_color {
+                    Color::White => self.white_king_position = piece_position,
+                    Color::Black => self.black_king_position = piece_position,
+                }
+            }
 
             self.add_piece(Piece::new(piece_type, piece_color), piece_position);
         }
     }
 }
 
+// TODO study the possibility of moving these tests into a dedicated module
 #[cfg(test)]
 mod tests {
     use crate::{

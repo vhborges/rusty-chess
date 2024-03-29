@@ -1,7 +1,7 @@
 use super::constants::{BOARD_SIZE, COL_RANGE, LINE_RANGE};
 use crate::errors::{ChessPositionError, PositionError};
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct Position {
     pub line: usize,
     pub col: usize,

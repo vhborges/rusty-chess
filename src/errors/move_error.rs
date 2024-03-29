@@ -7,9 +7,10 @@ use super::{ChessPositionError, PgnError, PositionError};
 pub enum MoveError {
     NoPieceAvailable,
     MoreThanOnePieceAvailable,
+    SquareOccupied,
+    KingWouldBeInCheck,
     InvalidCapture(&'static str),
     InvalidPgn(PgnError),
-    SquareOccupied,
 }
 
 impl Error for MoveError {}
@@ -21,9 +22,10 @@ impl Display for MoveError {
             Self::MoreThanOnePieceAvailable => {
                 write!(f, "More than one piece available for this move")
             }
+            Self::SquareOccupied => write!(f, "Invalid move: square already occupied"),
+            Self::KingWouldBeInCheck => write!(f, "Invalid move: this would put your King in check"),
             Self::InvalidCapture(err) => write!(f, "Invalid capture: {}", err),
             Self::InvalidPgn(err) => write!(f, "Invalid PGN: {}", err),
-            Self::SquareOccupied => write!(f, "Cannot move to a square already occupied"),
         }
     }
 }

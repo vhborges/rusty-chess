@@ -6,6 +6,8 @@ use crate::utils::types::Move;
 
 use super::pgn_parser_steps::{Fifth, First, Fourth, Second, Third};
 
+/// Represents all the possible steps in the PGN parse process.
+/// Each state is related with a character in the PGN string.
 pub enum PgnParserState {
     First(First),
     Second(Second),
@@ -25,7 +27,6 @@ pub struct PgnParser<'a, 'b> {
 }
 
 impl<'a, 'b> PgnParser<'a, 'b> {
-    /// Initializes the first step.
     fn new(game_state: &'a GameState, pgn_str: &'b str) -> Self {
         let pgn_chars = pgn_str.chars();
         let pgn_len = pgn_str.len();
