@@ -48,6 +48,7 @@ pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool 
 
     let mut i = (src_line + vertical_direction) as usize;
     let mut j = (src_col + horizontal_direction) as usize;
+    // TODO rever esse "-1" abaixo, pois talvez só faça sentido em caso de captura (ataque)
     let nr_of_squares = (dest_col - src_col).abs() - 1;
     for _ in 0..nr_of_squares {
         if board[i][j].is_some() {

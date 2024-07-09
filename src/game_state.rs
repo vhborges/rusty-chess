@@ -217,7 +217,7 @@ mod tests {
         errors::{ChessPositionError, MoveError, PgnError},
         utils::{Color, Position},
     };
-
+    use crate::io::ui::print_game;
     use super::GameState;
 
     #[test]
@@ -257,6 +257,8 @@ mod tests {
             Position::new(2, 5),
         )?;
 
+        print_game(&game_state);
+        
         assert_eq!(game_state.turn, Color::White);
         make_and_validate_move(
             &mut game_state,
@@ -264,6 +266,8 @@ mod tests {
             Position::new(3, 1),
             Position::new(1, 3),
         )?;
+        
+        print_game(&game_state);
 
         assert_eq!(game_state.turn, Color::Black);
         make_and_validate_move(

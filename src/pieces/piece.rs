@@ -83,6 +83,7 @@ impl Piece {
         }
     }
 
+    // TODO rever o uso do método abaixo, se ele for usado sempre em caso de captura, então podemos eliminar o booleano "capture" do método acima e implementar lógicas de captura nas funções "attacks" de cada peça
     pub fn attacks(
         &self,
         board: &Board,

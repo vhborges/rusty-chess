@@ -30,6 +30,7 @@ pub fn can_move(board: &Board, origin: Position,  destination: Position) -> bool
 
     let mut i = (src_line + vertical_direction) as usize;
     let mut j = (src_col + horizontal_direction) as usize;
+    // TODO rever a linha abaixo, talvez seja necessário adicionar um "-1" como foi feito no bishop em caso de captura (ataque)
     let nr_of_squares = max((dest_col - src_col).abs(), (dest_line - src_line).abs());
     for _ in 0..nr_of_squares {
         if board[i][j].is_some() {
