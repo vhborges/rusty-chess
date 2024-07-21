@@ -77,8 +77,6 @@ impl GameState {
         for piece in &self.captured_black_pieces {
             print!("{} ", piece)
         }
-
-        println!()
     }
 
     pub fn find_piece_position(
@@ -147,7 +145,7 @@ impl GameState {
         }
     }
 
-    pub fn move_piece(&mut self, str_move: String) -> Result<(), MoveError> {
+    pub fn move_piece(&mut self, str_move: &str) -> Result<(), MoveError> {
         let next_move = parse_move(&self, str_move)?;
 
         let source_line = next_move.source.line;

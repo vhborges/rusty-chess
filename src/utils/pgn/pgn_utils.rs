@@ -55,8 +55,8 @@ impl<'a, 'b> PgnParser<'a, 'b> {
     }
 }
 
-pub fn parse_move(game_state: &GameState, str_move: String) -> Result<Move, MoveError> {
-    let mut pgn_parser = PgnParser::new(game_state, &str_move);
+pub fn parse_move(game_state: &GameState, str_move: &str) -> Result<Move, MoveError> {
+    let mut pgn_parser = PgnParser::new(game_state, str_move);
 
     pgn_parser.step()?;
 
