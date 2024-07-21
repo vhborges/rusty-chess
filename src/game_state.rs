@@ -1,9 +1,9 @@
 use std::process::Command;
 
-use crate::utils::constants::{BLANK_SQUARE, COLUMNS, LINES};
 use crate::errors::MoveError;
 use crate::io::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
+use crate::utils::constants::{BLANK_SQUARE, COLUMNS, INTERNAL_ERROR_01, INTERNAL_ERROR_02, LINES};
 use crate::utils::types::Move;
 use crate::utils::{pgn::pgn_utils::parse_move, types::Board, ChessPosition, Color, Position};
 
@@ -108,9 +108,7 @@ impl GameState {
             };
 
             matching_positions.retain(|pos| -> bool {
-                let chess_pos: ChessPosition = (*pos)
-                    .try_into()
-                    .expect("Internal error 01: Invalid piece position");
+                let chess_pos: ChessPosition = (*pos).try_into().expect(INTERNAL_ERROR_01);
 
                 return disambiguation == chess_pos.line || disambiguation == chess_pos.col;
             });
@@ -132,17 +130,18 @@ impl GameState {
         capture: bool,
     ) -> Result<bool, MoveError> {
         if piece.piece_type != piece_type {
-            return Ok(false)
+            return Ok(false);
         }
         if piece.color != self.turn {
-            return Ok(false)
+            return Ok(false);
         }
 
         return if capture {
             piece.attacks(&self.board, origin, destination, true)
-        } else {
-            piece.can_move(&self.board, origin, destination)
         }
+        else {
+            piece.can_move(&self.board, origin, destination)
+        };
     }
 
     pub fn move_piece(&mut self, str_move: &str) -> Result<(), MoveError> {
@@ -240,9 +239,10 @@ impl GameState {
 
                     let piece_pos = Position::new(line_index, col_index);
 
-                    if piece.attacks(board, piece_pos, king_pos, false).expect(
-                        "Internal error 03: piece.attacks() should not return error when capture=false"
-                    ) {
+                    if piece
+                        .attacks(board, piece_pos, king_pos, false)
+                        .expect(INTERNAL_ERROR_02)
+                    {
                         return true;
                     }
                 }
