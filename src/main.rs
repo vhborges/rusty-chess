@@ -1,17 +1,11 @@
-mod errors;
-mod game_state;
-mod io;
-mod pieces;
-mod utils;
-
-use game_state::GameState;
-use io::ui::{print_game, read_move};
+use chess::io::ui::read_move;
+use chess::GameState;
 
 fn main() {
     let mut game_state = GameState::new();
 
     game_state.initialize();
-    print_game(&game_state);
+    game_state.print_game();
 
     loop {
         match read_move() {
@@ -27,6 +21,6 @@ fn main() {
             }
         }
 
-        print_game(&game_state);
+        game_state.print_game();
     }
 }
