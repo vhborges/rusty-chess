@@ -10,5 +10,5 @@ pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool 
 }
 
 pub fn attacks(board: &Board, origin: Position, destination: Position) -> bool {
-    can_move(board, origin, destination)
+    bishop::attacks(board, origin, destination) || rook::attacks(board, origin, destination)
 }

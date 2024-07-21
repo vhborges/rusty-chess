@@ -41,8 +41,7 @@ impl GameState {
             for (col_index, opt_piece) in line.iter().enumerate() {
                 if let Some(piece) = opt_piece {
                     let origin = Position::new(line_index, col_index);
-                    if self.piece_matches(piece, piece_type, origin, destination, capture)?
-                    {
+                    if self.piece_matches(piece, piece_type, origin, destination, capture)? {
                         matching_positions.push(origin);
                     }
                 }
@@ -53,14 +52,15 @@ impl GameState {
             return Err(MoveError::NoPieceAvailable);
         }
         if matching_positions.len() > 1 {
-            let Some(disambiguation) = opt_disambiguation else {
+            let Some(disambiguation) = opt_disambiguation
+            else {
                 return Err(MoveError::MoreThanOnePieceAvailable);
             };
 
             matching_positions.retain(|pos| -> bool {
                 let chess_pos: ChessPosition = (*pos)
                     .try_into()
-                    .expect("Internal error 02: Invalid piece position");
+                    .expect("Internal error 01: Invalid piece position");
 
                 return disambiguation == chess_pos.line || disambiguation == chess_pos.col;
             });
@@ -73,10 +73,26 @@ impl GameState {
         Ok(matching_positions[0])
     }
 
-    fn piece_matches(&self, piece: &Piece, piece_type: PieceType, origin: Position, destination: Position, capture: bool) -> Result<bool, MoveError> {
-        Ok(piece.piece_type == piece_type
-            && piece.color == self.turn
-            && piece.can_move(&self.board, origin, destination, capture)?)
+    fn piece_matches(
+        &self,
+        piece: &Piece,
+        piece_type: PieceType,
+        origin: Position,
+        destination: Position,
+        capture: bool,
+    ) -> Result<bool, MoveError> {
+        if piece.piece_type != piece_type {
+            return Ok(false)
+        }
+        if piece.color != self.turn {
+            return Ok(false)
+        }
+
+        return if capture {
+            piece.attacks(&self.board, origin, destination, true)
+        } else {
+            piece.can_move(&self.board, origin, destination)
+        }
     }
 
     pub fn move_piece(&mut self, str_move: String) -> Result<(), MoveError> {
@@ -101,7 +117,12 @@ impl GameState {
         Ok(())
     }
 
-    fn verify_king_in_check(&mut self, next_move: &Move, dest_line: usize, dest_col: usize) -> Result<(), MoveError> {
+    fn verify_king_in_check(
+        &mut self,
+        next_move: &Move,
+        dest_line: usize,
+        dest_col: usize,
+    ) -> Result<(), MoveError> {
         let mut temporary_board = self.board.clone();
         Self::perform_move(&next_move, &mut temporary_board);
 
@@ -110,7 +131,7 @@ impl GameState {
         if self.is_king_in_check(&temporary_board, king_pos) {
             return Err(MoveError::KingWouldBeInCheck);
         }
-        
+
         Ok(())
     }
 
@@ -134,11 +155,17 @@ impl GameState {
         }
     }
 
-    fn get_king_pos(&self, dest_line: usize, dest_col: usize, temporary_board: [[Option<Piece>; 8]; 8]) -> Position {
+    fn get_king_pos(
+        &self,
+        dest_line: usize,
+        dest_col: usize,
+        temporary_board: [[Option<Piece>; 8]; 8],
+    ) -> Position {
         let king_pos =
             if temporary_board[dest_line][dest_col].unwrap().piece_type == PieceType::King {
                 Position::new(dest_line, dest_col)
-            } else {
+            }
+            else {
                 match self.turn {
                     Color::White => self.white_king_position,
                     Color::Black => self.black_king_position,
@@ -148,7 +175,8 @@ impl GameState {
     }
 
     fn perform_move(_move: &Move, temporary_board: &mut Board) {
-        temporary_board[_move.destination.line][_move.destination.col] = temporary_board[_move.source.line][_move.source.col];
+        temporary_board[_move.destination.line][_move.destination.col] =
+            temporary_board[_move.source.line][_move.source.col];
         temporary_board[_move.source.line][_move.source.col] = None;
     }
 
@@ -157,12 +185,14 @@ impl GameState {
             for (col_index, opt_piece) in line.iter().enumerate() {
                 if let Some(piece) = opt_piece {
                     if piece.color == self.turn {
-                        continue
+                        continue;
                     }
 
                     let piece_pos = Position::new(line_index, col_index);
 
-                    if piece.attacks(board, piece_pos, king_pos) {
+                    if piece.attacks(board, piece_pos, king_pos, false).expect(
+                        "Internal error 03: piece.attacks() should not return error when capture=false"
+                    ) {
                         return true;
                     }
                 }
@@ -197,7 +227,7 @@ impl GameState {
                         "Could not convert ChessPosition {}{} to Position",
                         chess_col, chess_line
                     ));
-            
+
             if piece_type == PieceType::King {
                 match piece_color {
                     Color::White => self.white_king_position = piece_position,
