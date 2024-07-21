@@ -232,19 +232,22 @@ impl GameState {
     fn is_king_in_check(&self, board: &Board, king_pos: Position) -> bool {
         for (line_index, line) in board.iter().enumerate() {
             for (col_index, opt_piece) in line.iter().enumerate() {
-                if let Some(piece) = opt_piece {
-                    if piece.color == self.turn {
-                        continue;
-                    }
+                let Some(piece) = opt_piece
+                else {
+                    continue;
+                };
 
-                    let piece_pos = Position::new(line_index, col_index);
+                if piece.color == self.turn {
+                    continue;
+                }
 
-                    if piece
-                        .attacks(board, piece_pos, king_pos, false)
-                        .expect(INTERNAL_ERROR_02)
-                    {
-                        return true;
-                    }
+                let piece_pos = Position::new(line_index, col_index);
+
+                if piece
+                    .attacks(board, piece_pos, king_pos, false)
+                    .expect(INTERNAL_ERROR_02)
+                {
+                    return true;
                 }
             }
         }
