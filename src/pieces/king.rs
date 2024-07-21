@@ -7,6 +7,7 @@ pub fn can_move(origin: Position, destination: Position) -> bool {
     let (src_line, src_col) = (origin.line as i8, origin.col as i8);
     let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
 
+    // TODO this can be improved...
     for i in -1..2_i8 {
         for j in -1..2_i8 {
             if i == 0 && j == 0 {
