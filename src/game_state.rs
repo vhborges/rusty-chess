@@ -75,7 +75,7 @@ impl GameState {
         println!();
 
         for piece in &self.captured_black_pieces {
-            print!("{} ", piece)
+            println!("{} ", piece)
         }
     }
 
