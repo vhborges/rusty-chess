@@ -53,6 +53,7 @@ impl Piece {
         origin: Position,
         destination: Position,
     ) -> Result<bool, MoveError> {
+        Self::validate_move(origin, destination)?;
         self.validate_capture(&board[destination.line][destination.col], false)?;
 
         match self.piece_type {
@@ -72,6 +73,7 @@ impl Piece {
         destination: Position,
         capture: bool,
     ) -> Result<bool, MoveError> {
+        Self::validate_move(origin, destination)?;
         if capture {
             self.validate_capture(&board[destination.line][destination.col], true)?;
         }
@@ -103,6 +105,15 @@ impl Piece {
         else if dest_piece.is_some() && dest_piece.unwrap().color == self.color {
             return Err(MoveError::SquareOccupied);
         }
+
+        Ok(())
+    }
+
+    fn validate_move(origin: Position, destination: Position) -> Result<(), MoveError> {
+        if origin == destination {
+            return Err(MoveError::InvalidMove("The piece should not stay where it is"))
+        }
+
         Ok(())
     }
 

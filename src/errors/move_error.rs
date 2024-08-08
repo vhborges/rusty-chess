@@ -10,6 +10,7 @@ pub enum MoveError {
     SquareOccupied,
     KingWouldBeInCheck,
     InvalidCapture(&'static str),
+    InvalidMove(&'static str),
     InvalidPgn(PgnError),
 }
 
@@ -25,6 +26,7 @@ impl Display for MoveError {
             Self::SquareOccupied => write!(f, "Invalid move: square already occupied"),
             Self::KingWouldBeInCheck => write!(f, "Invalid move: this would put your King in check"),
             Self::InvalidCapture(err) => write!(f, "Invalid capture: {}", err),
+            Self::InvalidMove(err) => write!(f, "Invalid move: {}", err),
             Self::InvalidPgn(err) => write!(f, "Invalid PGN: {}", err),
         }
     }
