@@ -6,7 +6,7 @@ macro_rules! setup_board {
         ( $game_state:expr, $( $x:expr ),* ) => {
             {
                 $(
-                    $game_state.move_piece($x.to_owned())
+                    $game_state.move_piece($x)
                         .expect(format!("Something's wrong, {} is not a invalid move!", $x).as_str());
                 )*
             }
@@ -22,7 +22,7 @@ fn make_and_validate_move(
     let origin_piece = game_state.get_piece(source);
     assert!(origin_piece.is_some());
 
-    game_state.move_piece(str_move.to_owned())?;
+    game_state.move_piece(str_move)?;
 
     let dest_piece = game_state.get_piece(destination);
     assert!(dest_piece.is_some());
@@ -186,22 +186,22 @@ fn test_invalid_move() {
 
     // TODO segregate below tests into multiple functions
 
-    let mut result = game_state.move_piece("Kd5".to_owned());
+    let mut result = game_state.move_piece("Kd5");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
 
     setup_board!(game_state, "e4", "c5");
-    result = game_state.move_piece("exc5".to_owned());
+    result = game_state.move_piece("exc5");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
 
     setup_board!(game_state, "d4", "cxd4", "Nf3", "e5");
-    result = game_state.move_piece("Nd2".to_owned());
+    result = game_state.move_piece("Nd2");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::MoreThanOnePieceAvailable);
 
     setup_board!(game_state, "Nbd2", "Bd6", "Nxd4", "Nc6");
-    result = game_state.move_piece("Ndb3".to_owned());
+    result = game_state.move_piece("Ndb3");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::MoreThanOnePieceAvailable);
 }
@@ -211,7 +211,7 @@ fn test_square_occupied_error() {
     let mut game_state = GameState::new();
     game_state.initialize();
 
-    let result = game_state.move_piece("Ke2".to_owned());
+    let result = game_state.move_piece("Ke2");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::SquareOccupied);
 }
@@ -223,14 +223,14 @@ fn test_invalid_capture() {
 
     // TODO segregate below tests into multiple functions
 
-    let result = game_state.move_piece("exd3".to_owned());
+    let result = game_state.move_piece("exd3");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
         MoveError::InvalidCapture("Destination square is empty")
     );
 
-    let result = game_state.move_piece("Kxe2".to_owned());
+    let result = game_state.move_piece("Kxe2");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
@@ -245,59 +245,59 @@ fn test_invalid_pgn_string() {
 
     // TODO segregate below tests into multiple functions
 
-    let mut result = game_state.move_piece("e".to_owned());
+    let mut result = game_state.move_piece("e");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
         PgnError::MissingCharacter("second").into()
     );
 
-    result = game_state.move_piece("eK".to_owned());
+    result = game_state.move_piece("eK");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('K').into());
 
-    result = game_state.move_piece("Kx5".to_owned());
+    result = game_state.move_piece("Kx5");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
         ChessPositionError::MissingDestinationColumn.into()
     );
 
-    result = game_state.move_piece("KxI".to_owned());
+    result = game_state.move_piece("KxI");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('I').into());
 
-    result = game_state.move_piece("Kxc".to_owned());
+    result = game_state.move_piece("Kxc");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
         PgnError::MissingCharacter("fourth").into()
     );
 
-    result = game_state.move_piece("Kxx7".to_owned());
+    result = game_state.move_piece("Kxx7");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
         ChessPositionError::MissingDestinationColumn.into()
     );
 
-    result = game_state.move_piece("KxdL".to_owned());
+    result = game_state.move_piece("KxdL");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('L').into());
 
-    result = game_state.move_piece("KdxcM".to_owned());
+    result = game_state.move_piece("KdxcM");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
         ChessPositionError::MissingDestinationLine.into()
     );
 
-    result = game_state.move_piece("Le5".to_owned());
+    result = game_state.move_piece("Le5");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PgnError::InvalidPiece('L').into());
 
     setup_board!(game_state, "e4", "d5", "Nc3", "Nf6");
-    result = game_state.move_piece("Nd5".to_owned());
+    result = game_state.move_piece("Nd5");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
