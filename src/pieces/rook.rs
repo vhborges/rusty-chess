@@ -40,7 +40,7 @@ pub fn can_move(board: &Board, origin: Position,  destination: Position) -> bool
         j = (j as i8 + horizontal_direction) as usize;
     }
     
-    return true;
+    true
 }
 
 pub fn attacks(board: &Board, origin: Position, destination: Position) -> bool {
@@ -79,5 +79,5 @@ pub fn attacks(board: &Board, origin: Position, destination: Position) -> bool {
         j = (j as i8 + horizontal_direction) as usize;
     }
 
-    return true;
+    true
 }

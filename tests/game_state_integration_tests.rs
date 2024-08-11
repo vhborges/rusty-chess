@@ -37,6 +37,7 @@ fn make_and_validate_move(
 
 #[test]
 fn test_move_piece() -> Result<(), MoveError> {
+    // TODO create a function that will run the next two lines before all
     let mut game_state = GameState::new();
     game_state.initialize();
 

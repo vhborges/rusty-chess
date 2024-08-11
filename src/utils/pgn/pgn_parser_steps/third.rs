@@ -31,7 +31,7 @@ impl Third {
             capture = true;
             pgn_parser.next_move = None;
         }
-        else if current_pgn_char.is_digit(10) && piece_type != PieceType::Pawn {
+        else if current_pgn_char.is_ascii_digit() && piece_type != PieceType::Pawn {
             let Some(col) = dest_col else {
                 return Err(ChessPositionError::MissingDestinationColumn.into());
             };

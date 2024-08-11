@@ -27,7 +27,7 @@ impl Second {
             .next()
             .ok_or(PgnError::MissingCharacter("second"))?;
 
-        if current_pgn_char.is_digit(10) {
+        if current_pgn_char.is_ascii_digit() {
             let Some(col) = self.dest_col else {
                 return Err(ChessPositionError::MissingDestinationColumn.into());
             };

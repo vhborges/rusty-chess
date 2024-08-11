@@ -6,7 +6,7 @@ const INITIAL_POSITIONS: &str = "src/io/initial_positions.txt";
 
 pub fn initial_positions() -> Lines<BufReader<File>> {
     let file = File::open(INITIAL_POSITIONS)
-        .expect(format!("Could not open file {}", INITIAL_POSITIONS).as_str());
+        .unwrap_or_else(|_| panic!("Could not open file {}", INITIAL_POSITIONS));
 
     BufReader::new(file).lines()
 }
@@ -14,5 +14,5 @@ pub fn initial_positions() -> Lines<BufReader<File>> {
 pub fn get_next_char(line: &String, chars: &mut Chars) -> char {
     chars
         .next()
-        .expect(format!("Line {} is incomplete", line).as_str())
+        .unwrap_or_else(|| panic!("Line {} is incomplete", line))
 }

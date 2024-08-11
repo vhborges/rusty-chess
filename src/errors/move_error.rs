@@ -40,12 +40,12 @@ impl From<PgnError> for MoveError {
 
 impl From<ChessPositionError> for MoveError {
     fn from(err: ChessPositionError) -> Self {
-        return Into::<PgnError>::into(err).into();
+        Into::<PgnError>::into(err).into()
     }
 }
 
 impl From<PositionError> for MoveError {
     fn from(err: PositionError) -> Self {
-        return Into::<PgnError>::into(err).into();
+        Into::<PgnError>::into(err).into()
     }
 }

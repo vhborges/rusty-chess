@@ -16,6 +16,12 @@ pub struct GameState {
     black_king_position: Position,
 }
 
+impl Default for GameState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GameState {
     pub fn new() -> Self {
         Self {
@@ -110,7 +116,7 @@ impl GameState {
             matching_positions.retain(|pos| -> bool {
                 let chess_pos: ChessPosition = (*pos).try_into().expect(INTERNAL_ERROR_01);
 
-                return disambiguation == chess_pos.line || disambiguation == chess_pos.col;
+                disambiguation == chess_pos.line || disambiguation == chess_pos.col
             });
 
             if matching_positions.len() != 1 {
@@ -136,16 +142,16 @@ impl GameState {
             return Ok(false);
         }
 
-        return if capture {
+        if capture {
             piece.attacks(&self.board, origin, destination, true)
         }
         else {
             piece.can_move(&self.board, origin, destination)
-        };
+        }
     }
 
     pub fn move_piece(&mut self, str_move: &str) -> Result<(), MoveError> {
-        let next_move = parse_move(&self, str_move)?;
+        let next_move = parse_move(self, str_move)?;
 
         let source_line = next_move.source.line;
         let source_col = next_move.source.col;
@@ -172,8 +178,8 @@ impl GameState {
         dest_line: usize,
         dest_col: usize,
     ) -> Result<(), MoveError> {
-        let mut temporary_board = self.board.clone();
-        Self::perform_move(&next_move, &mut temporary_board);
+        let mut temporary_board = self.board;
+        Self::perform_move(next_move, &mut temporary_board);
 
         let king_pos = self.get_king_pos(dest_line, dest_col, temporary_board);
 
@@ -210,17 +216,15 @@ impl GameState {
         dest_col: usize,
         temporary_board: [[Option<Piece>; 8]; 8],
     ) -> Position {
-        let king_pos =
-            if temporary_board[dest_line][dest_col].unwrap().piece_type == PieceType::King {
-                Position::new(dest_line, dest_col)
+        if temporary_board[dest_line][dest_col].unwrap().piece_type == PieceType::King {
+            Position::new(dest_line, dest_col)
+        }
+        else {
+            match self.turn {
+                Color::White => self.white_king_position,
+                Color::Black => self.black_king_position,
             }
-            else {
-                match self.turn {
-                    Color::White => self.white_king_position,
-                    Color::Black => self.black_king_position,
-                }
-            };
-        king_pos
+        }
     }
 
     fn perform_move(_move: &Move, temporary_board: &mut Board) {
@@ -260,26 +264,26 @@ impl GameState {
             let line = wrapped_line.expect("Error reading file line");
             let mut chars = line.chars();
 
-            let piece_color: Color = get_next_char(&line, &mut chars).try_into().expect(&format!(
-                "Could not parse color character from line {}",
-                line
-            ));
+            let piece_color: Color = get_next_char(&line, &mut chars)
+                .try_into()
+                .unwrap_or_else(|_| panic!("Could not parse color character from line {}", line));
 
-            let piece_type: PieceType = get_next_char(&line, &mut chars).try_into().expect(
-                &format!("Could not parse piece character from line {}", line),
-            );
+            let piece_type: PieceType = get_next_char(&line, &mut chars)
+                .try_into()
+                .unwrap_or_else(|_| panic!("Could not parse piece character from line {}", line));
 
             let chess_col = get_next_char(&line, &mut chars);
 
             let chess_line = get_next_char(&line, &mut chars);
 
-            let piece_position =
-                ChessPosition::new(chess_line, chess_col)
-                    .try_into()
-                    .expect(&format!(
+            let piece_position = ChessPosition::new(chess_line, chess_col)
+                .try_into()
+                .unwrap_or_else(|_| {
+                    panic!(
                         "Could not convert ChessPosition {}{} to Position",
                         chess_col, chess_line
-                    ));
+                    )
+                });
 
             if piece_type == PieceType::King {
                 match piece_color {

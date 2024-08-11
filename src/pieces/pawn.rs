@@ -31,10 +31,10 @@ pub fn can_move(board: &Board, piece: &Piece, origin: Position, destination: Pos
         return false;
     }
 
-    return vertical_distance == 1
+    vertical_distance == 1
         || (allow_two_rows
             && vertical_distance == 2
-            && check_clear_path(board, origin, destination));
+            && check_clear_path(board, origin, destination))
 }
 
 fn check_clear_path(board: &Board, origin: Position, destination: Position) -> bool {

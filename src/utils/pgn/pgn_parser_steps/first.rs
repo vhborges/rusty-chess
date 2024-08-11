@@ -10,17 +10,15 @@ pub struct First {
 
 impl First {
     pub fn parse(self, pgn_parser: &mut PgnParser) -> Result<(), MoveError> {
-        let dest_col;
-
         let current_pgn_char = pgn_parser.pgn_chars.next().ok_or(PgnError::EmptyInput)?;
         let piece_type: PieceType = current_pgn_char.try_into()?;
 
-        if piece_type == PieceType::Pawn {
-            dest_col = Some(current_pgn_char);
+        let dest_col: Option<char> = if piece_type == PieceType::Pawn {
+            Some(current_pgn_char)
         }
         else {
-            dest_col = None;
-        }
+            None
+        };
 
         pgn_parser.state = PgnParserState::Second(Second {
             pgn_len: self.pgn_len,

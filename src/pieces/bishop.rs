@@ -16,7 +16,7 @@ pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool 
         return false;
     }
 
-    return true;
+    true
 }
 
 pub fn attacks(board: &Board, origin: Position, destination: Position) -> bool {
@@ -32,7 +32,7 @@ pub fn attacks(board: &Board, origin: Position, destination: Position) -> bool {
         return false;
     }
 
-    return true;
+    true
 }
 
 fn is_move_valid(src_line: i8, src_col: i8, dest_line: i8, dest_col: i8) -> bool {
@@ -44,7 +44,7 @@ fn is_move_valid(src_line: i8, src_col: i8, dest_line: i8, dest_col: i8) -> bool
         return false;
     }
 
-    return true;
+    true
 }
 
 fn is_path_clear(
@@ -69,5 +69,5 @@ fn is_path_clear(
         j = (j as i8 + horizontal_direction) as usize;
     }
 
-    return true;
+    true
 }

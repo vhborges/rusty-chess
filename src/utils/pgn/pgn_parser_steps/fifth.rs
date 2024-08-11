@@ -25,7 +25,7 @@ impl Fifth {
             .next()
             .ok_or(PgnError::MissingCharacter("fifth"))?;
 
-        if !current_pgn_char.is_digit(10) {
+        if !current_pgn_char.is_ascii_digit() {
             return Err(ChessPositionError::MissingDestinationLine.into());
         }
 

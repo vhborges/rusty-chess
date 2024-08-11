@@ -26,7 +26,7 @@ impl Fourth {
             .next()
             .ok_or(PgnError::MissingCharacter("fourth"))?;
 
-        if current_pgn_char.is_digit(10) && (capture || disambiguation.is_some()) {
+        if current_pgn_char.is_ascii_digit() && (capture || disambiguation.is_some()) {
             let Some(col) = dest_col else {
                 return Err(ChessPositionError::MissingDestinationColumn.into());
             };
