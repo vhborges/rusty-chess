@@ -1,5 +1,3 @@
-use std::process::Command;
-
 use crate::errors::MoveError;
 use crate::io::io::{get_next_char, initial_positions};
 use crate::pieces::{Piece, PieceType};
@@ -51,9 +49,7 @@ impl GameState {
     }
 
     pub fn print_game(&self) {
-        Command::new("clear")
-            .status()
-            .expect("Failed to clear screen");
+        clearscreen::clear().expect("Failed to clear screen");
 
         for (line, line_chess) in self.board.iter().zip(LINES.iter()) {
             print!("{} ", line_chess);
