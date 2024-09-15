@@ -2,6 +2,7 @@ use std::error::Error;
 use std::fmt::Display;
 
 #[derive(Debug, PartialEq)]
+#[non_exhaustive]
 pub enum PositionError {
     InvalidLine(usize),
     InvalidColumn(usize),
@@ -19,6 +20,7 @@ impl Display for PositionError {
 }
 
 #[derive(Debug, PartialEq)]
+#[non_exhaustive]
 pub enum ChessPositionError {
     InvalidLine(char),
     InvalidColumn(char),

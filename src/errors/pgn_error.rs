@@ -6,6 +6,7 @@ use crate::utils::constants::CAPTURE;
 use super::{ChessPositionError, PositionError};
 
 #[derive(Debug, PartialEq)]
+#[non_exhaustive]
 pub enum PgnError {
     EmptyInput,
     MissingCharacter(&'static str),

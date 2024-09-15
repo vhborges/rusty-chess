@@ -4,6 +4,7 @@ use std::fmt::Display;
 use super::{ChessPositionError, PgnError, PositionError};
 
 #[derive(Debug, PartialEq)]
+#[non_exhaustive]
 pub enum MoveError {
     NoPieceAvailable,
     MoreThanOnePieceAvailable,
