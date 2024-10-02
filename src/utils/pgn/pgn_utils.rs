@@ -6,6 +6,8 @@ use crate::utils::types::Move;
 
 use super::pgn_parser_steps::{Fifth, First, Fourth, Second, Third};
 
+// TODO implement support for castling ("O-O" and "O-O-O")
+
 /// Represents all the possible steps in the PGN parse process.
 /// Each state is related with a character in the PGN string.
 pub enum PgnParserState {

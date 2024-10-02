@@ -1,5 +1,7 @@
 use std::ops::RangeInclusive;
 
+// TODO add and implement support for the CHECK character (+)
+
 pub const BOARD_SIZE: usize = 8;
 
 pub const BLANK_SQUARE: char = '_';
