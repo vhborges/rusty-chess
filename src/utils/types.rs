@@ -5,8 +5,6 @@ use super::Position;
 
 pub type Board = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
-// pub type PossibleMoves = [[bool; BOARD_SIZE]; BOARD_SIZE];
-
 pub struct Move {
     pub source: Position,
     pub destination: Position,
