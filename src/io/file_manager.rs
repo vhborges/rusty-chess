@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader, Lines};
-const INITIAL_POSITIONS_FILE: &str = "src/io/initial_positions.txt";
+const INITIAL_POSITIONS_FILE: &str = "res/initial_positions.txt";
 
 pub fn initial_positions() -> Lines<BufReader<File>> {
     let file = File::open(INITIAL_POSITIONS_FILE)
