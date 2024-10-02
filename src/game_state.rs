@@ -1,9 +1,10 @@
 use crate::errors::MoveError;
-use crate::io::io::{get_next_char, initial_positions};
+use crate::io::file_manager::initial_positions;
 use crate::pieces::{Piece, PieceType};
 use crate::utils::constants::{BLANK_SQUARE, COLUMNS, INTERNAL_ERROR_01, INTERNAL_ERROR_02, LINES};
 use crate::utils::types::Move;
 use crate::utils::{pgn::pgn_utils::parse_move, types::Board, ChessPosition, Color, Position};
+use std::str::Chars;
 
 pub struct GameState {
     board: Board,
@@ -291,4 +292,10 @@ impl GameState {
             self.add_piece(Piece::new(piece_type, piece_color), piece_position);
         }
     }
+}
+
+fn get_next_char(line: &String, chars: &mut Chars) -> char {
+    chars
+        .next()
+        .unwrap_or_else(|| panic!("Line {} is incomplete", line))
 }
