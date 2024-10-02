@@ -1,5 +1,5 @@
 use crate::errors::{ChessPositionError, MoveError, PgnError};
-use crate::pieces::PieceType;
+use crate::piece::PieceType;
 use crate::utils::types::Move;
 use crate::utils::ChessPosition;
 

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use super::{bishop, king, knight, pawn, queen, rook};
+use super::pieces::{bishop, king, knight, pawn, queen, rook};
 use crate::errors::{MoveError, PgnError};
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};

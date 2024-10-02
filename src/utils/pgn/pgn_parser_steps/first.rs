@@ -1,7 +1,7 @@
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Second;
 use crate::errors::{MoveError, PgnError};
-use crate::pieces::PieceType;
+use crate::piece::PieceType;
 
 #[derive(Copy, Clone)]
 pub struct First {

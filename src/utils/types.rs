@@ -1,4 +1,4 @@
-use crate::pieces::Piece;
+use crate::piece::Piece;
 use crate::utils::constants::BOARD_SIZE;
 
 use super::Position;

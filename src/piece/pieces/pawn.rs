@@ -1,7 +1,7 @@
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};
 
-use super::Piece;
+use super::super::Piece;
 
 pub const SYMBOLS: [char; 2] = ['\u{2659}', '\u{265F}'];
 

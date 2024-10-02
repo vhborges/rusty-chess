@@ -1,6 +1,6 @@
 use crate::errors::MoveError;
 use crate::io::file_manager::initial_positions;
-use crate::pieces::{Piece, PieceType};
+use crate::piece::{Piece, PieceType};
 use crate::utils::constants::{BLANK_SQUARE, COLUMNS, INTERNAL_ERROR_01, INTERNAL_ERROR_02, LINES};
 use crate::utils::types::Move;
 use crate::utils::{pgn::pgn_utils::parse_move, types::Board, ChessPosition, Color, Position};
