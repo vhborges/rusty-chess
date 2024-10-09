@@ -2,7 +2,7 @@ use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
 use crate::utils::types::Move;
 use crate::utils::ChessPosition;
-
+use crate::utils::constants::INTERNAL_ERROR_03;
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Fifth;
 
@@ -12,6 +12,7 @@ pub struct Fourth {
     pub disambiguation: Option<char>,
     pub dest_col: Option<char>,
     pub piece_type: PieceType,
+    pub castling: bool,
 }
 
 impl Fourth {
@@ -26,7 +27,10 @@ impl Fourth {
             .next()
             .ok_or(PgnError::MissingCharacter("fourth"))?;
 
-        if current_pgn_char.is_ascii_digit() && (capture || disambiguation.is_some()) {
+        if self.castling {
+            return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
+        }
+        else if current_pgn_char.is_ascii_digit() && (capture || disambiguation.is_some()) {
             let Some(col) = dest_col else {
                 return Err(ChessPositionError::MissingDestinationColumn.into());
             };
@@ -55,8 +59,31 @@ impl Fourth {
             disambiguation,
             dest_col,
             piece_type,
+            castling: false,
         });
 
         Ok(())
+    }
+
+    fn handle_castling(
+        pgn_parser: &mut PgnParser,
+        piece_type: PieceType,
+        dest_col: Option<char>,
+        current_pgn_char: char,
+    ) -> Result<(), MoveError> {
+        if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
+            pgn_parser.state = PgnParserState::Fifth(Fifth {
+                capture: false,
+                disambiguation: None,
+                dest_col,
+                piece_type,
+                castling: true,
+            });
+
+            Ok(())
+        }
+        else {
+            Err(PgnError::MissingCharacter("fourth").into())
+        }
     }
 }

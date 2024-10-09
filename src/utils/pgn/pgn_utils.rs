@@ -2,6 +2,7 @@ use std::str::Chars;
 
 use crate::errors::MoveError;
 use crate::game_state::GameState;
+use crate::utils::constants::QUEEN_SIDE_CASTLING;
 use crate::utils::types::Move;
 
 use super::pgn_parser_steps::{Fifth, First, Fourth, Second, Third};
@@ -26,18 +27,24 @@ pub struct PgnParser<'a, 'b> {
     pub pgn_chars: Chars<'b>,
     pub next_move: Option<Move>,
     pub state: PgnParserState,
+    // pub king_size_castling_chars: Chars<'b>,
+    pub castling_chars: Chars<'b>,
 }
 
 impl<'a, 'b> PgnParser<'a, 'b> {
     fn new(game_state: &'a GameState, pgn_str: &'b str) -> Self {
         let pgn_chars = pgn_str.chars();
         let pgn_len = pgn_str.len();
+        // let king_size_castling_chars = KING_SIDE_CASTLING.chars();
+        let queen_size_castling_chars = QUEEN_SIDE_CASTLING.chars();
 
         Self {
             game_state,
             pgn_chars,
             next_move: None,
             state: PgnParserState::First(First { pgn_len }),
+            // king_size_castling_chars,
+            castling_chars: queen_size_castling_chars,
         }
     }
 }

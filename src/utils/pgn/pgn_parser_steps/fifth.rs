@@ -2,7 +2,8 @@ use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
 use crate::utils::types::Move;
 use crate::utils::ChessPosition;
-
+use crate::utils::constants::INTERNAL_ERROR_03;
+use crate::utils::pgn::pgn_parser_steps::Fourth;
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 
 #[derive(Copy, Clone)]
@@ -11,6 +12,7 @@ pub struct Fifth {
     pub disambiguation: Option<char>,
     pub dest_col: Option<char>,
     pub piece_type: PieceType,
+    pub castling: bool,
 }
 
 impl Fifth {
@@ -25,7 +27,10 @@ impl Fifth {
             .next()
             .ok_or(PgnError::MissingCharacter("fifth"))?;
 
-        if !current_pgn_char.is_ascii_digit() {
+        if self.castling {
+            return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
+        }
+        else if !current_pgn_char.is_ascii_digit() {
             return Err(ChessPositionError::MissingDestinationLine.into());
         }
 
@@ -47,5 +52,28 @@ impl Fifth {
         pgn_parser.state = PgnParserState::Finished;
 
         Ok(())
+    }
+
+    fn handle_castling(
+        pgn_parser: &mut PgnParser,
+        piece_type: PieceType,
+        dest_col: Option<char>,
+        current_pgn_char: char,
+    ) -> Result<(), MoveError> {
+        if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
+            pgn_parser.state = PgnParserState::Fourth(Fourth {
+                capture: false,
+                disambiguation: None,
+                dest_col,
+                piece_type,
+                castling: true,
+            });
+
+            Ok(())
+        }
+        else {
+            // TODO handle queen side castling
+            Ok(())
+        }
     }
 }
