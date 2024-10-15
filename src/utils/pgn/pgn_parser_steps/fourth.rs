@@ -6,6 +6,8 @@ use crate::utils::constants::INTERNAL_ERROR_03;
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Fifth;
 
+const STEP: &str = "fourth";
+
 #[derive(Copy, Clone)]
 pub struct Fourth {
     pub capture: bool,
@@ -25,7 +27,7 @@ impl Fourth {
         let current_pgn_char = pgn_parser
             .pgn_chars
             .next()
-            .ok_or(PgnError::MissingCharacter("fourth"))?;
+            .ok_or(PgnError::MissingCharacter(STEP))?;
 
         if self.castling {
             return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
@@ -83,7 +85,8 @@ impl Fourth {
             Ok(())
         }
         else {
-            Err(PgnError::MissingCharacter("fourth").into())
+            // TODO implement king size castling
+            
         }
     }
 }

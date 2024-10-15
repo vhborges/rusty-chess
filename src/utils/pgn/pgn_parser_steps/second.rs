@@ -7,6 +7,8 @@ use crate::utils::ChessPosition;
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Third;
 
+const STEP: &str = "second";
+
 #[derive(Copy, Clone)]
 pub struct Second {
     pub pgn_len: usize,
@@ -27,7 +29,7 @@ impl Second {
         let current_pgn_char = pgn_parser
             .pgn_chars
             .next()
-            .ok_or(PgnError::MissingCharacter("second"))?;
+            .ok_or(PgnError::MissingCharacter(STEP))?;
 
         if self.castling {
             return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
@@ -112,7 +114,7 @@ impl Second {
             Ok(())
         }
         else {
-            Err(PgnError::MissingCharacter("second").into())
+            Err(PgnError::MissingCharacter(STEP).into())
         }
     }
 }

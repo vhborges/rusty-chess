@@ -88,13 +88,14 @@ impl GameState {
         destination: Position,
         opt_disambiguation: Option<char>,
         capture: bool,
+        castling: bool,
     ) -> Result<Position, MoveError> {
         let mut matching_positions = Vec::new();
         for (line_index, line) in self.board.iter().enumerate() {
             for (col_index, opt_piece) in line.iter().enumerate() {
                 if let Some(piece) = opt_piece {
                     let origin = Position::new(line_index, col_index);
-                    if self.piece_matches(piece, piece_type, origin, destination, capture)? {
+                    if self.piece_matches(piece, piece_type, origin, destination, capture, castling)? {
                         matching_positions.push(origin);
                     }
                 }
@@ -131,6 +132,7 @@ impl GameState {
         origin: Position,
         destination: Position,
         capture: bool,
+        castling: bool,
     ) -> Result<bool, MoveError> {
         if piece.piece_type != piece_type {
             return Ok(false);
@@ -143,7 +145,7 @@ impl GameState {
             piece.attacks(&self.board, origin, destination, true)
         }
         else {
-            piece.can_move(&self.board, origin, destination)
+            piece.can_move(&self.board, origin, destination, castling)
         }
     }
 

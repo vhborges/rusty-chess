@@ -7,6 +7,8 @@ use crate::utils::ChessPosition;
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Fourth;
 
+const STEP: &str = "third";
+
 #[derive(Copy, Clone)]
 pub struct Third {
     pub capture: bool,
@@ -26,7 +28,7 @@ impl Third {
         let current_pgn_char = pgn_parser
             .pgn_chars
             .next()
-            .ok_or(PgnError::MissingCharacter("third"))?;
+            .ok_or(PgnError::MissingCharacter(STEP))?;
 
         if self.castling {
             return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
@@ -88,8 +90,7 @@ impl Third {
             Ok(())
         }
         else {
-            // TODO handle king side castling
-            Ok(())
+            Err(PgnError::MissingCharacter(STEP).into())
         }
     }
 }

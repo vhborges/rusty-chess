@@ -33,17 +33,28 @@ impl TryFrom<char> for PieceType {
 
 #[derive(Copy, Clone)]
 pub struct Piece {
-    symbol: char,
     pub piece_type: PieceType,
     pub color: Color,
+    // TODO should come up with a logic to update these booleans after moving the king or the rooks
+    pub short_castling_available: bool,
+    pub long_castling_available: bool,
+    symbol: char,
 }
 
 impl Piece {
     pub fn new(piece_type: PieceType, color: Color) -> Self {
         Self {
-            symbol: Self::get_symbol(&piece_type, &color),
             piece_type,
             color,
+            short_castling_available: match piece_type {
+                PieceType::King | PieceType::Rook => true,
+                _ => false,
+            },
+            long_castling_available: match piece_type {
+                PieceType::King | PieceType::Rook => true,
+                _ => false,
+            },
+            symbol: Self::get_symbol(&piece_type, &color),
         }
     }
 
@@ -52,13 +63,17 @@ impl Piece {
         board: &Board,
         origin: Position,
         destination: Position,
+        castling: bool,
     ) -> Result<bool, MoveError> {
         Self::validate_move(origin, destination)?;
         self.validate_capture(&board[destination.line][destination.col], false)?;
 
         match self.piece_type {
             PieceType::Bishop => Ok(bishop::can_move(board, origin, destination)),
-            PieceType::King => Ok(king::can_move(origin, destination)),
+            PieceType::King => match castling {
+                false => Ok(king::can_move(origin, destination)),
+                true => Ok(king::can_castle(self, board, origin, destination)),
+            },
             PieceType::Knight => Ok(knight::can_move(origin, destination)),
             PieceType::Pawn => Ok(pawn::can_move(board, self, origin, destination)),
             PieceType::Queen => Ok(queen::can_move(board, origin, destination)),
@@ -66,6 +81,7 @@ impl Piece {
         }
     }
 
+    // TODO check if the destination square contains a piece of the opposite color
     pub fn attacks(
         &self,
         board: &Board,
