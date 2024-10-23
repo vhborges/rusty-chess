@@ -13,9 +13,14 @@ pub const COL_RANGE: RangeInclusive<char> = 'a'..='h';
 pub const LINE_RANGE: RangeInclusive<char> = '1'..='8';
 
 pub const CAPTURE: char = 'x';
+// TODO deal with this commented code later
 // pub const KING_SIDE_CASTLING: &str = "O-O";
 pub const QUEEN_SIDE_CASTLING: &str = "O-O-O";
 
+pub const KING_SIDE_CASTLING_COLUMN: char = 'g';
+
 pub const INTERNAL_ERROR_01: &str = "Internal error 01: Invalid piece position";
-pub const INTERNAL_ERROR_02: &str = "Internal error 02: piece.attacks() should not return error when capture=false";
-pub const INTERNAL_ERROR_03: &str = "Internal error 03: constant castling PGN constant should have 5 characters";
+pub const INTERNAL_ERROR_02: &str =
+    "Internal error 02: piece.attacks() should not return error when capture=false";
+pub const INTERNAL_ERROR_03: &str =
+    "Internal error 03: constant castling PGN constant should have 5 characters";

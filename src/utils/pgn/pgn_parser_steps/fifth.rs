@@ -1,10 +1,9 @@
+use super::super::pgn_utils::{PgnParser, PgnParserState};
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
+use crate::utils::constants::INTERNAL_ERROR_03;
 use crate::utils::types::Move;
 use crate::utils::ChessPosition;
-use crate::utils::constants::INTERNAL_ERROR_03;
-use crate::utils::pgn::pgn_parser_steps::Fourth;
-use super::super::pgn_utils::{PgnParser, PgnParserState};
 
 #[derive(Copy, Clone)]
 pub struct Fifth {
@@ -34,7 +33,8 @@ impl Fifth {
             return Err(ChessPositionError::MissingDestinationLine.into());
         }
 
-        let Some(col) = dest_col else {
+        let Some(col) = dest_col
+        else {
             return Err(ChessPositionError::MissingDestinationColumn.into());
         };
 
@@ -61,19 +61,15 @@ impl Fifth {
         current_pgn_char: char,
     ) -> Result<(), MoveError> {
         if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
-            pgn_parser.state = PgnParserState::Fourth(Fourth {
-                capture: false,
-                disambiguation: None,
-                dest_col,
-                piece_type,
-                castling: true,
-            });
+            // TODO call a method inside game_state to find the origin and destination of the king that is castling
+            pgn_parser.next_move = Some(Move::new());
+
+            pgn_parser.state = PgnParserState::Finished;
 
             Ok(())
         }
         else {
-            // TODO handle queen side castling
-            Ok(())
+            Err(PgnError::InvalidCharacter(current_pgn_char).into())
         }
     }
 }

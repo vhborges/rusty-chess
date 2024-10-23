@@ -1,10 +1,10 @@
-use crate::errors::{ChessPositionError, MoveError, PgnError};
-use crate::piece::PieceType;
-use crate::utils::types::Move;
-use crate::utils::ChessPosition;
-use crate::utils::constants::INTERNAL_ERROR_03;
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Fifth;
+use crate::errors::{ChessPositionError, MoveError, PgnError};
+use crate::piece::PieceType;
+use crate::utils::constants::INTERNAL_ERROR_03;
+use crate::utils::types::Move;
+use crate::utils::ChessPosition;
 
 const STEP: &str = "fourth";
 
@@ -24,16 +24,17 @@ impl Fourth {
         let capture = self.capture;
         let disambiguation = self.disambiguation;
 
-        let current_pgn_char = pgn_parser
-            .pgn_chars
-            .next()
-            .ok_or(PgnError::MissingCharacter(STEP))?;
+        let opt_current_pgn_char = pgn_parser.pgn_chars.next();
 
         if self.castling {
-            return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
+            return Self::handle_castling(pgn_parser, piece_type, dest_col, opt_current_pgn_char);
         }
-        else if current_pgn_char.is_ascii_digit() && (capture || disambiguation.is_some()) {
-            let Some(col) = dest_col else {
+
+        let current_pgn_char = opt_current_pgn_char.ok_or(PgnError::MissingCharacter(STEP))?;
+
+        if current_pgn_char.is_ascii_digit() && (capture || disambiguation.is_some()) {
+            let Some(col) = dest_col
+            else {
                 return Err(ChessPositionError::MissingDestinationColumn.into());
             };
 
@@ -71,22 +72,33 @@ impl Fourth {
         pgn_parser: &mut PgnParser,
         piece_type: PieceType,
         dest_col: Option<char>,
-        current_pgn_char: char,
+        current_pgn_char: Option<char>,
     ) -> Result<(), MoveError> {
-        if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
-            pgn_parser.state = PgnParserState::Fifth(Fifth {
-                capture: false,
-                disambiguation: None,
-                dest_col,
-                piece_type,
-                castling: true,
-            });
+        match current_pgn_char {
+            Some(pgn_char) => {
+                if pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
+                    pgn_parser.state = PgnParserState::Fifth(Fifth {
+                        capture: false,
+                        disambiguation: None,
+                        dest_col,
+                        piece_type,
+                        castling: true,
+                    });
 
-            Ok(())
-        }
-        else {
-            // TODO implement king size castling
-            
+                    Ok(())
+                }
+                else {
+                    Err(PgnError::InvalidCharacter(pgn_char).into())
+                }
+            }
+            None => {
+                // TODO call a method inside game_state to find the origin and destination of the king that is castling
+                pgn_parser.next_move = Some(Move::new());
+
+                pgn_parser.state = PgnParserState::Finished;
+
+                Ok(())
+            }
         }
     }
 }
