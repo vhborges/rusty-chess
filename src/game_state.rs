@@ -1,7 +1,7 @@
 use crate::errors::MoveError;
 use crate::io::file_manager::initial_positions;
 use crate::piece::{Piece, PieceType};
-use crate::utils::constants::{BLANK_SQUARE, COLUMNS, INTERNAL_ERROR_01, INTERNAL_ERROR_02, LINES};
+use crate::utils::constants::*;
 use crate::utils::types::Move;
 use crate::utils::{pgn::pgn_utils::parse_move, types::Board, ChessPosition, Color, Position};
 use std::str::Chars;
@@ -82,6 +82,8 @@ impl GameState {
         }
     }
 
+    /// Given the piece type, the destination square, the disambiguation character and whether
+    /// it's a capture, find the piece that best matches these parameters and return its position
     pub fn find_piece_position(
         &self,
         piece_type: PieceType,
@@ -145,6 +147,70 @@ impl GameState {
         else {
             piece.can_move(&self.board, origin, destination)
         }
+    }
+
+    /// Find and return the King and Rook moves (in that order) needed for castling
+    pub fn find_castling_move(&self, short_castle: bool) -> Result<(Move, Move), MoveError> {
+        let (king_origin, king_destination) = self.get_king_castle_move(short_castle);
+        let king = self.get_piece(king_origin).ok_or(MoveError::InvalidCastle(
+            "The King is no longer on its original square",
+        ))?;
+
+        let (rook_origin, rook_destination) = self.get_rook_castle_move(short_castle);
+        let rook = self.get_piece(rook_origin).ok_or(MoveError::InvalidCastle(
+            "The Rook is no longer on its original square",
+        ))?;
+
+        if !(king.can_move(&self.board, king_origin, king_destination)?
+            && rook.can_move(&self.board, rook_origin, rook_destination)?)
+        {
+            return Err(MoveError::InvalidCastle("This move is not allowed"));
+        }
+
+        Ok((
+            Move::new(king_origin, king_destination),
+            Move::new(rook_origin, rook_destination),
+        ))
+    }
+
+    fn get_king_castle_move(&self, short_castle: bool) -> (Position, Position) {
+        let src_line = match self.turn {
+            Color::White => WHITE_CASTLING_LINE,
+            Color::Black => BLACK_CASTLING_LINE,
+        };
+        let src_col = KING_INITIAL_COLUMN;
+
+        let dest_line = src_line;
+        let dest_col = match short_castle {
+            true => KING_SHORT_CASTLING_COLUMN,
+            false => KING_LONG_CASTLING_COLUMN,
+        };
+
+        let origin = Position::new(src_line, src_col);
+        let destination = Position::new(dest_line, dest_col);
+
+        (origin, destination)
+    }
+
+    fn get_rook_castle_move(&self, short_castle: bool) -> (Position, Position) {
+        let src_line = match self.turn {
+            Color::White => WHITE_CASTLING_LINE,
+            Color::Black => BLACK_CASTLING_LINE,
+        };
+        let dest_line = src_line;
+
+        let (src_col, dest_col) = match short_castle {
+            true => (
+                ROOK_SHORT_CASTLING_INITIAL_COLUMN,
+                ROOK_SHORT_CASTLING_COLUMN,
+            ),
+            false => (ROOK_LONG_CASTLING_INITIAL_COLUMN, ROOK_LONG_CASTLING_COLUMN),
+        };
+
+        let origin = Position::new(src_line, src_col);
+        let destination = Position::new(dest_line, dest_col);
+
+        (origin, destination)
     }
 
     pub fn move_piece(&mut self, str_move: &str) -> Result<(), MoveError> {

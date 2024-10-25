@@ -27,7 +27,7 @@ impl Fifth {
             .ok_or(PgnError::MissingCharacter("fifth"))?;
 
         if self.castling {
-            return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
+            return Self::handle_castling(pgn_parser, current_pgn_char);
         }
         else if !current_pgn_char.is_ascii_digit() {
             return Err(ChessPositionError::MissingDestinationLine.into());
@@ -56,13 +56,12 @@ impl Fifth {
 
     fn handle_castling(
         pgn_parser: &mut PgnParser,
-        piece_type: PieceType,
-        dest_col: Option<char>,
         current_pgn_char: char,
     ) -> Result<(), MoveError> {
         if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
-            // TODO call a method inside game_state to find the origin and destination of the king that is castling
-            pgn_parser.next_move = Some(Move::new());
+            let (king_move, rook_move) = pgn_parser.game_state.find_castling_move(false)?;
+            pgn_parser.next_move = Some(king_move);
+            pgn_parser.additional_next_move = Some(rook_move);
 
             pgn_parser.state = PgnParserState::Finished;
 

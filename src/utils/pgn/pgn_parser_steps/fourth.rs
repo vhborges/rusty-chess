@@ -92,8 +92,9 @@ impl Fourth {
                 }
             }
             None => {
-                // TODO call a method inside game_state to find the origin and destination of the king that is castling
-                pgn_parser.next_move = Some(Move::new());
+                let (king_move, rook_move) = pgn_parser.game_state.find_castling_move(true)?;
+                pgn_parser.next_move = Some(king_move);
+                pgn_parser.additional_next_move = Some(rook_move);
 
                 pgn_parser.state = PgnParserState::Finished;
 

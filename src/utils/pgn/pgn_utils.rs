@@ -7,8 +7,6 @@ use crate::utils::types::Move;
 
 use super::pgn_parser_steps::{Fifth, First, Fourth, Second, Third};
 
-// TODO implement support for castling ("O-O" and "O-O-O")
-
 /// Represents all the possible steps in the PGN parse process.
 /// Each state is related with a character in the PGN string.
 pub enum PgnParserState {
@@ -26,8 +24,9 @@ pub struct PgnParser<'a, 'b> {
     pub game_state: &'a GameState,
     pub pgn_chars: Chars<'b>,
     pub next_move: Option<Move>,
+    /// This should be only used for castling
+    pub additional_next_move: Option<Move>,
     pub state: PgnParserState,
-    // pub king_size_castling_chars: Chars<'b>,
     pub castling_chars: Chars<'b>,
 }
 
@@ -42,6 +41,7 @@ impl<'a, 'b> PgnParser<'a, 'b> {
             game_state,
             pgn_chars,
             next_move: None,
+            additional_next_move: None,
             state: PgnParserState::First(First { pgn_len }),
             // king_size_castling_chars,
             castling_chars: queen_size_castling_chars,
@@ -52,6 +52,10 @@ impl<'a, 'b> PgnParser<'a, 'b> {
 impl<'a, 'b> PgnParser<'a, 'b> {
     fn step(&mut self) -> Result<(), MoveError> {
         match self.state {
+            // TODO Maybe if the PgnParserState is a trait, we don't need to have all this boilerplate?
+            // TODO we could define the `parse` method in the trait
+            // TODO Another idea: we can keep using the PgnParserState as an enum and create another
+            // TODO struct member to store each struct state that implements a trait with the `parse` method
             PgnParserState::First(first) => first.parse(self),
             PgnParserState::Second(second) => second.parse(self),
             PgnParserState::Third(third) => third.parse(self),
