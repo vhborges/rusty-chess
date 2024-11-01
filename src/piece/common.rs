@@ -13,6 +13,7 @@ pub enum PieceType {
     Pawn,
     Queen,
     Rook,
+    None,
 }
 
 impl TryFrom<char> for PieceType {
@@ -26,6 +27,7 @@ impl TryFrom<char> for PieceType {
             'a'..='h' | 'P' => Ok(PieceType::Pawn),
             'Q' => Ok(PieceType::Queen),
             'R' => Ok(PieceType::Rook),
+            'O' => Ok(PieceType::None),
             _ => Err(PgnError::InvalidPiece(value)),
         }
     }
@@ -43,18 +45,28 @@ pub struct Piece {
 
 impl Piece {
     pub fn new(piece_type: PieceType, color: Color) -> Self {
+        let castling_available = matches!(piece_type, PieceType::King | PieceType::Rook);
         Self {
             piece_type,
             color,
-            short_castling_available: match piece_type {
-                PieceType::King | PieceType::Rook => true,
-                _ => false,
-            },
-            long_castling_available: match piece_type {
-                PieceType::King | PieceType::Rook => true,
-                _ => false,
-            },
+            short_castling_available: castling_available,
+            long_castling_available: castling_available,
             symbol: Self::get_symbol(&piece_type, &color),
+        }
+    }
+    
+    pub fn can_castle(
+        &self,
+        board: &Board,
+        origin: Position,
+        destination: Position,
+    ) -> Result<bool, MoveError> {
+        Self::validate_move(origin, destination)?;
+
+        match self.piece_type {
+            PieceType::King => Ok(king::can_castle(self, board, origin, destination)),
+            PieceType::Rook => Ok(rook::can_castle(self, board, origin, destination)),
+            _ => Err(MoveError::InvalidCastle("Invalid piece for castling"))
         }
     }
 
@@ -71,9 +83,11 @@ impl Piece {
             PieceType::Bishop => Ok(bishop::can_move(board, origin, destination)),
             PieceType::King => Ok(king::can_move(origin, destination)),
             PieceType::Knight => Ok(knight::can_move(origin, destination)),
-            PieceType::Pawn => Ok(pawn::can_move(board, self, origin, destination)),
+            PieceType::Pawn => Ok(pawn::can_move(self, board, origin, destination)),
             PieceType::Queen => Ok(queen::can_move(board, origin, destination)),
             PieceType::Rook => Ok(rook::can_move(board, origin, destination)),
+            // TODO fill panic message
+            PieceType::None => panic!(),
         }
     }
 
@@ -86,7 +100,9 @@ impl Piece {
         capture: bool,
     ) -> Result<bool, MoveError> {
         Self::validate_move(origin, destination)?;
+        // TODO review this logic
         if capture {
+            // TODO this function purpose is not clear considering the last argument
             self.validate_capture(&board[destination.line][destination.col], true)?;
         }
 
@@ -97,6 +113,8 @@ impl Piece {
             PieceType::Pawn => Ok(pawn::attacks(self.color, origin, destination)),
             PieceType::Queen => Ok(queen::attacks(board, origin, destination)),
             PieceType::Rook => Ok(rook::attacks(board, origin, destination)),
+            // TODO fill panic message
+            PieceType::None => panic!(),
         }
     }
 
@@ -139,6 +157,8 @@ impl Piece {
             PieceType::Pawn => pawn::SYMBOLS,
             PieceType::Queen => queen::SYMBOLS,
             PieceType::Rook => rook::SYMBOLS,
+            // TODO fill panic message
+            PieceType::None => panic!(),
         };
 
         Self::get_symbol_for_color(color, symbols)

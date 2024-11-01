@@ -1,10 +1,19 @@
+use crate::piece::Piece;
+use crate::utils::constants::{
+    ROOK_LONG_CASTLING_INITIAL_COLUMN,
+    ROOK_SHORT_CASTLING_INITIAL_COLUMN,
+};
 use crate::utils::types::Board;
 use crate::utils::Position;
 use std::cmp::max;
 
 pub const SYMBOLS: [char; 2] = ['\u{2656}', '\u{265C}'];
 
-pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool {
+pub fn can_move(
+    board: &Board,
+    origin: Position,
+    destination: Position,
+) -> bool {
     let (src_line, src_col) = (origin.line as i8, origin.col as i8);
     let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
 
@@ -26,6 +35,36 @@ pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool 
         vertical_direction,
         nr_of_squares,
     )
+}
+
+pub fn can_castle(
+    piece: &Piece,
+    board: &Board,
+    origin: Position,
+    destination: Position,
+) -> bool {
+    if !is_valid_castling(piece, origin) {
+        return false;
+    }
+
+    can_move(board, origin, destination)
+}
+
+fn is_valid_castling(piece: &Piece, origin: Position) -> bool {
+    if origin.col == ROOK_SHORT_CASTLING_INITIAL_COLUMN {
+        if !piece.short_castling_available {
+            return false;
+        }
+    }
+    else if origin.col == ROOK_LONG_CASTLING_INITIAL_COLUMN {
+        if !piece.long_castling_available {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+    true
 }
 
 // TODO reuse the can_move function above
@@ -68,7 +107,7 @@ fn get_directions(src_line: i8, src_col: i8, dest_line: i8, dest_col: i8) -> (i8
     else {
         0
     };
-    
+
     (horizontal_direction, vertical_direction)
 }
 

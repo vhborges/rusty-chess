@@ -18,7 +18,6 @@ pub fn can_move(origin: Position, destination: Position) -> bool {
     false
 }
 
-// TODO handle castling inside 'can_move' function
 pub fn can_castle(piece: &Piece, board: &Board, origin: Position, destination: Position) -> bool {
     if destination.col != 2 && destination.col != 6 {
         return false;

@@ -150,7 +150,7 @@ impl GameState {
     }
 
     /// Find and return the King and Rook moves (in that order) needed for castling
-    pub fn find_castling_move(&self, short_castle: bool) -> Result<(Move, Move), MoveError> {
+    pub fn find_castling_move(&self, short_castle: bool) -> Result<Move, MoveError> {
         let (king_origin, king_destination) = self.get_king_castle_move(short_castle);
         let king = self.get_piece(king_origin).ok_or(MoveError::InvalidCastle(
             "The King is no longer on its original square",
@@ -161,16 +161,13 @@ impl GameState {
             "The Rook is no longer on its original square",
         ))?;
 
-        if !(king.can_move(&self.board, king_origin, king_destination)?
-            && rook.can_move(&self.board, rook_origin, rook_destination)?)
+        if !(king.can_castle(&self.board, king_origin, king_destination)?
+            && rook.can_castle(&self.board, rook_origin, rook_destination)?)
         {
             return Err(MoveError::InvalidCastle("This move is not allowed"));
         }
 
-        Ok((
-            Move::new(king_origin, king_destination),
-            Move::new(rook_origin, rook_destination),
-        ))
+        Ok(Move::new_with_options(king_origin, king_destination, rook_origin, rook_destination))
     }
 
     fn get_king_castle_move(&self, short_castle: bool) -> (Position, Position) {
@@ -213,7 +210,7 @@ impl GameState {
         (origin, destination)
     }
 
-    pub fn move_piece(&mut self, str_move: &str) -> Result<(), MoveError> {
+    pub fn handle_move(&mut self, str_move: &str) -> Result<(), MoveError> {
         let next_move = parse_move(self, str_move)?;
 
         let source_line = next_move.source.line;
@@ -221,6 +218,8 @@ impl GameState {
 
         let dest_line = next_move.destination.line;
         let dest_col = next_move.destination.col;
+        
+        // TODO handle castling validation (e.g. some piece is attacking the king path)
 
         self.verify_king_in_check(&next_move, dest_line, dest_col)?;
 
@@ -294,6 +293,14 @@ impl GameState {
         temporary_board[_move.destination.line][_move.destination.col] =
             temporary_board[_move.source.line][_move.source.col];
         temporary_board[_move.source.line][_move.source.col] = None;
+        
+        if let Some(opt_dest) = _move.opt_destination {
+            if let Some(opt_src) = _move.opt_source {
+                temporary_board[opt_dest.line][opt_dest.col] =
+                    temporary_board[opt_src.line][opt_src.col];
+                temporary_board[opt_src.line][opt_src.col] = None;
+            }
+        }
     }
 
     fn is_king_in_check(&self, board: &Board, king_pos: Position) -> bool {

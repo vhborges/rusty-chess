@@ -24,8 +24,6 @@ pub struct PgnParser<'a, 'b> {
     pub game_state: &'a GameState,
     pub pgn_chars: Chars<'b>,
     pub next_move: Option<Move>,
-    /// This should be only used for castling
-    pub additional_next_move: Option<Move>,
     pub state: PgnParserState,
     pub castling_chars: Chars<'b>,
 }
@@ -41,7 +39,6 @@ impl<'a, 'b> PgnParser<'a, 'b> {
             game_state,
             pgn_chars,
             next_move: None,
-            additional_next_move: None,
             state: PgnParserState::First(First { pgn_len }),
             // king_size_castling_chars,
             castling_chars: queen_size_castling_chars,

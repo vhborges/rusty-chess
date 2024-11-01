@@ -8,13 +8,36 @@ pub type Board = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 pub struct Move {
     pub source: Position,
     pub destination: Position,
+    
+    // These two should be only used for castling
+    pub opt_source: Option<Position>,
+    pub opt_destination: Option<Position>,
 }
 
 impl Move {
-    pub fn new(origin: Position, destination: Position) -> Self {
+    pub fn new(
+        source: Position,
+        destination: Position,
+    ) -> Self {
         Self {
-            source: origin,
+            source,
             destination,
+            opt_source: None,
+            opt_destination: None,
+        }
+    }
+    
+    pub fn new_with_options(
+        source: Position,
+        destination: Position,
+        opt_source: Position,
+        opt_destination: Position,
+    ) -> Self {
+        Self {
+            source,
+            destination,
+            opt_source: Some(opt_source),
+            opt_destination: Some(opt_destination),
         }
     }
 }

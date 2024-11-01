@@ -59,9 +59,7 @@ impl Fifth {
         current_pgn_char: char,
     ) -> Result<(), MoveError> {
         if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
-            let (king_move, rook_move) = pgn_parser.game_state.find_castling_move(false)?;
-            pgn_parser.next_move = Some(king_move);
-            pgn_parser.additional_next_move = Some(rook_move);
+            pgn_parser.next_move = Some(pgn_parser.game_state.find_castling_move(false)?);
 
             pgn_parser.state = PgnParserState::Finished;
 

@@ -5,7 +5,7 @@ use super::super::Piece;
 
 pub const SYMBOLS: [char; 2] = ['\u{2659}', '\u{265F}'];
 
-pub fn can_move(board: &Board, piece: &Piece, origin: Position, destination: Position) -> bool {
+pub fn can_move(piece: &Piece, board: &Board, origin: Position, destination: Position) -> bool {
     let (src_line, src_col) = (origin.line as i8, origin.col as i8);
     let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
 
