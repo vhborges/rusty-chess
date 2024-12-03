@@ -37,7 +37,6 @@ impl TryFrom<char> for PieceType {
 pub struct Piece {
     pub piece_type: PieceType,
     pub color: Color,
-    // TODO should come up with a logic to update these booleans after moving the king or the rooks
     pub short_castling_available: bool,
     pub long_castling_available: bool,
     symbol: char,

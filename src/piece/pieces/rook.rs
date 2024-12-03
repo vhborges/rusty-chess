@@ -1,19 +1,15 @@
 use crate::piece::Piece;
 use crate::utils::constants::{
-    ROOK_LONG_CASTLING_INITIAL_COLUMN,
-    ROOK_SHORT_CASTLING_INITIAL_COLUMN,
+    BLACK_CASTLING_LINE, ROOK_LONG_CASTLING_COLUMN, ROOK_LONG_CASTLING_INITIAL_COLUMN,
+    ROOK_SHORT_CASTLING_COLUMN, ROOK_SHORT_CASTLING_INITIAL_COLUMN, WHITE_CASTLING_LINE,
 };
 use crate::utils::types::Board;
-use crate::utils::Position;
+use crate::utils::{Color, Position};
 use std::cmp::max;
 
 pub const SYMBOLS: [char; 2] = ['\u{2656}', '\u{265C}'];
 
-pub fn can_move(
-    board: &Board,
-    origin: Position,
-    destination: Position,
-) -> bool {
+pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool {
     let (src_line, src_col) = (origin.line as i8, origin.col as i8);
     let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
 
@@ -37,12 +33,7 @@ pub fn can_move(
     )
 }
 
-pub fn can_castle(
-    piece: &Piece,
-    board: &Board,
-    origin: Position,
-    destination: Position,
-) -> bool {
+pub fn can_castle(piece: &Piece, board: &Board, origin: Position, destination: Position) -> bool {
     if !is_valid_castling(piece, origin) {
         return false;
     }
@@ -131,4 +122,25 @@ fn check_clear_path(
     }
 
     true
+}
+
+pub fn get_castle_move(turn: Color, is_short_castle: bool) -> (Position, Position) {
+    let src_line = match turn {
+        Color::White => WHITE_CASTLING_LINE,
+        Color::Black => BLACK_CASTLING_LINE,
+    };
+    let dest_line = src_line;
+
+    let (src_col, dest_col) = match is_short_castle {
+        true => (
+            ROOK_SHORT_CASTLING_INITIAL_COLUMN,
+            ROOK_SHORT_CASTLING_COLUMN,
+        ),
+        false => (ROOK_LONG_CASTLING_INITIAL_COLUMN, ROOK_LONG_CASTLING_COLUMN),
+    };
+
+    let origin = Position::new(src_line, src_col);
+    let destination = Position::new(dest_line, dest_col);
+
+    (origin, destination)
 }

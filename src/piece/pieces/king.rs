@@ -1,4 +1,8 @@
 use crate::piece::Piece;
+use crate::utils::constants::{
+    BLACK_CASTLING_LINE, KING_INITIAL_COLUMN, KING_LONG_CASTLING_COLUMN,
+    KING_SHORT_CASTLING_COLUMN, WHITE_CASTLING_LINE,
+};
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};
 
@@ -74,4 +78,22 @@ fn check_clear_path(board: &Board, destination: Position, i: usize) -> bool {
     }
 
     true
+}
+pub fn get_castle_move(turn: Color, is_short_castle: bool) -> (Position, Position) {
+    let src_line = match turn {
+        Color::White => WHITE_CASTLING_LINE,
+        Color::Black => BLACK_CASTLING_LINE,
+    };
+    let src_col = KING_INITIAL_COLUMN;
+
+    let dest_line = src_line;
+    let dest_col = match is_short_castle {
+        true => KING_SHORT_CASTLING_COLUMN,
+        false => KING_LONG_CASTLING_COLUMN,
+    };
+
+    let origin = Position::new(src_line, src_col);
+    let destination = Position::new(dest_line, dest_col);
+
+    (origin, destination)
 }
