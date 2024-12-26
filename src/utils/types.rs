@@ -10,7 +10,7 @@ pub struct Move {
     pub source: Position,
     pub destination: Position,
     
-    // These two should be only used for castling
+    // The following should be only used for castling
     pub opt_source: Option<Position>,
     pub opt_destination: Option<Position>,
 }

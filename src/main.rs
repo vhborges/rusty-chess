@@ -4,7 +4,7 @@ use chess::GameState;
 fn main() {
     let mut game_state = GameState::new();
 
-    game_state.initialize();
+    game_state.initialize(None);
     game_state.print_game();
 
     loop {

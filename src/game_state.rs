@@ -259,15 +259,19 @@ impl GameState {
     }
 
     fn perform_move(_move: &Move, temporary_board: &mut Board) {
-        temporary_board[_move.destination.line][_move.destination.col] =
-            temporary_board[_move.source.line][_move.source.col];
-        temporary_board[_move.source.line][_move.source.col] = None;
+        if _move.source != _move.destination {
+            temporary_board[_move.destination.line][_move.destination.col] =
+                temporary_board[_move.source.line][_move.source.col];
+            temporary_board[_move.source.line][_move.source.col] = None;
+        }
 
         if let Some(opt_dest) = _move.opt_destination {
             if let Some(opt_src) = _move.opt_source {
-                temporary_board[opt_dest.line][opt_dest.col] =
-                    temporary_board[opt_src.line][opt_src.col];
-                temporary_board[opt_src.line][opt_src.col] = None;
+                if opt_src != opt_dest {
+                    temporary_board[opt_dest.line][opt_dest.col] =
+                        temporary_board[opt_src.line][opt_src.col];
+                    temporary_board[opt_src.line][opt_src.col] = None;
+                }
             }
         }
     }
@@ -298,8 +302,8 @@ impl GameState {
         false
     }
 
-    pub fn initialize(&mut self) {
-        for wrapped_line in initial_positions() {
+    pub fn initialize(&mut self, positions_file: Option<&str>) {
+        for wrapped_line in initial_positions(positions_file) {
             let line = wrapped_line.expect("Error reading file line");
             let mut chars = line.chars();
 
@@ -351,15 +355,17 @@ impl GameState {
         }
     }
 
-    // TODO implement a unit test for this function
     fn validate_castling_path(&self, mut next_move: Move) -> Result<(), MoveError> {
-        let (mut start, mut end) = (next_move.source.line, next_move.destination.line);
+        next_move.opt_source = None;
+        next_move.opt_destination = None;
+
+        let (mut start, mut end) = (next_move.source.col, next_move.destination.col);
         if start > end {
             swap(&mut start, &mut end);
         }
 
-        for line in start..=end {
-            next_move.destination.line = line;
+        for col in start..=end {
+            next_move.destination.col = col;
             self.verify_king_in_check(&next_move)?
         }
 
@@ -377,10 +383,15 @@ fn get_next_char(line: &String, chars: &mut Chars) -> char {
 mod tests {
     use super::*;
 
+    fn setup(positions_file: Option<&str>) -> GameState {
+        let mut game_state = GameState::new();
+        game_state.initialize(positions_file);
+        game_state
+    }
+
     #[test]
     fn test_update_castling_rights_king_move() {
-        let mut game_state = GameState::new();
-        game_state.initialize();
+        let mut game_state = setup(None);
 
         game_state.update_castling_rights(0, 4);
 
@@ -390,8 +401,7 @@ mod tests {
 
     #[test]
     fn test_update_castling_rights_long_rook_move() {
-        let mut game_state = GameState::new();
-        game_state.initialize();
+        let mut game_state = setup(None);
 
         game_state.update_castling_rights(0, 0);
 
@@ -401,12 +411,73 @@ mod tests {
 
     #[test]
     fn test_update_castling_rights_short_rook_move() {
-        let mut game_state = GameState::new();
-        game_state.initialize();
+        let mut game_state = setup(None);
 
         game_state.update_castling_rights(0, 7);
 
         assert!(!game_state.board[0][7].unwrap().short_castling_available);
         assert!(game_state.board[0][7].unwrap().long_castling_available);
+    }
+
+    #[test]
+    fn test_validate_castling_path_short_castle_success() {
+        let game_state = setup(Some("tests/validate_castling_path_success.txt"));
+
+        let king_source = Position::new(7, 4);
+        let king_destination = Position::new(7, 6);
+        let rook_source = Position::new(7, 7);
+        let rook_destination = Position::new(7, 5);
+        let next_move =
+            Move::new_with_options(king_source, king_destination, rook_source, rook_destination);
+        let result = game_state.validate_castling_path(next_move);
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_castling_path_short_castle_fail() {
+        let game_state = setup(Some("tests/validate_castling_path_fail.txt"));
+
+        let king_source = Position::new(7, 4);
+        let king_destination = Position::new(7, 6);
+        let rook_source = Position::new(7, 7);
+        let rook_destination = Position::new(7, 5);
+        let next_move =
+            Move::new_with_options(king_source, king_destination, rook_source, rook_destination);
+        let result = game_state.validate_castling_path(next_move);
+
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), MoveError::KingWouldBeInCheck);
+    }
+
+    #[test]
+    fn test_validate_castling_path_long_castle_success() {
+        let game_state = setup(Some("tests/validate_castling_path_success.txt"));
+
+        let king_source = Position::new(7, 4);
+        let king_destination = Position::new(7, 2);
+        let rook_source = Position::new(7, 0);
+        let rook_destination = Position::new(7, 3);
+        let next_move =
+            Move::new_with_options(king_source, king_destination, rook_source, rook_destination);
+        let result = game_state.validate_castling_path(next_move);
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_validate_castling_path_long_castle_fail() {
+        let game_state = setup(Some("tests/validate_castling_path_fail.txt"));
+
+        let king_source = Position::new(7, 4);
+        let king_destination = Position::new(7, 2);
+        let rook_source = Position::new(7, 0);
+        let rook_destination = Position::new(7, 3);
+        let next_move =
+            Move::new_with_options(king_source, king_destination, rook_source, rook_destination);
+        let result = game_state.validate_castling_path(next_move);
+
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), MoveError::KingWouldBeInCheck);
     }
 }

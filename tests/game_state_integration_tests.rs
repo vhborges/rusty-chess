@@ -336,6 +336,6 @@ fn test_missing_capture_character_error() {
 
 fn setup() -> GameState {
     let mut game_state = GameState::new();
-    game_state.initialize();
+    game_state.initialize(None);
     game_state
 }
