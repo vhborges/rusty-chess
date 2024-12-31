@@ -277,13 +277,13 @@ impl GameState {
         for (line_index, line) in board.iter().enumerate() {
             for (col_index, piece) in line
                 .iter()
-                .filter(|piece| piece.is_some() && piece.unwrap().color != self.turn)
-                .map(|piece| piece.unwrap())
                 .enumerate()
+                .filter(|(_, piece)| piece.is_some() && piece.unwrap().color != self.turn)
             {
                 let piece_pos = Position::new(line_index, col_index);
 
                 if piece
+                    .unwrap()
                     .attacks(board, piece_pos, king_pos, false)
                     .expect(INTERNAL_ERROR_02)
                 {
