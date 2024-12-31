@@ -56,8 +56,8 @@ impl GameState {
 
         for (line, line_chess) in self.board.iter().zip(LINES.iter()) {
             print!("{} ", line_chess);
-            for opt_piece in line {
-                match opt_piece {
+            for maybe_piece in line {
+                match maybe_piece {
                     Some(piece) => print!("{} ", piece),
                     None => print!("{} ", BLANK_SQUARE),
                 }
@@ -90,13 +90,13 @@ impl GameState {
         &self,
         piece_type: PieceType,
         destination: Position,
-        opt_disambiguation: Option<char>,
+        disambiguation: Option<char>,
         capture: bool,
     ) -> Result<Position, MoveError> {
         let mut matching_positions = Vec::new();
         for (line_index, line) in self.board.iter().enumerate() {
-            for (col_index, opt_piece) in line.iter().enumerate() {
-                if let Some(piece) = opt_piece {
+            for (col_index, maybe_piece) in line.iter().enumerate() {
+                if let Some(piece) = maybe_piece {
                     let origin = Position::new(line_index, col_index);
                     if self.piece_matches(piece, piece_type, origin, destination, capture)? {
                         matching_positions.push(origin);
@@ -109,14 +109,13 @@ impl GameState {
             return Err(MoveError::NoPieceAvailable);
         }
         if matching_positions.len() > 1 {
-            let Some(disambiguation) = opt_disambiguation
+            let Some(disambiguation) = disambiguation
             else {
                 return Err(MoveError::MoreThanOnePieceAvailable);
             };
 
             matching_positions.retain(|pos| -> bool {
                 let chess_pos: ChessPosition = (*pos).try_into().expect(INTERNAL_ERROR_01);
-
                 disambiguation == chess_pos.line || disambiguation == chess_pos.col
             });
 
@@ -276,16 +275,12 @@ impl GameState {
 
     fn is_king_in_check(&self, board: &Board, king_pos: Position) -> bool {
         for (line_index, line) in board.iter().enumerate() {
-            for (col_index, opt_piece) in line.iter().enumerate() {
-                let Some(piece) = opt_piece
-                else {
-                    continue;
-                };
-
-                if piece.color == self.turn {
-                    continue;
-                }
-
+            for (col_index, piece) in line
+                .iter()
+                .filter(|piece| piece.is_some() && piece.unwrap().color != self.turn)
+                .map(|piece| piece.unwrap())
+                .enumerate()
+            {
                 let piece_pos = Position::new(line_index, col_index);
 
                 if piece

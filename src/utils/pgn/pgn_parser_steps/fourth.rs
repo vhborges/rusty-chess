@@ -24,13 +24,13 @@ impl Fourth {
         let capture = self.capture;
         let disambiguation = self.disambiguation;
 
-        let opt_current_pgn_char = pgn_parser.pgn_chars.next();
+        let current_pgn_char = pgn_parser.pgn_chars.next();
 
         if self.castling {
-            return Self::handle_castling(pgn_parser, piece_type, dest_col, opt_current_pgn_char);
+            return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
         }
 
-        let current_pgn_char = opt_current_pgn_char.ok_or(PgnError::MissingCharacter(STEP))?;
+        let current_pgn_char = current_pgn_char.ok_or(PgnError::MissingCharacter(STEP))?;
 
         if current_pgn_char.is_ascii_digit() && (capture || disambiguation.is_some()) {
             let Some(col) = dest_col

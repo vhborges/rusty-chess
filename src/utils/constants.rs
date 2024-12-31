@@ -31,5 +31,3 @@ pub const INTERNAL_ERROR_02: &str =
     "Internal error 02: piece.attacks() should not return error when capture=false";
 pub const INTERNAL_ERROR_03: &str =
     "Internal error 03: constant castling PGN constant should have 5 characters";
-pub const INTERNAL_ERROR_04: &str =
-    "Internal error 04: Move struct instances should have equal values for opt_source and opt_destination";
