@@ -92,8 +92,8 @@ pub fn get_castle_move(turn: Color, is_short_castle: bool) -> (Position, Positio
         false => KING_LONG_CASTLING_COLUMN,
     };
 
-    let origin = Position::new(src_line, src_col);
+    let source = Position::new(src_line, src_col);
     let destination = Position::new(dest_line, dest_col);
 
-    (origin, destination)
+    (source, destination)
 }

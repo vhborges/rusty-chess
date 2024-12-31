@@ -1,18 +1,22 @@
 use crate::piece::Piece;
-use crate::utils::constants::{BOARD_SIZE, INTERNAL_ERROR_04};
+use crate::utils::constants::BOARD_SIZE;
 
 use super::Position;
 
 pub type Board = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
 #[derive(Copy, Clone)]
-pub struct Move {
+/// Represents a single piece move
+pub struct PieceMove {
     pub source: Position,
     pub destination: Position,
-    
-    // The following should be only used for castling
-    pub opt_source: Option<Position>,
-    pub opt_destination: Option<Position>,
+}
+
+#[derive(Copy, Clone)]
+/// Represents a complete move, potentially including an additional move (e.g., for castling)
+pub struct Move {
+    pub primary: PieceMove,
+    pub additional: Option<PieceMove>,
 }
 
 impl Move {
@@ -21,32 +25,41 @@ impl Move {
         destination: Position,
     ) -> Self {
         Self {
-            source,
-            destination,
-            opt_source: None,
-            opt_destination: None,
+            primary: PieceMove {
+                source,
+                destination,
+            },
+            additional: None,
         }
     }
     
-    pub fn new_with_options(
+    pub fn new_with_castling(
         source: Position,
         destination: Position,
-        opt_source: Position,
-        opt_destination: Position,
+        additional_source: Position,
+        additional_destination: Position,
     ) -> Self {
         Self {
-            source,
-            destination,
-            opt_source: Some(opt_source),
-            opt_destination: Some(opt_destination),
+            primary: PieceMove {
+                source,
+                destination,
+            },
+            additional: Some(PieceMove {
+                source: additional_source,
+                destination: additional_destination,
+            })
         }
     }
     
-    pub fn is_castle(&self) -> bool {
-        if self.opt_source.is_some() != self.opt_destination.is_some() {
-            panic!("{}", INTERNAL_ERROR_04)
-        }
-        
-        self.opt_source.is_some()
+    pub fn source(&self) -> Position {
+        self.primary.source
+    }
+    
+    pub fn destination(&self) -> Position {
+        self.primary.destination
+    }
+    
+    pub fn is_castling(&self) -> bool {
+        self.additional.is_some()
     }
 }
