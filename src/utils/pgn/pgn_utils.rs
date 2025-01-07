@@ -49,7 +49,7 @@ impl<'a, 'b> PgnParser<'a, 'b> {
 impl<'a, 'b> PgnParser<'a, 'b> {
     fn step(&mut self) -> Result<(), MoveError> {
         match self.state {
-            // TODO Maybe if the PgnParserState is a trait, we don't need to have all this boilerplate?
+            // TODO Maybe if the PgnParserState was a trait, we wouldn't need all this boilerplate?
             // TODO we could define the `parse` method in the trait
             // TODO Another idea: we can keep using the PgnParserState as an enum and create another
             // TODO struct member to store each struct state that implements a trait with the `parse` method

@@ -4,6 +4,7 @@ use super::pieces::{bishop, king, knight, pawn, queen, rook};
 use crate::errors::{MoveError, PgnError};
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};
+use crate::utils::constants::INTERNAL_ERROR_04;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PieceType {
@@ -85,8 +86,7 @@ impl Piece {
             PieceType::Pawn => Ok(pawn::can_move(self, board, origin, destination)),
             PieceType::Queen => Ok(queen::can_move(board, origin, destination)),
             PieceType::Rook => Ok(rook::can_move(board, origin, destination)),
-            // TODO fill panic message
-            PieceType::None => panic!(),
+            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
         }
     }
 
@@ -112,8 +112,7 @@ impl Piece {
             PieceType::Pawn => Ok(pawn::attacks(self.color, origin, destination)),
             PieceType::Queen => Ok(queen::attacks(board, origin, destination)),
             PieceType::Rook => Ok(rook::attacks(board, origin, destination)),
-            // TODO fill panic message
-            PieceType::None => panic!(),
+            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
         }
     }
 
@@ -156,8 +155,7 @@ impl Piece {
             PieceType::Pawn => pawn::SYMBOLS,
             PieceType::Queen => queen::SYMBOLS,
             PieceType::Rook => rook::SYMBOLS,
-            // TODO fill panic message
-            PieceType::None => panic!(),
+            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
         };
 
         Self::get_symbol_for_color(color, symbols)
