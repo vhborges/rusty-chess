@@ -46,7 +46,7 @@ impl<'a, 'b> PgnParser<'a, 'b> {
     }
 }
 
-impl<'a, 'b> PgnParser<'a, 'b> {
+impl PgnParser<'_, '_> {
     fn step(&mut self) -> Result<(), MoveError> {
         match self.state {
             // TODO Maybe if the PgnParserState was a trait, we wouldn't need all this boilerplate?
