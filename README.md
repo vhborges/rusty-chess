@@ -1,0 +1,37 @@
+# Rusty Chess
+A (yet) terminal-based Chess game written in Rust.
+This project was created with the purpose of learning and practicing Rust concepts, but my goal is to have a fully working Chess game, with a graphical interface, mouse support, AI engine and multiplayer functionality.
+
+## Roadmap
+- [x] Textual interface
+- [ ] PGN based movement and validations
+  - [x] Basic movement
+  - [x] Capture symbol support
+  - [x] Disambiguation symbol support (e.g. N**f**e5)
+  - [x] Invalid move validation
+  - [x] Castling support
+  - [ ] Check symbol support
+  - [ ] Checkmate support
+  - [ ] Stalemate support
+- [x] Tests
+  - [x] Integration tests
+  - [ ] Unit tests (in progress)
+- [ ] Graphical interface & mouse support
+- [ ] AI engine
+- [ ] Multiplayer
+
+## Requirements
+- Rust 1.85+ (**nightly** toolchain)
+
+## Running & playing
+Simply run:
+`cargo run`
+
+You will be presented with a text-based Chess board (the pieces are drawn using Unicode chess characters).
+
+Turns alternate between white and black, in that order. In earch turn, the game expects you to enter a PGN movement, for example:
+- e4 (move the King's pawn to *e4*)
+- Nf3 (move the Knight to *f3*)
+- Bxc4 (bishop captures the piece on *c4*)
+- N6e5 (move the Knight currently on the sixth row to *e5* - assuming both Knights can go to *e5*)
+- Nfe5 (move the *f*-column Knight to *e5* - assuming both Knights can go to *e5*)
