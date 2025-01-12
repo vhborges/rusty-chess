@@ -1,6 +1,6 @@
+use chess::GameState;
 use chess::errors::{ChessPositionError, MoveError, PgnError};
 use chess::utils::Position;
-use chess::GameState;
 
 macro_rules! setup_board {
         ( $game_state:expr_2021, $( $x:expr_2021 ),* ) => {

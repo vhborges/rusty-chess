@@ -1,5 +1,5 @@
-use crate::utils::types::Board;
 use crate::utils::Position;
+use crate::utils::types::Board;
 
 pub const SYMBOLS: [char; 2] = ['\u{2657}', '\u{265D}'];
 

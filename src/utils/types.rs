@@ -20,10 +20,7 @@ pub struct Move {
 }
 
 impl Move {
-    pub fn new(
-        source: Position,
-        destination: Position,
-    ) -> Self {
+    pub fn new(source: Position, destination: Position) -> Self {
         Self {
             primary: PieceMove {
                 source,
@@ -32,7 +29,7 @@ impl Move {
             additional: None,
         }
     }
-    
+
     pub fn new_with_castling(
         source: Position,
         destination: Position,
@@ -47,18 +44,18 @@ impl Move {
             additional: Some(PieceMove {
                 source: additional_source,
                 destination: additional_destination,
-            })
+            }),
         }
     }
-    
+
     pub fn source(&self) -> Position {
         self.primary.source
     }
-    
+
     pub fn destination(&self) -> Position {
         self.primary.destination
     }
-    
+
     pub fn is_castling(&self) -> bool {
         self.additional.is_some()
     }

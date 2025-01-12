@@ -2,9 +2,9 @@ use std::fmt::Display;
 
 use super::pieces::{bishop, king, knight, pawn, queen, rook};
 use crate::errors::{MoveError, PgnError};
+use crate::utils::constants::INTERNAL_ERROR_04;
 use crate::utils::types::Board;
 use crate::utils::{Color, Position};
-use crate::utils::constants::INTERNAL_ERROR_04;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PieceType {
@@ -54,7 +54,7 @@ impl Piece {
             symbol: Self::get_symbol(&piece_type, &color),
         }
     }
-    
+
     pub fn can_castle(
         &self,
         board: &Board,
@@ -66,7 +66,7 @@ impl Piece {
         match self.piece_type {
             PieceType::King => Ok(king::can_castle(self, board, origin, destination)),
             PieceType::Rook => Ok(rook::can_castle(self, board, origin, destination)),
-            _ => Err(MoveError::InvalidCastle("Invalid piece for castling"))
+            _ => Err(MoveError::InvalidCastle("Invalid piece for castling")),
         }
     }
 

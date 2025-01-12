@@ -1,8 +1,8 @@
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
+use crate::utils::ChessPosition;
 use crate::utils::constants::{CAPTURE, INTERNAL_ERROR_03};
 use crate::utils::types::Move;
-use crate::utils::ChessPosition;
 
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Fourth;
@@ -38,7 +38,8 @@ impl Third {
             pgn_parser.next_move = None;
         }
         else if current_pgn_char.is_ascii_digit() && piece_type != PieceType::Pawn {
-            let Some(col) = dest_col else {
+            let Some(col) = dest_col
+            else {
                 return Err(ChessPositionError::MissingDestinationColumn.into());
             };
 

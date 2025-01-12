@@ -1,5 +1,5 @@
-use chess::io::ui::read_move;
 use chess::GameState;
+use chess::io::ui::read_move;
 
 fn main() {
     let mut game_state = GameState::new();

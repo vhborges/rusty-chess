@@ -1,4 +1,4 @@
-use std::io::{self, stdin, stdout, Write};
+use std::io::{self, Write, stdin, stdout};
 
 pub fn read_move() -> io::Result<String> {
     print!("Next move: ");
@@ -9,4 +9,3 @@ pub fn read_move() -> io::Result<String> {
 
     Ok(next_move.trim().to_owned())
 }
-

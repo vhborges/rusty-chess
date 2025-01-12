@@ -2,9 +2,9 @@ use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Fifth;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
+use crate::utils::ChessPosition;
 use crate::utils::constants::INTERNAL_ERROR_03;
 use crate::utils::types::Move;
-use crate::utils::ChessPosition;
 
 const STEP: &str = "fourth";
 

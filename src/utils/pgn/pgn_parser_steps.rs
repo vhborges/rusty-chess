@@ -1,11 +1,11 @@
+mod fifth;
 mod first;
+mod fourth;
 mod second;
 mod third;
-mod fourth;
-mod fifth;
 
+pub use fifth::Fifth;
 pub use first::First;
+pub use fourth::Fourth;
 pub use second::Second;
 pub use third::Third;
-pub use fourth::Fourth;
-pub use fifth::Fifth;

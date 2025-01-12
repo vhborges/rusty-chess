@@ -28,7 +28,11 @@ impl Display for PgnError {
             Self::InvalidCharacter(character) => write!(f, "Invalid character: {}", character),
             Self::InvalidPosition(err) => write!(f, "Invalid position: {}", err),
             Self::InvalidChessPosition(err) => write!(f, "Invalid chess position: {}", err),
-            Self::MissingCaptureCharacter => write!(f, "Attempted to capture a piece without the '{}' PGN character", CAPTURE),
+            Self::MissingCaptureCharacter => write!(
+                f,
+                "Attempted to capture a piece without the '{}' PGN character",
+                CAPTURE
+            ),
         }
     }
 }

@@ -1,9 +1,9 @@
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
+use crate::utils::ChessPosition;
 use crate::utils::constants::INTERNAL_ERROR_03;
 use crate::utils::types::Move;
-use crate::utils::ChessPosition;
 
 #[derive(Copy, Clone)]
 pub struct Fifth {

@@ -1,8 +1,8 @@
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
+use crate::utils::ChessPosition;
 use crate::utils::constants::{CAPTURE, COL_RANGE, INTERNAL_ERROR_03, LINE_RANGE};
 use crate::utils::types::Move;
-use crate::utils::ChessPosition;
 
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Third;
