@@ -374,12 +374,7 @@ fn get_next_char(line: &String, chars: &mut Chars) -> char {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn setup(positions_file: Option<&str>) -> GameState {
-        let mut game_state = GameState::new();
-        game_state.initialize(positions_file);
-        game_state
-    }
+    use crate::utils::test_helper::setup;
 
     #[test]
     fn test_update_castling_rights_king_move() {

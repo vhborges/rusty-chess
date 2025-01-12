@@ -1,6 +1,7 @@
 use chess::GameState;
 use chess::errors::{ChessPositionError, MoveError, PgnError};
 use chess::utils::Position;
+use chess::utils::test_helper::setup;
 
 macro_rules! setup_board {
         ( $game_state:expr, $( $x:expr ),* ) => {
@@ -37,7 +38,7 @@ fn make_and_validate_move(
 
 #[test]
 fn test_successful_game() -> Result<(), MoveError> {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     assert!(game_state.is_white_turn());
     make_and_validate_move(
@@ -180,7 +181,7 @@ fn test_successful_game() -> Result<(), MoveError> {
 
 #[test]
 fn test_no_piece_available_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("Kd5");
     assert!(result.is_err());
@@ -194,7 +195,7 @@ fn test_no_piece_available_error() {
 
 #[test]
 fn test_more_than_one_piece_available_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     setup_board!(game_state, "e4", "c5", "d4", "cxd4", "Nf3", "e5");
     let result = game_state.handle_move("Nd2");
@@ -209,7 +210,7 @@ fn test_more_than_one_piece_available_error() {
 
 #[test]
 fn test_square_occupied_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("Ke2");
     assert!(result.is_err());
@@ -218,7 +219,7 @@ fn test_square_occupied_error() {
 
 #[test]
 fn test_destination_square_empty_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("exd3");
     assert!(result.is_err());
@@ -230,7 +231,7 @@ fn test_destination_square_empty_error() {
 
 #[test]
 fn test_same_color_piece_capture_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("Kxe2");
     assert!(result.is_err());
@@ -242,7 +243,7 @@ fn test_same_color_piece_capture_error() {
 
 #[test]
 fn test_missing_second_character_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("e");
     assert!(result.is_err());
@@ -254,7 +255,7 @@ fn test_missing_second_character_error() {
 
 #[test]
 fn test_invalid_character_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("eK");
     assert!(result.is_err());
@@ -271,7 +272,7 @@ fn test_invalid_character_error() {
 
 #[test]
 fn test_missing_destination_column_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("Kx5");
     assert!(result.is_err());
@@ -290,7 +291,7 @@ fn test_missing_destination_column_error() {
 
 #[test]
 fn test_missing_fourth_character_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("Kxc");
     assert!(result.is_err());
@@ -302,7 +303,7 @@ fn test_missing_fourth_character_error() {
 
 #[test]
 fn test_missing_destination_line_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("KdxcM");
     assert!(result.is_err());
@@ -314,7 +315,7 @@ fn test_missing_destination_line_error() {
 
 #[test]
 fn test_invalid_piece_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     let result = game_state.handle_move("Le5");
     assert!(result.is_err());
@@ -323,7 +324,7 @@ fn test_invalid_piece_error() {
 
 #[test]
 fn test_missing_capture_character_error() {
-    let mut game_state = setup();
+    let mut game_state = setup(None);
 
     setup_board!(game_state, "e4", "d5", "Nc3", "Nf6");
     let result = game_state.handle_move("Nd5");
@@ -332,10 +333,4 @@ fn test_missing_capture_character_error() {
         result.unwrap_err(),
         PgnError::MissingCaptureCharacter.into()
     );
-}
-
-fn setup() -> GameState {
-    let mut game_state = GameState::new();
-    game_state.initialize(None);
-    game_state
 }
