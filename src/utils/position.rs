@@ -55,9 +55,36 @@ impl TryFrom<Position> for ChessPosition {
             return Err(PositionError::InvalidColumn(position.col));
         }
 
-        let chess_line = char::from((BOARD_SIZE - position.line) as u8);
+        let chess_line = ((BOARD_SIZE - position.line) as u8 + b'0') as char;
         let chess_col = ((position.col as u8) + b'a') as char;
 
         Ok(ChessPosition::new(chess_line, chess_col))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_chess_position_try_from() -> Result<(), PositionError> {
+        let position = Position::new(6, 1);
+        let chess_pos = ChessPosition::try_from(position)?;
+
+        assert_eq!(chess_pos.line, '2');
+        assert_eq!(chess_pos.col, 'b');
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_position_try_from() -> Result<(), ChessPositionError> {
+        let chess_position = ChessPosition::new('3', 'c');
+        let position = Position::try_from(chess_position)?;
+
+        assert_eq!(position.line, 5);
+        assert_eq!(position.col, 2);
+
+        Ok(())
     }
 }

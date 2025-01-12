@@ -74,3 +74,31 @@ pub fn parse_move(game_state: &GameState, str_move: &str) -> Result<Move, MoveEr
 
     Ok(pgn_parser.next_move.unwrap())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::test_helper::setup;
+
+    #[test]
+    fn test_disambiguation_same_column() -> Result<(), MoveError> {
+        let game_state = setup(Some("tests/validate_disambiguation_same_column.txt"));
+
+        let result = parse_move(&game_state, "N3d4")?;
+
+        assert_eq!(result.source().line, 5);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_disambiguation_same_line() -> Result<(), MoveError> {
+        let game_state = setup(Some("tests/validate_disambiguation_same_line.txt"));
+
+        let result = parse_move(&game_state, "Ncd5")?;
+
+        assert_eq!(result.source().col, 2);
+
+        Ok(())
+    }
+}

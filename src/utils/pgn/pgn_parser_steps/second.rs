@@ -1,4 +1,4 @@
-use crate::errors::{ChessPositionError, MoveError, PgnError};
+use crate::errors::{MoveError, PgnError};
 use crate::piece::PieceType;
 use crate::utils::ChessPosition;
 use crate::utils::constants::{CAPTURE, COL_RANGE, INTERNAL_ERROR_03, LINE_RANGE};
@@ -35,25 +35,29 @@ impl Second {
             return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
         }
         else if current_pgn_char.is_ascii_digit() {
-            let Some(col) = self.dest_col
-            else {
-                return Err(ChessPositionError::MissingDestinationColumn.into());
-            };
+            match self.dest_col {
+                Some(col) => {
+                    let dest_line = current_pgn_char;
+                    let destination = ChessPosition::new(dest_line, col).try_into()?;
 
-            let dest_line = current_pgn_char;
-            let destination = ChessPosition::new(dest_line, col).try_into()?;
+                    disambiguation = None;
+                    capture = false;
 
-            disambiguation = None;
-            capture = false;
+                    let origin = pgn_parser.game_state.find_piece_position(
+                        piece_type,
+                        destination,
+                        disambiguation,
+                        capture,
+                    )?;
 
-            let origin = pgn_parser.game_state.find_piece_position(
-                piece_type,
-                destination,
-                disambiguation,
-                capture,
-            )?;
-
-            pgn_parser.next_move = Some(Move::new(origin, destination));
+                    pgn_parser.next_move = Some(Move::new(origin, destination));
+                }
+                None => {
+                    disambiguation = Some(current_pgn_char);
+                    capture = false;
+                    pgn_parser.next_move = None;
+                }
+            }
         }
         else if current_pgn_char == CAPTURE {
             capture = true;
