@@ -3,7 +3,7 @@ use chess::utils::Position;
 use chess::GameState;
 
 macro_rules! setup_board {
-        ( $game_state:expr, $( $x:expr ),* ) => {
+        ( $game_state:expr_2021, $( $x:expr_2021 ),* ) => {
             {
                 $(
                     $game_state.handle_move($x)
