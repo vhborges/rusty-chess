@@ -1,7 +1,7 @@
 # Rusty Chess
 A (so far) text-based Chess game written in Rust.
 
-This project was created with the purpose of learning and practicing Rust concepts as I code, but my long-term goal is to have a fully working Chess game, with a graphical interface, mouse support, AI engine and multiplayer functionality.
+This project was created with the purpose of learning and practicing Rust concepts as I code, but my long-term goal is to have a fully working game, with a graphical interface, mouse support, AI engine and multiplayer functionality.
 
 ## Roadmap
 - [x] Textual interface
@@ -25,8 +25,7 @@ This project was created with the purpose of learning and practicing Rust concep
 - Rust 1.85+ (**nightly** toolchain)
 
 ## Running & playing
-Simply run:
-`cargo run`
+Simply run: `cargo run`
 
 You will be presented with a text-based Chess board (the pieces are drawn using Unicode chess characters).
 
