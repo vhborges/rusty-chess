@@ -13,6 +13,7 @@ pub enum MoveError {
     InvalidCapture(&'static str),
     InvalidMove(&'static str),
     InvalidPgn(PgnError),
+    InvalidCastle(&'static str),
 }
 
 impl Error for MoveError {}
@@ -29,6 +30,7 @@ impl Display for MoveError {
             Self::InvalidCapture(err) => write!(f, "Invalid capture: {}", err),
             Self::InvalidMove(err) => write!(f, "Invalid move: {}", err),
             Self::InvalidPgn(err) => write!(f, "Invalid PGN: {}", err),
+            Self::InvalidCastle(err) => write!(f, "Unable to castle: {}", err),
         }
     }
 }

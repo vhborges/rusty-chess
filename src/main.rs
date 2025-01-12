@@ -4,13 +4,13 @@ use chess::GameState;
 fn main() {
     let mut game_state = GameState::new();
 
-    game_state.initialize();
+    game_state.initialize(None);
     game_state.print_game();
 
     loop {
         match read_move() {
             Ok(next_move) => {
-                if let Err(move_err) = game_state.move_piece(next_move.as_str()) {
+                if let Err(move_err) = game_state.handle_move(next_move.as_str()) {
                     game_state.print_game();
                     println!("{}", next_move);
                     println!("{}", move_err);

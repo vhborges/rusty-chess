@@ -6,7 +6,7 @@ macro_rules! setup_board {
         ( $game_state:expr, $( $x:expr ),* ) => {
             {
                 $(
-                    $game_state.move_piece($x)
+                    $game_state.handle_move($x)
                         .expect(format!("Something's wrong, {} is not a invalid move!", $x).as_str());
                 )*
             }
@@ -22,7 +22,7 @@ fn make_and_validate_move(
     let origin_piece = game_state.get_piece(source);
     assert!(origin_piece.is_some());
 
-    game_state.move_piece(str_move)?;
+    game_state.handle_move(str_move)?;
 
     let dest_piece = game_state.get_piece(destination);
     assert!(dest_piece.is_some());
@@ -182,12 +182,12 @@ fn test_successful_game() -> Result<(), MoveError> {
 fn test_no_piece_available_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("Kd5");
+    let result = game_state.handle_move("Kd5");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
 
     setup_board!(game_state, "e4", "c5");
-    let result = game_state.move_piece("exc5");
+    let result = game_state.handle_move("exc5");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::NoPieceAvailable);
 }
@@ -197,12 +197,12 @@ fn test_more_than_one_piece_available_error() {
     let mut game_state = setup();
 
     setup_board!(game_state, "e4", "c5", "d4", "cxd4", "Nf3", "e5");
-    let result = game_state.move_piece("Nd2");
+    let result = game_state.handle_move("Nd2");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::MoreThanOnePieceAvailable);
 
     setup_board!(game_state, "Nbd2", "Bd6", "Nxd4", "Nc6");
-    let result = game_state.move_piece("Ndb3");
+    let result = game_state.handle_move("Ndb3");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::MoreThanOnePieceAvailable);
 }
@@ -211,7 +211,7 @@ fn test_more_than_one_piece_available_error() {
 fn test_square_occupied_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("Ke2");
+    let result = game_state.handle_move("Ke2");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), MoveError::SquareOccupied);
 }
@@ -220,7 +220,7 @@ fn test_square_occupied_error() {
 fn test_destination_square_empty_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("exd3");
+    let result = game_state.handle_move("exd3");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
@@ -232,7 +232,7 @@ fn test_destination_square_empty_error() {
 fn test_same_color_piece_capture_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("Kxe2");
+    let result = game_state.handle_move("Kxe2");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
@@ -244,7 +244,7 @@ fn test_same_color_piece_capture_error() {
 fn test_missing_second_character_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("e");
+    let result = game_state.handle_move("e");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
@@ -256,15 +256,15 @@ fn test_missing_second_character_error() {
 fn test_invalid_character_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("eK");
+    let result = game_state.handle_move("eK");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('K').into());
 
-    let result = game_state.move_piece("KxI");
+    let result = game_state.handle_move("KxI");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('I').into());
 
-    let result = game_state.move_piece("KxdL");
+    let result = game_state.handle_move("KxdL");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('L').into());
 }
@@ -273,14 +273,14 @@ fn test_invalid_character_error() {
 fn test_missing_destination_column_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("Kx5");
+    let result = game_state.handle_move("Kx5");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
         ChessPositionError::MissingDestinationColumn.into()
     );
 
-    let result = game_state.move_piece("Kxx7");
+    let result = game_state.handle_move("Kxx7");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
@@ -292,7 +292,7 @@ fn test_missing_destination_column_error() {
 fn test_missing_fourth_character_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("Kxc");
+    let result = game_state.handle_move("Kxc");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
@@ -304,7 +304,7 @@ fn test_missing_fourth_character_error() {
 fn test_missing_destination_line_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("KdxcM");
+    let result = game_state.handle_move("KdxcM");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
@@ -316,7 +316,7 @@ fn test_missing_destination_line_error() {
 fn test_invalid_piece_error() {
     let mut game_state = setup();
 
-    let result = game_state.move_piece("Le5");
+    let result = game_state.handle_move("Le5");
     assert!(result.is_err());
     assert_eq!(result.unwrap_err(), PgnError::InvalidPiece('L').into());
 }
@@ -326,7 +326,7 @@ fn test_missing_capture_character_error() {
     let mut game_state = setup();
 
     setup_board!(game_state, "e4", "d5", "Nc3", "Nf6");
-    let result = game_state.move_piece("Nd5");
+    let result = game_state.handle_move("Nd5");
     assert!(result.is_err());
     assert_eq!(
         result.unwrap_err(),
@@ -336,6 +336,6 @@ fn test_missing_capture_character_error() {
 
 fn setup() -> GameState {
     let mut game_state = GameState::new();
-    game_state.initialize();
+    game_state.initialize(None);
     game_state
 }

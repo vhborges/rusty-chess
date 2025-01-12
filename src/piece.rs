@@ -1,4 +1,4 @@
-mod pieces;
+pub mod pieces;
 mod common;
 
 pub use common::Piece;

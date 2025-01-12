@@ -1,11 +1,13 @@
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
-use crate::utils::constants::CAPTURE;
+use crate::utils::constants::{CAPTURE, INTERNAL_ERROR_03};
 use crate::utils::types::Move;
 use crate::utils::ChessPosition;
 
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Fourth;
+
+const STEP: &str = "third";
 
 #[derive(Copy, Clone)]
 pub struct Third {
@@ -13,6 +15,7 @@ pub struct Third {
     pub disambiguation: Option<char>,
     pub dest_col: Option<char>,
     pub piece_type: PieceType,
+    pub castling: bool,
 }
 
 impl Third {
@@ -25,9 +28,12 @@ impl Third {
         let current_pgn_char = pgn_parser
             .pgn_chars
             .next()
-            .ok_or(PgnError::MissingCharacter("third"))?;
+            .ok_or(PgnError::MissingCharacter(STEP))?;
 
-        if current_pgn_char == CAPTURE {
+        if self.castling {
+            return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
+        }
+        else if current_pgn_char == CAPTURE {
             capture = true;
             pgn_parser.next_move = None;
         }
@@ -60,8 +66,31 @@ impl Third {
             disambiguation,
             dest_col,
             piece_type,
+            castling: false,
         });
 
         Ok(())
+    }
+
+    fn handle_castling(
+        pgn_parser: &mut PgnParser,
+        piece_type: PieceType,
+        dest_col: Option<char>,
+        current_pgn_char: char,
+    ) -> Result<(), MoveError> {
+        if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
+            pgn_parser.state = PgnParserState::Fourth(Fourth {
+                capture: false,
+                disambiguation: None,
+                dest_col,
+                piece_type,
+                castling: true,
+            });
+
+            Ok(())
+        }
+        else {
+            Err(PgnError::MissingCharacter(STEP).into())
+        }
     }
 }

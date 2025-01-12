@@ -13,6 +13,23 @@ pub const COL_RANGE: RangeInclusive<char> = 'a'..='h';
 pub const LINE_RANGE: RangeInclusive<char> = '1'..='8';
 
 pub const CAPTURE: char = 'x';
+pub const QUEEN_SIDE_CASTLING: &str = "O-O-O";
+
+pub const WHITE_CASTLING_LINE: usize = 7;
+pub const BLACK_CASTLING_LINE: usize = 0;
+pub const KING_SHORT_CASTLING_COLUMN: usize = 6;
+pub const KING_LONG_CASTLING_COLUMN: usize = 2;
+pub const KING_INITIAL_COLUMN: usize = 4;
+
+pub const ROOK_SHORT_CASTLING_COLUMN: usize = 5;
+pub const ROOK_LONG_CASTLING_COLUMN: usize = 3;
+pub const ROOK_SHORT_CASTLING_INITIAL_COLUMN: usize = 7;
+pub const ROOK_LONG_CASTLING_INITIAL_COLUMN: usize = 0;
 
 pub const INTERNAL_ERROR_01: &str = "Internal error 01: Invalid piece position";
-pub const INTERNAL_ERROR_02: &str = "Internal error 02: piece.attacks() should not return error when capture=false";
+pub const INTERNAL_ERROR_02: &str =
+    "Internal error 02: piece.attacks() should not return error when capture=false";
+pub const INTERNAL_ERROR_03: &str =
+    "Internal error 03: constant castling PGN constant should have 5 characters";
+pub const INTERNAL_ERROR_04: &str =
+    "Internal error 04: invalid function call: a PieceType of the None kind cannot be used in this function";

@@ -2,6 +2,7 @@ use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Second;
 use crate::errors::{MoveError, PgnError};
 use crate::piece::PieceType;
+use crate::utils::constants::INTERNAL_ERROR_03;
 
 #[derive(Copy, Clone)]
 pub struct First {
@@ -20,11 +21,15 @@ impl First {
             None
         };
 
+        let castling =
+            current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03);
+
         pgn_parser.state = PgnParserState::Second(Second {
             pgn_len: self.pgn_len,
             pgn_first_char: current_pgn_char,
             dest_col,
             piece_type,
+            castling,
         });
 
         Ok(())

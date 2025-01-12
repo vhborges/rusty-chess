@@ -1,11 +1,13 @@
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
-use crate::utils::constants::{CAPTURE, COL_RANGE, LINE_RANGE};
+use crate::utils::constants::{CAPTURE, COL_RANGE, INTERNAL_ERROR_03, LINE_RANGE};
 use crate::utils::types::Move;
 use crate::utils::ChessPosition;
 
 use super::super::pgn_utils::{PgnParser, PgnParserState};
 use super::Third;
+
+const STEP: &str = "second";
 
 #[derive(Copy, Clone)]
 pub struct Second {
@@ -13,9 +15,11 @@ pub struct Second {
     pub pgn_first_char: char,
     pub dest_col: Option<char>,
     pub piece_type: PieceType,
+    pub castling: bool,
 }
 
 impl Second {
+    // TODO create functions for each condition, store pgn state in each function and return a Result
     pub fn parse(self, pgn_parser: &mut PgnParser) -> Result<(), MoveError> {
         let disambiguation;
         let capture;
@@ -25,10 +29,14 @@ impl Second {
         let current_pgn_char = pgn_parser
             .pgn_chars
             .next()
-            .ok_or(PgnError::MissingCharacter("second"))?;
+            .ok_or(PgnError::MissingCharacter(STEP))?;
 
-        if current_pgn_char.is_ascii_digit() {
-            let Some(col) = self.dest_col else {
+        if self.castling {
+            return Self::handle_castling(pgn_parser, piece_type, dest_col, current_pgn_char);
+        }
+        else if current_pgn_char.is_ascii_digit() {
+            let Some(col) = self.dest_col
+            else {
                 return Err(ChessPositionError::MissingDestinationColumn.into());
             };
 
@@ -82,8 +90,31 @@ impl Second {
             disambiguation,
             dest_col,
             piece_type,
+            castling: false,
         });
 
         Ok(())
+    }
+
+    fn handle_castling(
+        pgn_parser: &mut PgnParser,
+        piece_type: PieceType,
+        dest_col: Option<char>,
+        current_pgn_char: char,
+    ) -> Result<(), MoveError> {
+        if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
+            pgn_parser.state = PgnParserState::Third(Third {
+                capture: false,
+                disambiguation: None,
+                dest_col,
+                piece_type,
+                castling: true,
+            });
+
+            Ok(())
+        }
+        else {
+            Err(PgnError::MissingCharacter(STEP).into())
+        }
     }
 }
