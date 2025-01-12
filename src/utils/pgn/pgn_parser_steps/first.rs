@@ -9,8 +9,8 @@ pub struct First {
     pub pgn_len: usize,
 }
 
-impl First {
-    pub fn parse(self, pgn_parser: &mut PgnParser) -> Result<(), MoveError> {
+impl PgnParserState for First {
+    fn parse(self, pgn_parser: &mut PgnParser) -> Result<(), MoveError> {
         let current_pgn_char = pgn_parser.pgn_chars.next().ok_or(PgnError::EmptyInput)?;
         let piece_type: PieceType = current_pgn_char.try_into()?;
 
@@ -24,7 +24,7 @@ impl First {
         let castling =
             current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03);
 
-        pgn_parser.state = PgnParserState::Second(Second {
+        pgn_parser.state = Box::new(Second {
             pgn_len: self.pgn_len,
             pgn_first_char: current_pgn_char,
             dest_col,

@@ -18,9 +18,9 @@ pub struct Second {
     pub castling: bool,
 }
 
-impl Second {
+impl PgnParserState for Second {
     // TODO create functions for each condition, store pgn state in each function and return a Result
-    pub fn parse(self, pgn_parser: &mut PgnParser) -> Result<(), MoveError> {
+    fn parse(self, pgn_parser: &mut PgnParser) -> Result<(), MoveError> {
         let disambiguation;
         let capture;
         let piece_type = self.piece_type;
