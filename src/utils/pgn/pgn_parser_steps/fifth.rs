@@ -1,69 +1,57 @@
-use super::super::pgn_utils::{PgnParser, PgnParserState};
+use crate::GameState;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
-use crate::piece::PieceType;
 use crate::utils::ChessPosition;
 use crate::utils::constants::INTERNAL_ERROR_03;
+use crate::utils::pgn::pgn_parser_steps::common::ParserState;
 use crate::utils::types::Move;
+use std::str::Chars;
 
-#[derive(Copy, Clone)]
 pub struct Fifth {
-    pub capture: bool,
-    pub disambiguation: Option<char>,
-    pub dest_col: Option<char>,
-    pub piece_type: PieceType,
-    pub castling: bool,
+    pub state: ParserState,
 }
 
 impl Fifth {
-    pub fn parse(self, pgn_parser: &mut PgnParser) -> Result<(), MoveError> {
-        let capture = self.capture;
-        let disambiguation = self.disambiguation;
-        let dest_col = self.dest_col;
-        let piece_type = self.piece_type;
+    pub fn parse(
+        self,
+        game_state: &GameState,
+        mut pgn_chars: Chars,
+        castling_chars: Chars,
+    ) -> Result<Move, MoveError> {
+        let capture = self.state.capture;
+        let disambiguation = self.state.disambiguation;
+        let piece_type = self.state.piece_type;
 
-        let current_pgn_char = pgn_parser
-            .pgn_chars
+        let current_pgn_char = pgn_chars
             .next()
             .ok_or(PgnError::MissingCharacter("fifth"))?;
 
-        if self.castling {
-            return Self::handle_castling(pgn_parser, current_pgn_char);
+        if self.state.castling {
+            return Self::handle_castling(game_state, castling_chars, current_pgn_char);
         }
         else if !current_pgn_char.is_ascii_digit() {
             return Err(ChessPositionError::MissingDestinationLine.into());
         }
 
-        let Some(col) = dest_col
+        let Some(col) = self.state.dest_col
         else {
             return Err(ChessPositionError::MissingDestinationColumn.into());
         };
 
         let dest_line = current_pgn_char;
         let destination = ChessPosition::new(dest_line, col).try_into()?;
-        let origin = pgn_parser.game_state.find_piece_position(
-            piece_type,
-            destination,
-            disambiguation,
-            capture,
-        )?;
+        let origin =
+            game_state.find_piece_position(piece_type, destination, disambiguation, capture)?;
 
-        pgn_parser.next_move = Some(Move::new(origin, destination));
-
-        pgn_parser.state = PgnParserState::Finished;
-
-        Ok(())
+        Ok(Move::new(origin, destination))
     }
 
     fn handle_castling(
-        pgn_parser: &mut PgnParser,
+        game_state: &GameState,
+        mut castling_chars: Chars,
         current_pgn_char: char,
-    ) -> Result<(), MoveError> {
-        if current_pgn_char == pgn_parser.castling_chars.next().expect(INTERNAL_ERROR_03) {
-            pgn_parser.next_move = Some(pgn_parser.game_state.find_castling_move(false)?);
-
-            pgn_parser.state = PgnParserState::Finished;
-
-            Ok(())
+    ) -> Result<Move, MoveError> {
+        if current_pgn_char == castling_chars.next().expect(INTERNAL_ERROR_03) {
+            game_state.find_castling_move(false)
         }
         else {
             Err(PgnError::InvalidCharacter(current_pgn_char).into())
