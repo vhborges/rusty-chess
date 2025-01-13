@@ -1,8 +1,8 @@
 use crate::GameState;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
+use crate::pgn::pgn_parser_steps::common::ParserState;
 use crate::utils::ChessPosition;
 use crate::utils::constants::INTERNAL_ERROR_03;
-use crate::utils::pgn::pgn_parser_steps::common::ParserState;
 use crate::utils::types::Move;
 use std::str::Chars;
 
