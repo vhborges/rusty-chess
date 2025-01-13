@@ -4,8 +4,7 @@ use crate::pgn::pgn_parser::parse_move;
 use crate::piece::pieces::{king, rook};
 use crate::piece::{Piece, PieceType};
 use crate::utils::constants::*;
-use crate::utils::types::Move;
-use crate::utils::{ChessPosition, Color, Position, types::Board};
+use crate::utils::{Board, ChessPosition, Color, Move, Position};
 use std::mem::swap;
 use std::str::Chars;
 

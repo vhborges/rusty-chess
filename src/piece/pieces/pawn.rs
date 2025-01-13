@@ -1,5 +1,4 @@
-use crate::utils::types::Board;
-use crate::utils::{Color, Position};
+use crate::utils::{Board, Color, Position};
 
 use super::super::Piece;
 

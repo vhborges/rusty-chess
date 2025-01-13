@@ -4,8 +4,8 @@ use crate::errors::{MoveError, PgnError};
 use crate::pgn::pgn_parser_steps::common::ParserState;
 use crate::piece::PieceType;
 use crate::utils::constants::INTERNAL_ERROR_03;
-use crate::utils::types::Move;
 use std::str::Chars;
+use crate::utils::Move;
 
 pub struct First {
     pub pgn_len: usize,

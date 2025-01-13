@@ -1,9 +1,4 @@
-use crate::piece::Piece;
-use crate::utils::constants::BOARD_SIZE;
-
 use super::Position;
-
-pub type Board = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
 #[derive(Copy, Clone)]
 /// Represents a single piece move

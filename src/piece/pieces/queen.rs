@@ -1,5 +1,4 @@
-use crate::utils::Position;
-use crate::utils::types::Board;
+use crate::utils::{Board, Position};
 
 use super::{bishop, rook};
 

@@ -1,8 +1,7 @@
 use crate::errors::MoveError;
 use crate::game_state::GameState;
 use crate::utils::constants::QUEEN_SIDE_CASTLING;
-use crate::utils::types::Move;
-
+use crate::utils::Move;
 use super::pgn_parser_steps::First;
 
 pub fn parse_move(game_state: &GameState, str_move: &str) -> Result<Move, MoveError> {

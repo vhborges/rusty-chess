@@ -3,8 +3,7 @@ use std::fmt::Display;
 use super::pieces::{bishop, king, knight, pawn, queen, rook};
 use crate::errors::{MoveError, PgnError};
 use crate::utils::constants::INTERNAL_ERROR_04;
-use crate::utils::types::Board;
-use crate::utils::{Color, Position};
+use crate::utils::{Board, Color, Position};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PieceType {

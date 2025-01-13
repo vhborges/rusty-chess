@@ -3,9 +3,8 @@ use crate::GameState;
 use crate::errors::{MoveError, PgnError};
 use crate::pgn::pgn_parser_steps::common::ParserState;
 use crate::piece::PieceType;
-use crate::utils::ChessPosition;
+use crate::utils::{ChessPosition, Move};
 use crate::utils::constants::{CAPTURE, COL_RANGE, INTERNAL_ERROR_03, LINE_RANGE};
-use crate::utils::types::Move;
 use std::str::Chars;
 
 const STEP: &str = "second";
