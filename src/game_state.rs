@@ -4,9 +4,9 @@ use crate::pgn::pgn_parser::parse_move;
 use crate::piece::pieces::{king, rook};
 use crate::piece::{Piece, PieceType};
 use crate::utils::constants::*;
+use crate::utils::helper_functions::{get_next_char, perform_move};
 use crate::utils::{Board, ChessPosition, Color, Move, Position};
 use std::mem::swap;
-use std::str::Chars;
 
 pub struct GameState {
     board: Board,
@@ -197,7 +197,7 @@ impl GameState {
 
         self.update_captured_pieces_list(dest_line, dest_col);
 
-        Self::perform_move(&next_move, &mut self.board);
+        perform_move(&next_move, &mut self.board);
 
         self.turn.flip();
 
@@ -206,7 +206,7 @@ impl GameState {
 
     fn verify_king_in_check(&self, next_move: &Move) -> Result<(), MoveError> {
         let mut temporary_board = self.board;
-        Self::perform_move(next_move, &mut temporary_board);
+        perform_move(next_move, &mut temporary_board);
 
         let (dest_line, dest_col) = (next_move.destination().line, next_move.destination().col);
         let king_pos = self.get_king_pos(dest_line, dest_col, temporary_board);
@@ -252,23 +252,6 @@ impl GameState {
             match self.turn {
                 Color::White => self.white_king_position,
                 Color::Black => self.black_king_position,
-            }
-        }
-    }
-
-    fn perform_move(_move: &Move, temporary_board: &mut Board) {
-        if _move.source() != _move.destination() {
-            temporary_board[_move.destination().line][_move.destination().col] =
-                temporary_board[_move.source().line][_move.source().col];
-            temporary_board[_move.source().line][_move.source().col] = None;
-        }
-
-        if let Some(additional) = _move.additional {
-            let source = additional.source;
-            let dest = additional.destination;
-            if source != dest {
-                temporary_board[dest.line][dest.col] = temporary_board[source.line][source.col];
-                temporary_board[source.line][source.col] = None;
             }
         }
     }
@@ -363,12 +346,6 @@ impl GameState {
 
         Ok(())
     }
-}
-
-fn get_next_char(line: &String, chars: &mut Chars) -> char {
-    chars
-        .next()
-        .unwrap_or_else(|| panic!("Line {} is incomplete", line))
 }
 
 #[cfg(test)]

@@ -2,8 +2,8 @@ use super::Fifth;
 use crate::GameState;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::pgn::pgn_parser_steps::common::ParserState;
-use crate::utils::{ChessPosition, Move};
 use crate::utils::constants::INTERNAL_ERROR_03;
+use crate::utils::{ChessPosition, Move};
 use std::str::Chars;
 
 const STEP: &str = "fourth";
