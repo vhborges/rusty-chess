@@ -27,7 +27,9 @@ This project was created with the purpose of learning and practicing Rust concep
 ## Running & playing
 Simply run: `cargo run`
 
-You will be presented with a text-based Chess board (the pieces are drawn using Unicode chess characters).
+You will be presented with the following text-based Chess board:
+
+![image](https://github.com/user-attachments/assets/dca97cd6-d93e-44a7-b853-6bf3945f95dc)
 
 Turns alternate between white and black, in that order. In each turn, the game expects you to enter a PGN movement, for example:
 - e4 (move the King's pawn to *e4*)
