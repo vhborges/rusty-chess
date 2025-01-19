@@ -1,91 +1,77 @@
 use super::Fourth;
+use super::common::{ParserState, PgnParserStep, StepResult};
 use crate::GameState;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
-use crate::pgn::pgn_parser_steps::common::ParserState;
 use crate::piece::PieceType;
 use crate::utils::constants::{CAPTURE, INTERNAL_ERROR_03};
 use crate::utils::{ChessPosition, Move};
-use std::str::Chars;
 
 const STEP: &str = "third";
 
-pub struct Third {
-    pub state: ParserState,
+pub struct Third<'a> {
+    pub state: ParserState<'a>,
 }
 
-impl Third {
-    pub fn parse(
-        self,
-        game_state: &GameState,
-        mut pgn_chars: Chars,
-        castling_chars: Chars,
-    ) -> Result<Move, MoveError> {
+impl PgnParserStep for Third<'_> {
+    fn parse<'a>(mut self: Box<Self>, game_state: &GameState) -> Result<StepResult<'a>, MoveError>
+    where
+        Self: 'a,
+    {
         let piece_type = self.state.piece_type;
-        let mut dest_col = self.state.dest_col;
-        let mut capture = self.state.capture;
         let disambiguation = self.state.disambiguation;
         let castling = self.state.castling;
 
-        let current_pgn_char = pgn_chars.next().ok_or(PgnError::MissingCharacter(STEP))?;
+        let current_pgn_char = self
+            .state
+            .pgn_chars
+            .next()
+            .ok_or(PgnError::MissingCharacter(STEP))?;
 
         if castling {
-            return self.handle_castling(current_pgn_char, castling_chars, game_state, pgn_chars);
+            return self.handle_castling(current_pgn_char);
         }
         else if current_pgn_char == CAPTURE {
-            capture = true;
+            self.state.capture = true;
         }
         else if current_pgn_char.is_ascii_digit() && piece_type != PieceType::Pawn {
-            let Some(col) = dest_col
+            let Some(col) = self.state.dest_col
             else {
                 return Err(ChessPositionError::MissingDestinationColumn.into());
             };
 
             let dest_line = current_pgn_char;
             let destination = ChessPosition::new(dest_line, col).try_into()?;
-            let origin =
-                game_state.find_piece_position(piece_type, destination, disambiguation, capture)?;
+            let origin = game_state.find_piece_position(
+                piece_type,
+                destination,
+                disambiguation,
+                self.state.capture,
+            )?;
 
-            return Ok(Move::new(origin, destination));
+            return Ok(StepResult::Move(Move::new(origin, destination)));
         }
         else if current_pgn_char.is_lowercase() {
-            dest_col = Some(current_pgn_char);
+            self.state.dest_col = Some(current_pgn_char);
         }
         else {
             return Err(PgnError::InvalidCharacter(current_pgn_char).into());
         }
 
-        let step = Fourth {
-            state: ParserState {
-                piece_type,
-                capture,
-                castling,
-                dest_col,
-                disambiguation,
-            },
-        };
+        let fourth = Fourth { state: self.state };
 
-        step.parse(game_state, pgn_chars, castling_chars)
+        Ok(StepResult::Step(Box::new(fourth)))
     }
+}
 
-    fn handle_castling(
-        self,
-        current_pgn_char: char,
-        mut castling_chars: Chars,
-        game_state: &GameState,
-        pgn_chars: Chars,
-    ) -> Result<Move, MoveError> {
-        if current_pgn_char == castling_chars.next().expect(INTERNAL_ERROR_03) {
-            let step = Fourth {
-                state: ParserState {
-                    piece_type: self.state.piece_type,
-                    capture: self.state.capture,
-                    castling: true,
-                    dest_col: self.state.dest_col,
-                    disambiguation: self.state.disambiguation,
-                },
-            };
+impl Third<'_> {
+    fn handle_castling<'a>(mut self, current_pgn_char: char) -> Result<StepResult<'a>, MoveError>
+    where
+        Self: 'a,
+    {
+        if current_pgn_char == self.state.castling_chars.next().expect(INTERNAL_ERROR_03) {
+            let fourth = Fourth { state: self.state };
 
-            step.parse(game_state, pgn_chars, castling_chars)
+            Ok(StepResult::Step(Box::new(fourth)))
         }
         else {
             Err(PgnError::MissingCharacter(STEP).into())

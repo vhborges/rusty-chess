@@ -1,24 +1,23 @@
 use super::Second;
+use super::common::{PgnParserStep, StepResult};
 use crate::GameState;
 use crate::errors::{MoveError, PgnError};
-use crate::pgn::pgn_parser_steps::common::ParserState;
 use crate::piece::PieceType;
-use crate::utils::Move;
 use crate::utils::constants::INTERNAL_ERROR_03;
 use std::str::Chars;
 
-pub struct First {
+pub struct First<'a> {
     pub pgn_len: usize,
+    pub pgn_chars: Chars<'a>,
+    pub castling_chars: Chars<'static>,
 }
 
-impl First {
-    pub fn parse(
-        self,
-        game_state: &GameState,
-        mut pgn_chars: Chars,
-        mut castling_chars: Chars,
-    ) -> Result<Move, MoveError> {
-        let current_pgn_char = pgn_chars.next().ok_or(PgnError::EmptyInput)?;
+impl PgnParserStep for First<'_> {
+    fn parse<'a>(mut self: Box<Self>, _game_state: &GameState) -> Result<StepResult<'a>, MoveError>
+    where
+        Self: 'a,
+    {
+        let current_pgn_char = self.pgn_chars.next().ok_or(PgnError::EmptyInput)?;
         let piece_type: PieceType = current_pgn_char.try_into()?;
 
         let dest_col: Option<char> = if piece_type == PieceType::Pawn {
@@ -28,20 +27,18 @@ impl First {
             None
         };
 
-        let castling = current_pgn_char == castling_chars.next().expect(INTERNAL_ERROR_03);
+        let castling = current_pgn_char == self.castling_chars.next().expect(INTERNAL_ERROR_03);
 
-        let step = Second {
+        let second = Second {
             pgn_len: self.pgn_len,
             pgn_first_char: current_pgn_char,
-            state: ParserState {
-                piece_type,
-                capture: false,
-                castling,
-                dest_col,
-                disambiguation: None,
-            },
+            piece_type,
+            castling,
+            dest_col,
+            pgn_chars: self.pgn_chars,
+            castling_chars: self.castling_chars,
         };
 
-        step.parse(game_state, pgn_chars, castling_chars)
+        Ok(StepResult::Step(Box::new(second)))
     }
 }

@@ -1,15 +1,26 @@
 use super::pgn_parser_steps::First;
+use super::pgn_parser_steps::common::{PgnParserStep, StepResult};
 use crate::errors::MoveError;
 use crate::game_state::GameState;
 use crate::utils::Move;
-use crate::utils::constants::QUEEN_SIDE_CASTLING;
+use crate::utils::constants::{INTERNAL_ERROR_05, QUEEN_SIDE_CASTLING};
 
 pub fn parse_move(game_state: &GameState, str_move: &str) -> Result<Move, MoveError> {
-    let first = First {
+    let first_step = Box::new(First {
         pgn_len: str_move.len(),
-    };
+        pgn_chars: str_move.chars(),
+        castling_chars: QUEEN_SIDE_CASTLING.chars(),
+    });
 
-    first.parse(game_state, str_move.chars(), QUEEN_SIDE_CASTLING.chars())
+    let mut result = first_step.parse(game_state)?;
+    while let StepResult::Step(next_step) = result {
+        result = next_step.parse(game_state)?;
+    }
+
+    match result {
+        StepResult::Move(move_) => Ok(move_),
+        _ => panic!("{}", INTERNAL_ERROR_05),
+    }
 }
 
 #[cfg(test)]

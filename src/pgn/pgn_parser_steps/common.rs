@@ -1,9 +1,7 @@
-use crate::piece::PieceType;
+mod parser_state;
+mod parser_step;
+mod step_result;
 
-pub struct ParserState {
-    pub piece_type: PieceType,
-    pub capture: bool,
-    pub castling: bool,
-    pub dest_col: Option<char>,
-    pub disambiguation: Option<char>,
-}
+pub use parser_state::ParserState;
+pub use parser_step::PgnParserStep;
+pub use step_result::StepResult;

@@ -1,4 +1,4 @@
-mod common;
+pub mod common;
 mod fifth;
 mod first;
 mod fourth;

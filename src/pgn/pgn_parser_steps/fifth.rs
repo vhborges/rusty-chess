@@ -1,31 +1,30 @@
+use super::common::{ParserState, PgnParserStep, StepResult};
 use crate::GameState;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
-use crate::pgn::pgn_parser_steps::common::ParserState;
 use crate::utils::constants::INTERNAL_ERROR_03;
 use crate::utils::{ChessPosition, Move};
-use std::str::Chars;
 
-pub struct Fifth {
-    pub state: ParserState,
+pub struct Fifth<'a> {
+    pub state: ParserState<'a>,
 }
 
-impl Fifth {
-    pub fn parse(
-        self,
-        game_state: &GameState,
-        mut pgn_chars: Chars,
-        castling_chars: Chars,
-    ) -> Result<Move, MoveError> {
+impl PgnParserStep for Fifth<'_> {
+    fn parse<'a>(mut self: Box<Self>, game_state: &GameState) -> Result<StepResult<'a>, MoveError>
+    where
+        Self: 'a,
+    {
         let capture = self.state.capture;
         let disambiguation = self.state.disambiguation;
         let piece_type = self.state.piece_type;
 
-        let current_pgn_char = pgn_chars
+        let current_pgn_char = self
+            .state
+            .pgn_chars
             .next()
             .ok_or(PgnError::MissingCharacter("fifth"))?;
 
         if self.state.castling {
-            return Self::handle_castling(game_state, castling_chars, current_pgn_char);
+            return self.handle_castling(current_pgn_char, game_state);
         }
         else if !current_pgn_char.is_ascii_digit() {
             return Err(ChessPositionError::MissingDestinationLine.into());
@@ -41,16 +40,21 @@ impl Fifth {
         let origin =
             game_state.find_piece_position(piece_type, destination, disambiguation, capture)?;
 
-        Ok(Move::new(origin, destination))
+        Ok(StepResult::Move(Move::new(origin, destination)))
     }
+}
 
-    fn handle_castling(
-        game_state: &GameState,
-        mut castling_chars: Chars,
+impl Fifth<'_> {
+    fn handle_castling<'a>(
+        &mut self,
         current_pgn_char: char,
-    ) -> Result<Move, MoveError> {
-        if current_pgn_char == castling_chars.next().expect(INTERNAL_ERROR_03) {
-            game_state.find_castling_move(false)
+        game_state: &GameState,
+    ) -> Result<StepResult<'a>, MoveError>
+    where
+        Self: 'a,
+    {
+        if current_pgn_char == self.state.castling_chars.next().expect(INTERNAL_ERROR_03) {
+            game_state.find_castling_move(false).map(|m| m.into())
         }
         else {
             Err(PgnError::InvalidCharacter(current_pgn_char).into())
