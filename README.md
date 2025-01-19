@@ -27,11 +27,11 @@ This project was created with the purpose of learning and practicing Rust concep
 ## Running & playing
 Simply run: `cargo run`
 
-You will be presented with the following text-based Chess board:
+You will be presented with the following screen:
 
 ![image](https://github.com/user-attachments/assets/dca97cd6-d93e-44a7-b853-6bf3945f95dc)
 
-Turns alternate between white and black, in that order. In each turn, the game expects you to enter a PGN movement, for example:
+Turns alternate between white and black, in that order. In each turn, the game expects you to enter a PGN move, for example:
 - e4 (move the King's pawn to *e4*)
 - Nf3 (move the Knight to *f3*)
 - Bxc4 (bishop captures the piece on *c4*)
