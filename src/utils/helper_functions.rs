@@ -1,7 +1,7 @@
 use crate::types::{Board, Move};
 use std::str::Chars;
 
-pub fn perform_move(move_: &Move, board: &mut Board) {
+pub fn perform_move(move_: Move, board: &mut Board) {
     if move_.source() != move_.destination() {
         board[move_.destination().line][move_.destination().col] =
             board[move_.source().line][move_.source().col];
