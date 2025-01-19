@@ -15,6 +15,7 @@ pub struct GameState {
     turn: Color,
     white_king_position: Position,
     black_king_position: Position,
+    initialized: bool,
 }
 
 impl Default for GameState {
@@ -32,6 +33,7 @@ impl GameState {
             turn: Color::White,
             white_king_position: Default::default(),
             black_king_position: Default::default(),
+            initialized: Default::default(),
         }
     }
 
@@ -177,6 +179,10 @@ impl GameState {
     }
 
     pub fn handle_move(&mut self, str_move: &str) -> Result<(), MoveError> {
+        if !self.initialized {
+            panic!("Should call 'initialize' before 'handle_move'");
+        }
+        
         let next_move = parse_move(self, str_move)?;
 
         let source_line = next_move.source().line;
@@ -313,6 +319,7 @@ impl GameState {
 
             self.add_piece(Piece::new(piece_type, piece_color), piece_position);
         }
+        self.initialized = true;
     }
 
     fn update_castling_rights(&mut self, source_line: usize, source_col: usize) {
