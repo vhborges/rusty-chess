@@ -2,36 +2,9 @@ use std::fmt::Display;
 
 use super::pieces::{bishop, king, knight, pawn, queen, rook};
 use crate::errors::{MoveError, PgnError};
+use crate::piece::piece_type::PieceType;
 use crate::types::{Board, Color, Position};
 use crate::utils::constants::INTERNAL_ERROR_04;
-
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum PieceType {
-    Bishop,
-    King,
-    Knight,
-    Pawn,
-    Queen,
-    Rook,
-    None,
-}
-
-impl TryFrom<char> for PieceType {
-    type Error = PgnError;
-
-    fn try_from(value: char) -> Result<Self, Self::Error> {
-        match value {
-            'B' => Ok(PieceType::Bishop),
-            'K' => Ok(PieceType::King),
-            'N' => Ok(PieceType::Knight),
-            'a'..='h' | 'P' => Ok(PieceType::Pawn),
-            'Q' => Ok(PieceType::Queen),
-            'R' => Ok(PieceType::Rook),
-            'O' => Ok(PieceType::None),
-            _ => Err(PgnError::InvalidPiece(value)),
-        }
-    }
-}
 
 #[derive(Copy, Clone)]
 pub struct Piece {

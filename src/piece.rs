@@ -1,5 +1,6 @@
-mod common;
+mod piece_struct;
+mod piece_type;
 pub mod pieces;
 
-pub use common::Piece;
-pub use common::PieceType;
+pub use piece_struct::Piece;
+pub use piece_type::PieceType;
