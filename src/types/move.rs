@@ -1,4 +1,4 @@
-use super::Position;
+use crate::types::Position;
 
 #[derive(Copy, Clone)]
 /// Represents a single piece move
@@ -25,7 +25,7 @@ impl Move {
         }
     }
 
-    pub fn new_with_castling(
+    pub fn with_castling(
         source: Position,
         destination: Position,
         additional_source: Position,

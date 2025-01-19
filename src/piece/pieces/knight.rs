@@ -1,4 +1,4 @@
-use crate::utils::Position;
+use crate::types::Position;
 
 pub const SYMBOLS: [char; 2] = ['\u{2658}', '\u{265E}'];
 

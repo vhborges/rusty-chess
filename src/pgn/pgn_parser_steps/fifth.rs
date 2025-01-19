@@ -1,8 +1,8 @@
 use super::common::{ParserState, PgnParserStep, StepResult};
 use crate::GameState;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
+use crate::types::{ChessPosition, Move};
 use crate::utils::constants::INTERNAL_ERROR_03;
-use crate::utils::{ChessPosition, Move};
 
 pub struct Fifth<'a> {
     pub state: ParserState<'a>,

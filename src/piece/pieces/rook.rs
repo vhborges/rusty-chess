@@ -1,9 +1,6 @@
 use crate::piece::Piece;
-use crate::utils::constants::{
-    BLACK_CASTLING_LINE, ROOK_LONG_CASTLING_COLUMN, ROOK_LONG_CASTLING_INITIAL_COLUMN,
-    ROOK_SHORT_CASTLING_COLUMN, ROOK_SHORT_CASTLING_INITIAL_COLUMN, WHITE_CASTLING_LINE,
-};
-use crate::utils::{Board, Color, Position};
+use crate::types::{Board, Color, Position};
+use crate::utils::constants::*;
 use std::cmp::max;
 
 pub const SYMBOLS: [char; 2] = ['\u{2656}', '\u{265C}'];

@@ -2,7 +2,7 @@ use super::pgn_parser_steps::First;
 use super::pgn_parser_steps::common::{PgnParserStep, StepResult};
 use crate::errors::MoveError;
 use crate::game_state::GameState;
-use crate::utils::Move;
+use crate::types::Move;
 use crate::utils::constants::{INTERNAL_ERROR_05, QUEEN_SIDE_CASTLING};
 
 pub fn parse_move(game_state: &GameState, str_move: &str) -> Result<Move, MoveError> {

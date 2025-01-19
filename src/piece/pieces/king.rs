@@ -1,9 +1,9 @@
 use crate::piece::Piece;
+use crate::types::{Board, Color, Position};
 use crate::utils::constants::{
     BLACK_CASTLING_LINE, KING_INITIAL_COLUMN, KING_LONG_CASTLING_COLUMN,
     KING_SHORT_CASTLING_COLUMN, WHITE_CASTLING_LINE,
 };
-use crate::utils::{Board, Color, Position};
 
 pub const SYMBOLS: [char; 2] = ['\u{2654}', '\u{265A}'];
 

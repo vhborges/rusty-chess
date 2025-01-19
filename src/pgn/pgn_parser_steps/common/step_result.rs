@@ -1,5 +1,5 @@
 use super::PgnParserStep;
-use crate::utils::Move;
+use crate::types::Move;
 
 /// Represents the result of a single step parse.
 /// Can be a Move (if the parse is complete) or the next Step.

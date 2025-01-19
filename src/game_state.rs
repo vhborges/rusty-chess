@@ -3,9 +3,9 @@ use crate::io::file_manager::initial_positions;
 use crate::pgn::pgn_parser::parse_move;
 use crate::piece::pieces::{king, rook};
 use crate::piece::{Piece, PieceType};
+use crate::types::{Board, ChessPosition, Color, Move, Position};
 use crate::utils::constants::*;
 use crate::utils::helper_functions::{get_next_char, perform_move};
-use crate::utils::{Board, ChessPosition, Color, Move, Position};
 use std::mem::swap;
 
 pub struct GameState {
@@ -170,7 +170,7 @@ impl GameState {
             return Err(MoveError::InvalidCastle("This move is not allowed"));
         }
 
-        Ok(Move::new_with_castling(
+        Ok(Move::with_castling(
             king_source,
             king_destination,
             rook_source,
@@ -182,7 +182,7 @@ impl GameState {
         if !self.initialized {
             panic!("Should call 'initialize' before 'handle_move'");
         }
-        
+
         let next_move = parse_move(self, str_move)?;
 
         let source_line = next_move.source().line;
@@ -245,12 +245,7 @@ impl GameState {
         }
     }
 
-    fn get_king_pos(
-        &self,
-        dest_line: usize,
-        dest_col: usize,
-        temporary_board: [[Option<Piece>; 8]; 8],
-    ) -> Position {
+    fn get_king_pos(&self, dest_line: usize, dest_col: usize, temporary_board: Board) -> Position {
         if temporary_board[dest_line][dest_col].unwrap().piece_type == PieceType::King {
             Position::new(dest_line, dest_col)
         }
@@ -399,7 +394,7 @@ mod tests {
         let rook_source = Position::new(7, 7);
         let rook_destination = Position::new(7, 5);
         let next_move =
-            Move::new_with_castling(king_source, king_destination, rook_source, rook_destination);
+            Move::with_castling(king_source, king_destination, rook_source, rook_destination);
         let result = game_state.validate_castling_path(next_move);
 
         assert!(result.is_ok());
@@ -414,7 +409,7 @@ mod tests {
         let rook_source = Position::new(7, 7);
         let rook_destination = Position::new(7, 5);
         let next_move =
-            Move::new_with_castling(king_source, king_destination, rook_source, rook_destination);
+            Move::with_castling(king_source, king_destination, rook_source, rook_destination);
         let result = game_state.validate_castling_path(next_move);
 
         assert!(result.is_err());
@@ -430,7 +425,7 @@ mod tests {
         let rook_source = Position::new(7, 0);
         let rook_destination = Position::new(7, 3);
         let next_move =
-            Move::new_with_castling(king_source, king_destination, rook_source, rook_destination);
+            Move::with_castling(king_source, king_destination, rook_source, rook_destination);
         let result = game_state.validate_castling_path(next_move);
 
         assert!(result.is_ok());
@@ -445,7 +440,7 @@ mod tests {
         let rook_source = Position::new(7, 0);
         let rook_destination = Position::new(7, 3);
         let next_move =
-            Move::new_with_castling(king_source, king_destination, rook_source, rook_destination);
+            Move::with_castling(king_source, king_destination, rook_source, rook_destination);
         let result = game_state.validate_castling_path(next_move);
 
         assert!(result.is_err());
