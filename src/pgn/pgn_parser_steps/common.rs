@@ -1,7 +1,8 @@
-mod parser_state;
+mod common_fields;
 mod parser_step;
 mod step_result;
 
-pub use parser_state::ParserState;
+pub(super) use common_fields::CommonIters;
+pub(super) use common_fields::ParserState;
 pub use parser_step::PgnParserStep;
 pub use step_result::StepResult;

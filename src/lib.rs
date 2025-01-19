@@ -4,7 +4,7 @@ mod io;
 mod pgn;
 mod piece;
 pub mod types;
-pub mod utils;
+mod utils;
 
 pub use game_state::GameState;
 

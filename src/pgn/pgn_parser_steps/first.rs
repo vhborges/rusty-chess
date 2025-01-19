@@ -1,15 +1,26 @@
 use super::Second;
-use super::common::{PgnParserStep, StepResult};
+use super::common::{CommonIters, ParserState, PgnParserStep, StepResult};
 use crate::GameState;
 use crate::errors::{MoveError, PgnError};
 use crate::piece::PieceType;
-use crate::utils::constants::INTERNAL_ERROR_03;
-use std::str::Chars;
+use crate::utils::constants::{INTERNAL_ERROR_03, QUEEN_SIDE_CASTLING};
 
 pub struct First<'a> {
-    pub pgn_len: usize,
-    pub pgn_chars: Chars<'a>,
-    pub castling_chars: Chars<'static>,
+    pgn_len: usize,
+    iters: CommonIters<'a>,
+    state: ParserState,
+}
+
+impl<'a> First<'a> {
+    pub fn new(pgn_move: &'a str) -> Box<Self> {
+        let iters = CommonIters::new(pgn_move.chars(), QUEEN_SIDE_CASTLING.chars());
+
+        Box::new(Self {
+            pgn_len: pgn_move.len(),
+            iters,
+            state: Default::default(),
+        })
+    }
 }
 
 impl PgnParserStep for First<'_> {
@@ -17,28 +28,25 @@ impl PgnParserStep for First<'_> {
     where
         Self: 'a,
     {
-        let current_pgn_char = self.pgn_chars.next().ok_or(PgnError::EmptyInput)?;
+        let current_pgn_char = self.iters.pgn_chars.next().ok_or(PgnError::EmptyInput)?;
         let piece_type: PieceType = current_pgn_char.try_into()?;
 
-        let dest_col: Option<char> = if piece_type == PieceType::Pawn {
+        self.state.dest_col = if piece_type == PieceType::Pawn {
             Some(current_pgn_char)
         }
         else {
             None
         };
 
-        let castling = current_pgn_char == self.castling_chars.next().expect(INTERNAL_ERROR_03);
+        self.state.disambiguation = self.state.dest_col; //Possibly, could be used by the second step
+        self.state.castling =
+            current_pgn_char == self.iters.castling_chars.next().expect(INTERNAL_ERROR_03);
+        self.state.piece_type = piece_type;
 
-        let second = Second {
-            pgn_len: self.pgn_len,
-            pgn_first_char: current_pgn_char,
-            piece_type,
-            castling,
-            dest_col,
-            pgn_chars: self.pgn_chars,
-            castling_chars: self.castling_chars,
-        };
-
-        Ok(StepResult::Step(Box::new(second)))
+        Ok(StepResult::Step(Second::new(
+            self.pgn_len,
+            self.state,
+            self.iters,
+        )))
     }
 }

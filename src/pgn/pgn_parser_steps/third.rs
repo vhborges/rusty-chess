@@ -1,5 +1,5 @@
 use super::Fourth;
-use super::common::{ParserState, PgnParserStep, StepResult};
+use super::common::{CommonIters, ParserState, PgnParserStep, StepResult};
 use crate::GameState;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::piece::PieceType;
@@ -9,7 +9,26 @@ use crate::utils::constants::{CAPTURE, INTERNAL_ERROR_03};
 const STEP: &str = "third";
 
 pub struct Third<'a> {
-    pub state: ParserState<'a>,
+    state: ParserState,
+    iters: CommonIters<'a>,
+}
+
+impl<'a> Third<'a> {
+    pub fn new(state: ParserState, iters: CommonIters<'a>) -> Box<Self> {
+        Box::new(Self { state, iters })
+    }
+
+    fn handle_castling<'b>(mut self, current_pgn_char: char) -> Result<StepResult<'b>, MoveError>
+    where
+        Self: 'b,
+    {
+        if current_pgn_char == self.iters.castling_chars.next().expect(INTERNAL_ERROR_03) {
+            Ok(StepResult::Step(Fourth::new(self.state, self.iters)))
+        }
+        else {
+            Err(PgnError::MissingCharacter(STEP).into())
+        }
+    }
 }
 
 impl PgnParserStep for Third<'_> {
@@ -22,7 +41,7 @@ impl PgnParserStep for Third<'_> {
         let castling = self.state.castling;
 
         let current_pgn_char = self
-            .state
+            .iters
             .pgn_chars
             .next()
             .ok_or(PgnError::MissingCharacter(STEP))?;
@@ -57,24 +76,6 @@ impl PgnParserStep for Third<'_> {
             return Err(PgnError::InvalidCharacter(current_pgn_char).into());
         }
 
-        let fourth = Fourth { state: self.state };
-
-        Ok(StepResult::Step(Box::new(fourth)))
-    }
-}
-
-impl Third<'_> {
-    fn handle_castling<'a>(mut self, current_pgn_char: char) -> Result<StepResult<'a>, MoveError>
-    where
-        Self: 'a,
-    {
-        if current_pgn_char == self.state.castling_chars.next().expect(INTERNAL_ERROR_03) {
-            let fourth = Fourth { state: self.state };
-
-            Ok(StepResult::Step(Box::new(fourth)))
-        }
-        else {
-            Err(PgnError::MissingCharacter(STEP).into())
-        }
+        Ok(StepResult::Step(Fourth::new(self.state, self.iters)))
     }
 }

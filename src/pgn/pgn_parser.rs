@@ -3,14 +3,10 @@ use super::pgn_parser_steps::common::{PgnParserStep, StepResult};
 use crate::errors::MoveError;
 use crate::game_state::GameState;
 use crate::types::Move;
-use crate::utils::constants::{INTERNAL_ERROR_05, QUEEN_SIDE_CASTLING};
+use crate::utils::constants::INTERNAL_ERROR_05;
 
-pub fn parse_move(game_state: &GameState, str_move: &str) -> Result<Move, MoveError> {
-    let first_step = Box::new(First {
-        pgn_len: str_move.len(),
-        pgn_chars: str_move.chars(),
-        castling_chars: QUEEN_SIDE_CASTLING.chars(),
-    });
+pub fn parse_move(game_state: &GameState, pgn_move: &str) -> Result<Move, MoveError> {
+    let first_step = First::new(pgn_move);
 
     let mut result = first_step.parse(game_state)?;
     while let StepResult::Step(next_step) = result {
