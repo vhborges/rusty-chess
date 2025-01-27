@@ -37,6 +37,14 @@ impl GameState {
         }
     }
 
+    pub fn captured_white_pieces(&self) -> &Vec<Piece> {
+        &self.captured_white_pieces
+    }
+
+    pub fn captured_black_pieces(&self) -> &Vec<Piece> {
+        &self.captured_black_pieces
+    }
+
     pub fn add_piece(&mut self, piece: Piece, pos: Position) {
         self.board[pos.line][pos.col] = Some(piece);
     }
@@ -51,39 +59,6 @@ impl GameState {
 
     pub fn get_piece(&self, position: Position) -> Option<Piece> {
         self.board[position.line][position.col]
-    }
-
-    pub fn print_game(&self) {
-        clearscreen::clear().expect("Failed to clear screen");
-
-        for (line, line_chess) in self.board.iter().zip(LINES.iter()) {
-            print!("{} ", line_chess);
-            for maybe_piece in line {
-                match maybe_piece {
-                    Some(piece) => print!("{} ", piece),
-                    None => print!("{} ", BLANK_SQUARE),
-                }
-            }
-            println!();
-        }
-
-        print!("  ");
-
-        for col_chess in COLUMNS {
-            print!("{} ", col_chess);
-        }
-
-        println!();
-
-        for piece in &self.captured_white_pieces {
-            print!("{} ", piece)
-        }
-
-        println!();
-
-        for piece in &self.captured_black_pieces {
-            println!("{} ", piece)
-        }
     }
 
     /// Given the piece type, the destination square, the disambiguation character and whether

@@ -6,30 +6,29 @@ mod piece;
 pub mod types;
 mod utils;
 
+use crate::io::ui;
 pub use game_state::GameState;
 
-use crate::io::ui::read_move;
-
 pub fn run(game_state: &mut GameState) {
-    game_state.print_game();
+    ui::print_game(game_state);
 
     loop {
-        match read_move() {
+        match ui::read_move() {
             Ok(next_move) => {
                 if let Err(move_err) = game_state.handle_move(next_move.as_str()) {
-                    game_state.print_game();
+                    ui::print_game(game_state);
                     println!("{}", next_move);
                     println!("{}", move_err);
                     continue;
                 }
             }
             Err(move_err) => {
-                game_state.print_game();
+                ui::print_game(game_state);
                 println!("{}", move_err);
                 continue;
             }
         }
 
-        game_state.print_game();
+        ui::print_game(game_state);
     }
 }
