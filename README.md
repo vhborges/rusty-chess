@@ -25,7 +25,7 @@ This project was created with the purpose of learning and practicing Rust concep
 - Rust 1.85+ (**nightly** toolchain)
 
 ## Running & playing
-Simply run: `cargo run`
+Inside the project's root, run: `cargo run`
 
 You will be presented with the following screen:
 
@@ -37,3 +37,13 @@ Turns alternate between white and black, in that order. In each turn, the game e
 - Bxc4 (bishop captures the piece on *c4*)
 - N6e5 (move the Knight currently on the sixth row to *e5* - assuming both Knights can go to *e5*)
 - Nfe5 (move the *f*-column Knight to *e5* - assuming both Knights can go to *e5*)
+
+## Customization
+To customize the inicial board configuration, simply edit the file located in *res/positions/initial_positions.txt*.
+
+The expected structure is:<br>
+[color][piece type][column][line]
+
+**Examples**:
+- WPa2: **W**hite **P**awn on *a2*
+- BRh8: **B**lack **R**ook on *h8*
