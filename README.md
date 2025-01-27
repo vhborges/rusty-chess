@@ -41,8 +41,10 @@ Turns alternate between white and black, in that order. In each turn, the game e
 ## Customization
 To customize the inicial board configuration, simply edit the file located in *res/positions/initial_positions.txt*.
 
-The expected structure is:<br>
-[color][piece type][column][line]
+Each line represents a given piece starting on a specific square.
+
+The expected structure is (case-sensitive):<br>
+> [Color][Piece Type][column][line]
 
 **Examples**:
 - WPa2: **W**hite **P**awn on *a2*
