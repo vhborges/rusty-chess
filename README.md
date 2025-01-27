@@ -32,11 +32,11 @@ You will be presented with the following screen:
 ![image](https://github.com/user-attachments/assets/dca97cd6-d93e-44a7-b853-6bf3945f95dc)
 
 Turns alternate between white and black, in that order. In each turn, the game expects you to enter a PGN move, for example:
-- e4 (move the King's pawn to *e4*)
-- Nf3 (move the Knight to *f3*)
-- Bxc4 (bishop captures the piece on *c4*)
-- N6e5 (move the Knight currently on the sixth row to *e5* - assuming both Knights can go to *e5*)
-- Nfe5 (move the *f*-column Knight to *e5* - assuming both Knights can go to *e5*)
+- e4 (King's pawn goes to *e4*)
+- Nf3 (Knight goes to *f3*)
+- Bxc4 (Bishop captures the piece on *c4*)
+- N6e5 (the sixth-row Knight goes to *e5* - assuming both Knights can go to *e5*)
+- Nfe5 (the *f*-column Knight goes to *e5* - assuming both Knights can go to *e5*)
 
 ## Customization
 To customize the inicial board configuration, simply edit the file located in *res/positions/initial_positions.txt*.
