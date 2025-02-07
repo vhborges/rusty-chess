@@ -49,17 +49,9 @@ impl Piece {
         destination: Position,
     ) -> Result<bool, MoveError> {
         Self::validate_move(origin, destination)?;
-        self.validate_capture(&board[destination.line][destination.col], false)?;
+        self.validate_capture(board.get_piece(destination), false)?;
 
-        match self.piece_type {
-            PieceType::Bishop => Ok(bishop::can_move(board, origin, destination)),
-            PieceType::King => Ok(king::can_move(origin, destination)),
-            PieceType::Knight => Ok(knight::can_move(origin, destination)),
-            PieceType::Pawn => Ok(pawn::can_move(self, board, origin, destination)),
-            PieceType::Queen => Ok(queen::can_move(board, origin, destination)),
-            PieceType::Rook => Ok(rook::can_move(board, origin, destination)),
-            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
-        }
+        Ok(self.piece_type.can_move(origin, destination))
     }
 
     // TODO check if the destination square contains a piece of the opposite color
@@ -74,7 +66,7 @@ impl Piece {
         // TODO review this logic
         if capture {
             // TODO this function purpose is not clear considering the last argument
-            self.validate_capture(&board[destination.line][destination.col], true)?;
+            self.validate_capture(board.get_piece(destination), true)?;
         }
 
         match self.piece_type {
@@ -88,7 +80,7 @@ impl Piece {
         }
     }
 
-    fn validate_capture(&self, dest_piece: &Option<Piece>, capture: bool) -> Result<(), MoveError> {
+    fn validate_capture(&self, dest_piece: Option<Piece>, capture: bool) -> Result<(), MoveError> {
         if capture {
             if dest_piece.is_none() {
                 return Err(MoveError::InvalidCapture("Destination square is empty"));

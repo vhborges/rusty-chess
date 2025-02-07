@@ -13,6 +13,7 @@ pub fn read_move() -> io::Result<String> {
     Ok(next_move.trim().to_owned())
 }
 
+// TODO move the first part of this function to Board and name it "print_board", the final part is going to be in GameState, so GameState calls the Board function and later print its part
 pub fn print_game(game_state: &GameState) {
     clearscreen::clear().expect("Failed to clear screen");
 

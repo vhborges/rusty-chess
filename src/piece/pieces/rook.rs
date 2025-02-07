@@ -2,39 +2,18 @@ use crate::piece::Piece;
 use crate::types::{Board, Color, Position};
 use crate::utils::constants::*;
 use std::cmp::max;
+use crate::piece::traits::{Castable, Movable};
 
 pub const SYMBOLS: [char; 2] = ['\u{2656}', '\u{265C}'];
 
-pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool {
-    let (src_line, src_col) = (origin.line as i8, origin.col as i8);
-    let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
-
-    // Logical XNOR
-    if (src_line == dest_line) == (src_col == dest_col) {
-        return false;
-    }
-
-    let (horizontal_direction, vertical_direction) =
-        get_directions(src_line, src_col, dest_line, dest_col);
-
-    let nr_of_squares = max((dest_col - src_col).abs(), (dest_line - src_line).abs());
-
-    check_clear_path(
-        board,
-        src_line,
-        src_col,
-        horizontal_direction,
-        vertical_direction,
-        nr_of_squares,
-    )
-}
+pub struct Rook;
 
 pub fn can_castle(piece: &Piece, board: &Board, origin: Position, destination: Position) -> bool {
     if !is_valid_castling(piece, origin) {
         return false;
     }
 
-    can_move(board, origin, destination)
+    can_move(origin, destination)
 }
 
 fn is_valid_castling(piece: &Piece, origin: Position) -> bool {
@@ -70,7 +49,6 @@ pub fn attacks(board: &Board, origin: Position, destination: Position) -> bool {
     let nr_of_squares = max((dest_col - src_col).abs(), (dest_line - src_line).abs()) - 1;
 
     check_clear_path(
-        board,
         src_line,
         src_col,
         horizontal_direction,
@@ -99,7 +77,6 @@ fn get_directions(src_line: i8, src_col: i8, dest_line: i8, dest_col: i8) -> (i8
 }
 
 fn check_clear_path(
-    board: &Board,
     src_line: i8,
     src_col: i8,
     horizontal_direction: i8,
@@ -139,4 +116,34 @@ pub fn get_castle_move(turn: Color, is_short_castle: bool) -> (Position, Positio
     let destination = Position::new(dest_line, dest_col);
 
     (origin, destination)
+}
+
+impl Castable for Rook {
+    
+}
+
+impl Movable for Rook {
+    fn is_valid_move(origin: Position, destination: Position) -> bool {
+        let (src_line, src_col) = (origin.line as i8, origin.col as i8);
+        let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
+
+        // Logical XNOR
+        if (src_line == dest_line) == (src_col == dest_col) {
+            return false;
+        }
+
+        let (horizontal_direction, vertical_direction) =
+            get_directions(src_line, src_col, dest_line, dest_col);
+
+        let nr_of_squares = max((dest_col - src_col).abs(), (dest_line - src_line).abs());
+
+        check_clear_path(
+            src_line,
+            src_col,
+            horizontal_direction,
+            vertical_direction,
+            nr_of_squares,
+        )
+    }
+
 }

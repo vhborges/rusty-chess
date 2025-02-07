@@ -1,16 +1,15 @@
-use super::super::Piece;
 use crate::types::{Board, Color, Position};
 
 pub const SYMBOLS: [char; 2] = ['\u{2659}', '\u{265F}'];
 
-pub fn can_move(piece: &Piece, board: &Board, origin: Position, destination: Position) -> bool {
+pub fn can_move(origin: Position, destination: Position) -> bool {
     let (src_line, src_col) = (origin.line as i8, origin.col as i8);
     let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
 
     let mut allow_two_rows = false;
 
     let vertical_distance: i8;
-    match piece.color {
+    match piece_color {
         Color::White => {
             if src_line == 6 {
                 allow_two_rows = true;

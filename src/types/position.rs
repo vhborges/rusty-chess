@@ -88,3 +88,23 @@ mod tests {
         Ok(())
     }
 }
+
+impl Iterator for Position {
+    type Item = Position;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.line == (BOARD_SIZE - 1) && self.col == (BOARD_SIZE - 1) {
+            return None;
+        }
+        
+        if self.col == BOARD_SIZE - 1 {
+            self.col = 0;
+            self.line += 1;
+        }
+        else {
+            self.col += 1;
+        }
+        
+        Some(*self)
+    }
+}
