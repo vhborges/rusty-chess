@@ -49,7 +49,7 @@ impl Piece {
         destination: Position,
     ) -> Result<bool, MoveError> {
         Self::validate_move(origin, destination)?;
-        self.validate_capture(&board[destination.line][destination.col], false)?;
+        self.validate_capture(board.get_piece(destination), false)?;
 
         match self.piece_type {
             PieceType::Bishop => Ok(bishop::can_move(board, origin, destination)),
@@ -74,7 +74,7 @@ impl Piece {
         // TODO review this logic
         if capture {
             // TODO this function purpose is not clear considering the last argument
-            self.validate_capture(&board[destination.line][destination.col], true)?;
+            self.validate_capture(board.get_piece(destination), true)?;
         }
 
         match self.piece_type {
@@ -88,7 +88,7 @@ impl Piece {
         }
     }
 
-    fn validate_capture(&self, dest_piece: &Option<Piece>, capture: bool) -> Result<(), MoveError> {
+    fn validate_capture(&self, dest_piece: Option<Piece>, capture: bool) -> Result<(), MoveError> {
         if capture {
             if dest_piece.is_none() {
                 return Err(MoveError::InvalidCapture("Destination square is empty"));

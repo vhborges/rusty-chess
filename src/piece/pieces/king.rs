@@ -63,14 +63,14 @@ pub fn attacks(origin: Position, destination: Position) -> bool {
 fn check_clear_path(board: &Board, destination: Position, i: usize) -> bool {
     if destination.col == 6 {
         for j in 5..7 {
-            if board[i][j].is_some() {
+            if board.is_position_occupied(Position::new(i, j)) {
                 return false;
             }
         }
     }
     else {
         for j in 1..4 {
-            if board[i][j].is_some() {
+            if board.is_position_occupied(Position::new(i, j)) {
                 return false;
             }
         }

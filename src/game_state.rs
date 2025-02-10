@@ -45,10 +45,6 @@ impl GameState {
         &self.captured_black_pieces
     }
 
-    pub fn add_piece(&mut self, piece: Piece, pos: Position) {
-        self.board[pos.line][pos.col] = Some(piece);
-    }
-
     pub fn is_white_turn(&self) -> bool {
         self.turn == Color::White
     }
@@ -58,7 +54,7 @@ impl GameState {
     }
 
     pub fn get_piece(&self, position: Position) -> Option<Piece> {
-        self.board[position.line][position.col]
+        self.board.get_piece(position)
     }
 
     /// Given the piece type, the destination square, the disambiguation character and whether
@@ -71,14 +67,9 @@ impl GameState {
         capture: bool,
     ) -> Result<Position, MoveError> {
         let mut matching_positions = Vec::new();
-        for (line_index, line) in self.board.iter().enumerate() {
-            for (col_index, maybe_piece) in line.iter().enumerate() {
-                if let Some(piece) = maybe_piece {
-                    let origin = Position::new(line_index, col_index);
-                    if self.piece_matches(piece, piece_type, origin, destination, capture)? {
-                        matching_positions.push(origin);
-                    }
-                }
+        for (piece, src_pos) in &self.board {
+            if self.piece_matches(&piece, piece_type, src_pos, destination, capture)? {
+                matching_positions.push(src_pos);
             }
         }
 
@@ -130,14 +121,20 @@ impl GameState {
     /// Find and return the King and Rook moves (in that order) needed for castling
     pub fn find_castling_move(&self, is_short_castle: bool) -> Result<Move, MoveError> {
         let (king_source, king_destination) = king::get_castle_move(self.turn, is_short_castle);
-        let king = self.get_piece(king_source).ok_or(MoveError::InvalidCastle(
-            "The King is no longer on its original square",
-        ))?;
+        let king = self
+            .board
+            .get_piece(king_source)
+            .ok_or(MoveError::InvalidCastle(
+                "The King is no longer on its original square",
+            ))?;
 
         let (rook_source, rook_destination) = rook::get_castle_move(self.turn, is_short_castle);
-        let rook = self.get_piece(rook_source).ok_or(MoveError::InvalidCastle(
-            "The Rook is no longer on its original square",
-        ))?;
+        let rook = self
+            .board
+            .get_piece(rook_source)
+            .ok_or(MoveError::InvalidCastle(
+                "The Rook is no longer on its original square",
+            ))?;
 
         if !(king.can_castle(&self.board, king_source, king_destination)?
             && rook.can_castle(&self.board, rook_source, rook_destination)?)
@@ -183,8 +180,7 @@ impl GameState {
         let mut temporary_board = self.board;
         perform_move(next_move, &mut temporary_board);
 
-        let (dest_line, dest_col) = (next_move.destination().line, next_move.destination().col);
-        let king_pos = self.get_king_pos(dest_line, dest_col, temporary_board);
+        let king_pos = self.get_king_pos(temporary_board, next_move.destination());
 
         if self.is_king_in_check(&temporary_board, king_pos) {
             return Err(MoveError::KingWouldBeInCheck);
@@ -194,7 +190,7 @@ impl GameState {
     }
 
     fn update_captured_pieces_list(&mut self, pos: Position) {
-        let piece = self.board[pos.line][pos.col];
+        let piece = self.board.get_piece(pos);
         if let Some(captured_piece) = piece {
             match captured_piece.color {
                 Color::White => self.captured_white_pieces.push(captured_piece),
@@ -204,8 +200,7 @@ impl GameState {
     }
 
     fn update_king_position(&mut self, next_move: Move) {
-        let (source_line, source_col) = (next_move.source().line, next_move.source().col);
-        let source_piece = self.board[source_line][source_col].unwrap();
+        let source_piece = self.board.get_piece(next_move.source()).unwrap();
         if source_piece.piece_type == PieceType::King {
             match self.turn {
                 Color::White => self.white_king_position = next_move.destination(),
@@ -214,9 +209,9 @@ impl GameState {
         }
     }
 
-    fn get_king_pos(&self, dest_line: usize, dest_col: usize, temporary_board: Board) -> Position {
-        if temporary_board[dest_line][dest_col].unwrap().piece_type == PieceType::King {
-            Position::new(dest_line, dest_col)
+    fn get_king_pos(&self, temporary_board: Board, destination: Position) -> Position {
+        if temporary_board.get_piece(destination).unwrap().piece_type == PieceType::King {
+            destination
         }
         else {
             match self.turn {
@@ -227,21 +222,13 @@ impl GameState {
     }
 
     fn is_king_in_check(&self, board: &Board, king_pos: Position) -> bool {
-        for (line_index, line) in board.iter().enumerate() {
-            for (col_index, piece) in line
-                .iter()
-                .enumerate()
-                .filter(|(_, piece)| piece.is_some() && piece.unwrap().color != self.turn)
-            {
-                let piece_pos = Position::new(line_index, col_index);
-
-                if piece
-                    .unwrap()
-                    .attacks(board, piece_pos, king_pos, false)
+        for (piece, pos) in board {
+            if piece.color != self.turn
+                && piece
+                    .attacks(board, pos, king_pos, false)
                     .expect(INTERNAL_ERROR_02)
-                {
-                    return true;
-                }
+            {
+                return true;
             }
         }
 
@@ -281,13 +268,15 @@ impl GameState {
                 }
             }
 
-            self.add_piece(Piece::new(piece_type, piece_color), piece_position);
+            self.board
+                .add_piece(Piece::new(piece_type, piece_color), piece_position);
         }
         self.initialized = true;
     }
 
     fn update_castling_rights(&mut self, pos: Position) {
-        let piece = self.board[pos.line][pos.col].as_mut().unwrap();
+        let mut piece = self.board.get_piece(pos).unwrap();
+
         if piece.piece_type == PieceType::King {
             piece.long_castling_available = false;
             piece.short_castling_available = false;
@@ -300,6 +289,8 @@ impl GameState {
                 piece.short_castling_available = false;
             }
         }
+
+        self.board.update_piece(pos, piece);
     }
 
     fn validate_castling_path(&self, mut next_move: Move) -> Result<(), MoveError> {
@@ -330,8 +321,9 @@ mod tests {
 
         game_state.update_castling_rights(Position::new(0, 4));
 
-        assert!(!game_state.board[0][4].unwrap().short_castling_available);
-        assert!(!game_state.board[0][4].unwrap().long_castling_available);
+        let piece = game_state.board.get_piece(Position::new(0, 4)).unwrap();
+        assert!(!piece.short_castling_available);
+        assert!(!piece.long_castling_available);
     }
 
     #[test]
@@ -340,8 +332,9 @@ mod tests {
 
         game_state.update_castling_rights(Position::new(0, 0));
 
-        assert!(game_state.board[0][0].unwrap().short_castling_available);
-        assert!(!game_state.board[0][0].unwrap().long_castling_available);
+        let piece = game_state.board.get_piece(Position::new(0, 0)).unwrap();
+        assert!(piece.short_castling_available);
+        assert!(!piece.long_castling_available);
     }
 
     #[test]
@@ -350,8 +343,9 @@ mod tests {
 
         game_state.update_castling_rights(Position::new(0, 7));
 
-        assert!(!game_state.board[0][7].unwrap().short_castling_available);
-        assert!(game_state.board[0][7].unwrap().long_castling_available);
+        let piece = game_state.board.get_piece(Position::new(0, 7)).unwrap();
+        assert!(!piece.short_castling_available);
+        assert!(piece.long_castling_available);
     }
 
     #[test]

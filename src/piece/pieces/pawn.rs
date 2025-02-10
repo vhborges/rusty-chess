@@ -3,8 +3,8 @@ use crate::types::{Board, Color, Position};
 
 pub const SYMBOLS: [char; 2] = ['\u{2659}', '\u{265F}'];
 
-pub fn can_move(piece: &Piece, board: &Board, origin: Position, destination: Position) -> bool {
-    let (src_line, src_col) = (origin.line as i8, origin.col as i8);
+pub fn can_move(piece: &Piece, board: &Board, source: Position, destination: Position) -> bool {
+    let (src_line, src_col) = (source.line as i8, source.col as i8);
     let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
 
     let mut allow_two_rows = false;
@@ -32,13 +32,13 @@ pub fn can_move(piece: &Piece, board: &Board, origin: Position, destination: Pos
     vertical_distance == 1
         || (allow_two_rows
             && vertical_distance == 2
-            && check_clear_path(board, origin, destination))
+            && check_clear_path(board, source, destination))
 }
 
-fn check_clear_path(board: &Board, origin: Position, destination: Position) -> bool {
-    let middle_line = (origin.line + destination.line) / 2;
+fn check_clear_path(board: &Board, source: Position, destination: Position) -> bool {
+    let middle_line = (source.line + destination.line) / 2;
 
-    board[middle_line][origin.col].is_none()
+    !board.is_position_occupied(Position::new(middle_line, source.col))
 }
 
 pub fn attacks(piece_color: Color, origin: Position, destination: Position) -> bool {

@@ -109,7 +109,7 @@ fn check_clear_path(
     let mut i = (src_line + vertical_direction) as usize;
     let mut j = (src_col + horizontal_direction) as usize;
     for _ in 0..nr_of_squares {
-        if board[i][j].is_some() {
+        if board.is_position_occupied(Position::new(i, j)) {
             return false;
         }
 
