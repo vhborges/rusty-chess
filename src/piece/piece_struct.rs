@@ -1,10 +1,10 @@
 use std::fmt::Display;
 
 use super::pieces::{bishop, king, knight, pawn, queen, rook};
+use crate::errors::constants::INTERNAL_ERROR_04;
 use crate::errors::{MoveError, PgnError};
 use crate::piece::piece_type::PieceType;
 use crate::types::{Board, Color, Position};
-use crate::utils::constants::INTERNAL_ERROR_04;
 
 #[derive(Copy, Clone)]
 pub struct Piece {

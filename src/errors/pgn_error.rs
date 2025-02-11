@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::Display;
 
-use crate::utils::constants::CAPTURE;
+use crate::pgn::constants::CAPTURE;
 
 use super::{ChessPositionError, PositionError};
 

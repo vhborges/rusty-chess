@@ -1,4 +1,5 @@
 use crate::errors::MoveError;
+use crate::errors::constants::{INTERNAL_ERROR_01, INTERNAL_ERROR_02};
 use crate::io::file_manager::initial_positions;
 use crate::pgn::pgn_parser::parse_move;
 use crate::piece::pieces::rook::{
@@ -7,7 +8,6 @@ use crate::piece::pieces::rook::{
 use crate::piece::pieces::{king, rook};
 use crate::piece::{Piece, PieceType};
 use crate::types::{Board, ChessPosition, Color, Move, Position};
-use crate::utils::constants::*;
 use crate::utils::helper_functions::{get_next_char, perform_move};
 use std::mem::swap;
 

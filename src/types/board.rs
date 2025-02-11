@@ -1,15 +1,23 @@
+pub mod constants {
+    use std::ops::RangeInclusive;
+
+    pub const BOARD_SIZE: usize = 8;
+
+    pub const WHITE_CASTLING_LINE: usize = BOARD_SIZE - 1;
+    pub const BLACK_CASTLING_LINE: usize = 0;
+
+    pub const BLANK_SQUARE: char = '_';
+
+    pub const LINES: [char; BOARD_SIZE] = ['8', '7', '6', '5', '4', '3', '2', '1'];
+    pub const COLUMNS: [char; BOARD_SIZE] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+    pub const LINE_RANGE: RangeInclusive<char> = '1'..='8';
+    pub const COL_RANGE: RangeInclusive<char> = 'a'..='h';
+}
+
 use crate::piece::Piece;
 use crate::types::Position;
-use crate::utils::constants::BLANK_SQUARE;
-use std::ops::RangeInclusive;
-
-pub const BOARD_SIZE: usize = 8;
-
-pub const LINES: [char; BOARD_SIZE] = ['8', '7', '6', '5', '4', '3', '2', '1'];
-pub const COLUMNS: [char; BOARD_SIZE] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
-pub const LINE_RANGE: RangeInclusive<char> = '1'..='8';
-pub const COL_RANGE: RangeInclusive<char> = 'a'..='h';
+use crate::types::board::constants::{BLANK_SQUARE, BOARD_SIZE, COLUMNS, LINES};
 
 type InternalBoard = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 

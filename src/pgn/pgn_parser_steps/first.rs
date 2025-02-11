@@ -1,9 +1,10 @@
 use super::Second;
 use super::common::{CommonIters, ParserState, PgnParserStep, StepResult};
 use crate::GameState;
+use crate::errors::constants::INTERNAL_ERROR_03;
 use crate::errors::{MoveError, PgnError};
+use crate::pgn::constants::QUEEN_SIDE_CASTLING;
 use crate::piece::PieceType;
-use crate::utils::constants::{INTERNAL_ERROR_03, QUEEN_SIDE_CASTLING};
 
 pub struct First<'a> {
     pgn_len: usize,

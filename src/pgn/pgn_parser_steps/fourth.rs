@@ -1,9 +1,9 @@
 use super::Fifth;
 use super::common::{CommonIters, ParserState, PgnParserStep, StepResult};
 use crate::GameState;
+use crate::errors::constants::INTERNAL_ERROR_03;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::types::{ChessPosition, Move};
-use crate::utils::constants::INTERNAL_ERROR_03;
 
 const STEP: &str = "fourth";
 

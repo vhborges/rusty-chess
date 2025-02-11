@@ -1,11 +1,12 @@
 use super::Third;
 use super::common::{CommonIters, ParserState, PgnParserStep, StepResult};
 use crate::GameState;
+use crate::errors::constants::INTERNAL_ERROR_03;
 use crate::errors::{MoveError, PgnError};
+use crate::pgn::constants::CAPTURE;
 use crate::piece::PieceType;
-use crate::types::board::{COL_RANGE, LINE_RANGE};
+use crate::types::board::constants::{COL_RANGE, LINE_RANGE};
 use crate::types::{ChessPosition, Move};
-use crate::utils::constants::{CAPTURE, INTERNAL_ERROR_03};
 
 const STEP: &str = "second";
 

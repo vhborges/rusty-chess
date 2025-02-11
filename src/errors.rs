@@ -1,3 +1,4 @@
+pub mod constants;
 mod move_error;
 mod pgn_error;
 mod position_errors;

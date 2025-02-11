@@ -1,7 +1,6 @@
 use crate::piece::Piece;
+use crate::types::board::constants::{BLACK_CASTLING_LINE, WHITE_CASTLING_LINE};
 use crate::types::{Board, Color, Position};
-use crate::utils::constants::{BLACK_CASTLING_LINE, WHITE_CASTLING_LINE};
-
 pub const SYMBOLS: [char; 2] = ['\u{2654}', '\u{265A}'];
 
 pub const KING_SHORT_CASTLING_COLUMN: usize = 6;

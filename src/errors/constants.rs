@@ -1,13 +1,3 @@
-// TODO add and implement support for the CHECK character (+)
-
-pub const BLANK_SQUARE: char = '_';
-
-pub const CAPTURE: char = 'x';
-pub const QUEEN_SIDE_CASTLING: &str = "O-O-O";
-
-pub const WHITE_CASTLING_LINE: usize = 7;
-pub const BLACK_CASTLING_LINE: usize = 0;
-
 pub const INTERNAL_ERROR_01: &str = "Internal error 01: Invalid piece position";
 pub const INTERNAL_ERROR_02: &str =
     "Internal error 02: piece.attacks() should not return error when capture=false";
