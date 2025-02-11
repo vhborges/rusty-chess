@@ -1,4 +1,4 @@
-mod board;
+pub mod board;
 mod color;
 mod r#move;
 mod position;

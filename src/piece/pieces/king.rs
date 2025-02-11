@@ -1,11 +1,12 @@
 use crate::piece::Piece;
 use crate::types::{Board, Color, Position};
-use crate::utils::constants::{
-    BLACK_CASTLING_LINE, KING_INITIAL_COLUMN, KING_LONG_CASTLING_COLUMN,
-    KING_SHORT_CASTLING_COLUMN, WHITE_CASTLING_LINE,
-};
+use crate::utils::constants::{BLACK_CASTLING_LINE, WHITE_CASTLING_LINE};
 
 pub const SYMBOLS: [char; 2] = ['\u{2654}', '\u{265A}'];
+
+pub const KING_SHORT_CASTLING_COLUMN: usize = 6;
+pub const KING_LONG_CASTLING_COLUMN: usize = 2;
+pub const KING_INITIAL_COLUMN: usize = 4;
 
 pub fn can_move(origin: Position, destination: Position) -> bool {
     let (src_line, src_col) = (origin.line as i8, origin.col as i8);

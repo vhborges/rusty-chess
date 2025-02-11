@@ -5,6 +5,11 @@ use std::cmp::max;
 
 pub const SYMBOLS: [char; 2] = ['\u{2656}', '\u{265C}'];
 
+pub const ROOK_SHORT_CASTLING_COLUMN: usize = 5;
+pub const ROOK_LONG_CASTLING_COLUMN: usize = 3;
+pub const ROOK_SHORT_CASTLING_INITIAL_COLUMN: usize = 7;
+pub const ROOK_LONG_CASTLING_INITIAL_COLUMN: usize = 0;
+
 pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool {
     let (src_line, src_col) = (origin.line as i8, origin.col as i8);
     let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);

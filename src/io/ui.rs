@@ -1,6 +1,4 @@
 use crate::GameState;
-use crate::types::Position;
-use crate::utils::constants::{BLANK_SQUARE, BOARD_SIZE, COLUMNS, LINES};
 use std::io::{self, Write, stdin, stdout};
 
 pub fn read_move() -> io::Result<String> {
@@ -13,27 +11,10 @@ pub fn read_move() -> io::Result<String> {
     Ok(next_move.trim().to_owned())
 }
 
-// TODO move the first part of this function to Board and name it "print_board", the final part is going to be in GameState, so GameState calls the Board function and later print its part
 pub fn print_game(game_state: &GameState) {
     clearscreen::clear().expect("Failed to clear screen");
 
-    for (line, line_chess) in (0..BOARD_SIZE).zip(LINES.iter()) {
-        print!("{} ", line_chess);
-        for column in 0..BOARD_SIZE {
-            let maybe_piece = game_state.get_piece(Position::new(line, column));
-            match maybe_piece {
-                Some(piece) => print!("{} ", piece),
-                None => print!("{} ", BLANK_SQUARE),
-            }
-        }
-        println!();
-    }
-
-    print!("  ");
-
-    for col_chess in COLUMNS {
-        print!("{} ", col_chess);
-    }
+    game_state.board().print_board();
 
     println!();
 
@@ -44,6 +25,8 @@ pub fn print_game(game_state: &GameState) {
     println!();
 
     for piece in game_state.captured_black_pieces() {
-        println!("{} ", piece)
+        print!("{} ", piece)
     }
+
+    println!();
 }

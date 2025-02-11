@@ -1,6 +1,15 @@
 use crate::piece::Piece;
 use crate::types::Position;
-use crate::utils::constants::BOARD_SIZE;
+use crate::utils::constants::BLANK_SQUARE;
+use std::ops::RangeInclusive;
+
+pub const BOARD_SIZE: usize = 8;
+
+pub const LINES: [char; BOARD_SIZE] = ['8', '7', '6', '5', '4', '3', '2', '1'];
+pub const COLUMNS: [char; BOARD_SIZE] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+pub const LINE_RANGE: RangeInclusive<char> = '1'..='8';
+pub const COL_RANGE: RangeInclusive<char> = 'a'..='h';
 
 type InternalBoard = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
@@ -51,6 +60,26 @@ impl Board {
             }
         }
         true
+    }
+
+    pub fn print_board(&self) {
+        for (line, line_chess) in (0..BOARD_SIZE).zip(LINES.iter()) {
+            print!("{} ", line_chess);
+            for column in 0..BOARD_SIZE {
+                let maybe_piece = self.board[line][column];
+                match maybe_piece {
+                    Some(piece) => print!("{} ", piece),
+                    None => print!("{} ", BLANK_SQUARE),
+                }
+            }
+            println!();
+        }
+
+        print!("  ");
+
+        for col_chess in COLUMNS {
+            print!("{} ", col_chess);
+        }
     }
 }
 

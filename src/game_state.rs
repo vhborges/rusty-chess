@@ -1,6 +1,9 @@
 use crate::errors::MoveError;
 use crate::io::file_manager::initial_positions;
 use crate::pgn::pgn_parser::parse_move;
+use crate::piece::pieces::rook::{
+    ROOK_LONG_CASTLING_INITIAL_COLUMN, ROOK_SHORT_CASTLING_INITIAL_COLUMN,
+};
 use crate::piece::pieces::{king, rook};
 use crate::piece::{Piece, PieceType};
 use crate::types::{Board, ChessPosition, Color, Move, Position};
@@ -43,6 +46,10 @@ impl GameState {
 
     pub fn captured_black_pieces(&self) -> &Vec<Piece> {
         &self.captured_black_pieces
+    }
+
+    pub fn board(&self) -> &Board {
+        &self.board
     }
 
     pub fn is_white_turn(&self) -> bool {
