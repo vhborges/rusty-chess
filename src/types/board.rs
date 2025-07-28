@@ -16,8 +16,8 @@ pub mod constants {
 }
 
 use crate::piece::Piece;
-use crate::types::Position;
 use crate::types::board::constants::{BLANK_SQUARE, BOARD_SIZE, COLUMNS, LINES};
+use crate::types::{Direction, Position, PositionI8};
 
 type InternalBoard = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
@@ -61,15 +61,6 @@ impl Board {
         self.board[origin.line][origin.col] = None;
     }
 
-    pub fn is_path_clear(&self, path: Vec<Position>) -> bool {
-        for pos in path {
-            if self.board[pos.line][pos.col].is_some() {
-                return false;
-            }
-        }
-        true
-    }
-
     pub fn print_board(&self) {
         for (line, line_chess) in (0..BOARD_SIZE).zip(LINES.iter()) {
             print!("{} ", line_chess);
@@ -88,6 +79,28 @@ impl Board {
         for col_chess in COLUMNS {
             print!("{} ", col_chess);
         }
+    }
+
+    pub fn is_path_clear(
+        self,
+        source: PositionI8,
+        destination: PositionI8,
+        nr_of_squares: i8,
+    ) -> bool {
+        let direction = Direction::from_position_i8(source, destination);
+
+        let mut i = (source.line + direction.vertical) as usize;
+        let mut j = (source.col + direction.horizontal) as usize;
+        for _ in 0..nr_of_squares {
+            if self.is_position_occupied(Position::new(i, j)) {
+                return false;
+            }
+
+            i = (i as i8 + direction.vertical) as usize;
+            j = (j as i8 + direction.horizontal) as usize;
+        }
+
+        true
     }
 }
 

@@ -1,71 +1,32 @@
-use crate::types::{Board, Position};
+use crate::types::{Board, Position, PositionI8};
 
 pub const SYMBOLS: [char; 2] = ['\u{2657}', '\u{265D}'];
 
-pub fn can_move(board: &Board, origin: Position, destination: Position) -> bool {
-    let (src_line, src_col) = (origin.line as i8, origin.col as i8);
-    let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
+pub fn can_move(board: &Board, source: Position, destination: Position) -> bool {
+    let src: PositionI8 = source.into();
+    let dest: PositionI8 = destination.into();
 
-    if !is_move_valid(src_line, src_col, dest_line, dest_col) {
-        return false;
-    }
+    let nr_of_squares = (dest.col - src.col).abs();
 
-    let nr_of_squares = (dest_col - src_col).abs();
-    if !is_path_clear(board, src_line, src_col, dest_line, dest_col, nr_of_squares) {
-        return false;
-    }
-
-    true
+    is_move_valid(src, dest) && board.is_path_clear(src, dest, nr_of_squares)
 }
 
-pub fn attacks(board: &Board, origin: Position, destination: Position) -> bool {
-    let (src_line, src_col) = (origin.line as i8, origin.col as i8);
-    let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
+pub fn attacks(board: &Board, source: Position, destination: Position) -> bool {
+    let src: PositionI8 = source.into();
+    let dest: PositionI8 = destination.into();
 
-    if !is_move_valid(src_line, src_col, dest_line, dest_col) {
-        return false;
-    }
+    let nr_of_squares = (dest.col - src.col).abs() - 1;
 
-    let nr_of_squares = (dest_col - src_col).abs() - 1;
-    if !is_path_clear(board, src_line, src_col, dest_line, dest_col, nr_of_squares) {
-        return false;
-    }
-
-    true
+    is_move_valid(src, dest) && board.is_path_clear(src, dest, nr_of_squares)
 }
 
-fn is_move_valid(src_line: i8, src_col: i8, dest_line: i8, dest_col: i8) -> bool {
-    if (src_line == dest_line) || (src_col == dest_col) {
+fn is_move_valid(source: PositionI8, destination: PositionI8) -> bool {
+    if (source.line == destination.line) || (source.col == destination.col) {
         return false;
     }
 
-    if (src_line - dest_line).abs() != (src_col - dest_col).abs() {
+    if (source.line - destination.line).abs() != (source.col - destination.col).abs() {
         return false;
-    }
-
-    true
-}
-
-fn is_path_clear(
-    board: &Board,
-    src_line: i8,
-    src_col: i8,
-    dest_line: i8,
-    dest_col: i8,
-    nr_of_squares: i8,
-) -> bool {
-    let horizontal_direction = (dest_col - src_col) / (dest_col - src_col).abs();
-    let vertical_direction = (dest_line - src_line) / (dest_line - src_line).abs();
-
-    let mut i = (src_line + vertical_direction) as usize;
-    let mut j = (src_col + horizontal_direction) as usize;
-    for _ in 0..nr_of_squares {
-        if board.is_position_occupied(Position::new(i, j)) {
-            return false;
-        }
-
-        i = (i as i8 + vertical_direction) as usize;
-        j = (j as i8 + horizontal_direction) as usize;
     }
 
     true

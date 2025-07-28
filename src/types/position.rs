@@ -13,6 +13,18 @@ impl Position {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub struct PositionI8 {
+    pub line: i8,
+    pub col: i8,
+}
+
+impl PositionI8 {
+    pub fn new(line: i8, col: i8) -> Self {
+        Self { line, col }
+    }
+}
+
 pub struct ChessPosition {
     pub line: char,
     pub col: char,
@@ -59,6 +71,12 @@ impl TryFrom<Position> for ChessPosition {
         let chess_col = ((position.col as u8) + b'a') as char;
 
         Ok(ChessPosition::new(chess_line, chess_col))
+    }
+}
+
+impl From<Position> for PositionI8 {
+    fn from(position: Position) -> Self {
+        PositionI8::new(position.line as i8, position.col as i8)
     }
 }
 

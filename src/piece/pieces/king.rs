@@ -1,18 +1,18 @@
 use crate::piece::Piece;
 use crate::types::board::constants::{BLACK_CASTLING_LINE, WHITE_CASTLING_LINE};
-use crate::types::{Board, Color, Position};
+use crate::types::{Board, Color, Position, PositionI8};
 pub const SYMBOLS: [char; 2] = ['\u{2654}', '\u{265A}'];
 
 pub const KING_SHORT_CASTLING_COLUMN: usize = 6;
 pub const KING_LONG_CASTLING_COLUMN: usize = 2;
 pub const KING_INITIAL_COLUMN: usize = 4;
 
-pub fn can_move(origin: Position, destination: Position) -> bool {
-    let (src_line, src_col) = (origin.line as i8, origin.col as i8);
-    let (dest_line, dest_col) = (destination.line as i8, destination.col as i8);
+pub fn can_move(source: Position, destination: Position) -> bool {
+    let src: PositionI8 = source.into();
+    let dest: PositionI8 = destination.into();
 
-    let horizontal_distance = dest_col - src_col;
-    let vertical_distance = dest_line - src_line;
+    let horizontal_distance = dest.col - src.col;
+    let vertical_distance = dest.line - src.line;
 
     if (-1..=1).contains(&horizontal_distance) && (-1..=1).contains(&vertical_distance) {
         return true;
