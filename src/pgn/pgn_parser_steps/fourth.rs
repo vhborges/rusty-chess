@@ -12,19 +12,19 @@ pub struct Fourth<'a> {
     iters: CommonIters<'a>,
 }
 
-impl<'a> Fourth<'a> {
+impl<'a, 'b> Fourth<'a>
+where
+    Self: 'b,
+{
     pub fn new(state: ParserState, iters: CommonIters<'a>) -> Box<Self> {
         Box::new(Self { state, iters })
     }
 
-    fn handle_castling<'b>(
+    fn handle_castling(
         mut self,
         current_pgn_char: Option<char>,
         game_state: &GameState,
-    ) -> Result<StepResult<'b>, MoveError>
-    where
-        Self: 'b,
-    {
+    ) -> Result<StepResult<'b>, MoveError> {
         match current_pgn_char {
             Some(pgn_char) => {
                 if pgn_char == self.iters.castling_chars.next().expect(INTERNAL_ERROR_03) {
@@ -37,6 +37,37 @@ impl<'a> Fourth<'a> {
             None => game_state.find_castling_move(true).map(|m| m.into()),
         }
     }
+
+    fn handle_digit(
+        self,
+        game_state: &GameState,
+        capture: bool,
+        disambiguation: Option<char>,
+        current_pgn_char: char,
+    ) -> Result<StepResult<'b>, MoveError> {
+        let piece_type = self.state.piece_type;
+
+        let Some(col) = self.state.dest_col
+        else {
+            return Err(ChessPositionError::MissingDestinationColumn.into());
+        };
+
+        let dest_line = current_pgn_char;
+        let destination = ChessPosition::new(dest_line, col).try_into()?;
+        let origin =
+            game_state.find_piece_position(piece_type, destination, disambiguation, capture)?;
+
+        Ok(StepResult::Move(Move::new(origin, destination)))
+    }
+
+    fn handle_destination_column(
+        mut self,
+        current_pgn_char: char,
+    ) -> Result<StepResult<'b>, MoveError> {
+        self.state.dest_col = Some(current_pgn_char);
+
+        Ok(StepResult::Step(Fifth::new(self.state, self.iters)))
+    }
 }
 
 impl PgnParserStep for Fourth<'_> {
@@ -44,7 +75,6 @@ impl PgnParserStep for Fourth<'_> {
     where
         Self: 'a,
     {
-        let piece_type = self.state.piece_type;
         let capture = self.state.capture;
         let disambiguation = self.state.disambiguation;
         let castling = self.state.castling;
@@ -58,25 +88,13 @@ impl PgnParserStep for Fourth<'_> {
         let current_pgn_char = current_pgn_char.ok_or(PgnError::MissingCharacter(STEP))?;
 
         if current_pgn_char.is_ascii_digit() && (capture || disambiguation.is_some()) {
-            let Some(col) = self.state.dest_col
-            else {
-                return Err(ChessPositionError::MissingDestinationColumn.into());
-            };
-
-            let dest_line = current_pgn_char;
-            let destination = ChessPosition::new(dest_line, col).try_into()?;
-            let origin =
-                game_state.find_piece_position(piece_type, destination, disambiguation, capture)?;
-
-            return Ok(StepResult::Move(Move::new(origin, destination)));
+            self.handle_digit(game_state, capture, disambiguation, current_pgn_char)
         }
         else if current_pgn_char.is_lowercase() {
-            self.state.dest_col = Some(current_pgn_char);
+            self.handle_destination_column(current_pgn_char)
         }
         else {
-            return Err(PgnError::InvalidCharacter(current_pgn_char).into());
+            Err(PgnError::InvalidCharacter(current_pgn_char).into())
         }
-
-        Ok(StepResult::Step(Fifth::new(self.state, self.iters)))
     }
 }

@@ -16,7 +16,10 @@ pub struct Second<'a> {
     iters: CommonIters<'a>,
 }
 
-impl<'a> Second<'a> {
+impl<'a, 'b> Second<'a>
+where
+    Self: 'b,
+{
     pub fn new(pgn_len: usize, state: ParserState, iters: CommonIters<'a>) -> Box<Self> {
         Box::new(Self {
             pgn_len,
@@ -25,10 +28,7 @@ impl<'a> Second<'a> {
         })
     }
 
-    fn handle_castling<'b>(mut self, current_pgn_char: char) -> Result<StepResult<'b>, MoveError>
-    where
-        Self: 'b,
-    {
+    fn handle_castling(mut self, current_pgn_char: char) -> Result<StepResult<'b>, MoveError> {
         if current_pgn_char == self.iters.castling_chars.next().expect(INTERNAL_ERROR_03) {
             Ok(StepResult::Step(Third::new(self.state, self.iters)))
         }
@@ -36,10 +36,65 @@ impl<'a> Second<'a> {
             Err(PgnError::MissingCharacter(STEP).into())
         }
     }
+
+    fn handle_digit(
+        mut self,
+        game_state: &GameState,
+        piece_type: PieceType,
+        current_pgn_char: char,
+    ) -> Result<StepResult<'b>, MoveError> {
+        match self.state.dest_col {
+            Some(col) => {
+                let dest_line = current_pgn_char;
+                let destination = ChessPosition::new(dest_line, col).try_into()?;
+
+                let origin =
+                    game_state.find_piece_position(piece_type, destination, None, false)?;
+
+                Ok(StepResult::Move(Move::new(origin, destination)))
+            }
+            None => {
+                self.state.disambiguation = Some(current_pgn_char);
+                self.state.capture = false;
+
+                Ok(StepResult::Step(Third::new(self.state, self.iters)))
+            }
+        }
+    }
+
+    fn handle_capture(mut self, piece_type: PieceType) -> Result<StepResult<'b>, MoveError> {
+        self.state.capture = true;
+
+        if piece_type != PieceType::Pawn {
+            self.state.disambiguation = None;
+        }
+
+        Ok(StepResult::Step(Third::new(self.state, self.iters)))
+    }
+
+    fn handle_disambiguation(
+        mut self,
+        current_pgn_char: char,
+    ) -> Result<StepResult<'b>, MoveError> {
+        self.state.disambiguation = Some(current_pgn_char);
+        self.state.capture = false;
+
+        Ok(StepResult::Step(Third::new(self.state, self.iters)))
+    }
+
+    fn handle_destination_column(
+        mut self,
+        current_pgn_char: char,
+    ) -> Result<StepResult<'b>, MoveError> {
+        self.state.dest_col = Some(current_pgn_char);
+        self.state.disambiguation = None;
+        self.state.capture = false;
+
+        Ok(StepResult::Step(Third::new(self.state, self.iters)))
+    }
 }
 
 impl PgnParserStep for Second<'_> {
-    // TODO create functions for each condition, store pgn state in each function and return a Result
     fn parse<'a>(mut self: Box<Self>, game_state: &GameState) -> Result<StepResult<'a>, MoveError>
     where
         Self: 'a,
@@ -53,48 +108,25 @@ impl PgnParserStep for Second<'_> {
             .ok_or(PgnError::MissingCharacter(STEP))?;
 
         if self.state.castling {
-            return self.handle_castling(current_pgn_char);
+            self.handle_castling(current_pgn_char)
         }
         else if current_pgn_char.is_ascii_digit() {
-            match self.state.dest_col {
-                Some(col) => {
-                    let dest_line = current_pgn_char;
-                    let destination = ChessPosition::new(dest_line, col).try_into()?;
-
-                    let origin =
-                        game_state.find_piece_position(piece_type, destination, None, false)?;
-
-                    return Ok(StepResult::Move(Move::new(origin, destination)));
-                }
-                None => {
-                    self.state.disambiguation = Some(current_pgn_char);
-                    self.state.capture = false;
-                }
-            }
+            self.handle_digit(game_state, piece_type, current_pgn_char)
         }
         else if current_pgn_char == CAPTURE {
-            self.state.capture = true;
-
-            if piece_type != PieceType::Pawn {
-                self.state.disambiguation = None;
-            }
+            self.handle_capture(piece_type)
         }
         else if self.pgn_len > 3
             && piece_type != PieceType::Pawn
             && (LINE_RANGE.contains(&current_pgn_char) || COL_RANGE.contains(&current_pgn_char))
         {
-            self.state.disambiguation = Some(current_pgn_char);
-            self.state.capture = false;
+            self.handle_disambiguation(current_pgn_char)
         }
         else if current_pgn_char.is_lowercase() {
-            self.state.dest_col = Some(current_pgn_char);
-            self.state.disambiguation = None;
-            self.state.capture = false;
+            self.handle_destination_column(current_pgn_char)
         }
         else {
-            return Err(PgnError::InvalidCharacter(current_pgn_char).into());
+            Err(PgnError::InvalidCharacter(current_pgn_char).into())
         }
-
-        Ok(StepResult::Step(Third::new(self.state, self.iters)))
     }
 }

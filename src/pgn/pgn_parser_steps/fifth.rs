@@ -9,19 +9,19 @@ pub struct Fifth<'a> {
     iters: CommonIters<'a>,
 }
 
-impl<'a> Fifth<'a> {
+impl<'a, 'b> Fifth<'a>
+where
+    Self: 'b,
+{
     pub fn new(state: ParserState, iters: CommonIters<'a>) -> Box<Self> {
         Box::new(Self { state, iters })
     }
 
-    fn handle_castling<'b>(
+    fn handle_castling(
         &mut self,
         current_pgn_char: char,
         game_state: &GameState,
-    ) -> Result<StepResult<'b>, MoveError>
-    where
-        Self: 'b,
-    {
+    ) -> Result<StepResult<'b>, MoveError> {
         if current_pgn_char == self.iters.castling_chars.next().expect(INTERNAL_ERROR_03) {
             game_state.find_castling_move(false).map(|m| m.into())
         }
