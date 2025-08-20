@@ -118,7 +118,7 @@ impl GameState {
         }
 
         if capture {
-            piece.attacks(&self.board, origin, destination, true)
+            piece.attacks(&self.board, origin, destination, true, true)
         }
         else {
             piece.can_move(&self.board, origin, destination)
@@ -232,7 +232,7 @@ impl GameState {
         for (piece, pos) in board {
             if piece.color != self.turn
                 && piece
-                    .attacks(board, pos, king_pos, false)
+                    .attacks(board, pos, king_pos, false, false)
                     .expect(INTERNAL_ERROR_02)
             {
                 return true;
@@ -249,11 +249,11 @@ impl GameState {
 
             let piece_color: Color = get_next_char(&line, &mut chars)
                 .try_into()
-                .unwrap_or_else(|_| panic!("Could not parse color character from line {}", line));
+                .unwrap_or_else(|_| panic!("Could not parse color character from line {line}"));
 
             let piece_type: PieceType = get_next_char(&line, &mut chars)
                 .try_into()
-                .unwrap_or_else(|_| panic!("Could not parse piece character from line {}", line));
+                .unwrap_or_else(|_| panic!("Could not parse piece character from line {line}"));
 
             let chess_col = get_next_char(&line, &mut chars);
 
@@ -262,10 +262,7 @@ impl GameState {
             let piece_position = ChessPosition::new(chess_line, chess_col)
                 .try_into()
                 .unwrap_or_else(|_| {
-                    panic!(
-                        "Could not convert ChessPosition {}{} to Position",
-                        chess_col, chess_line
-                    )
+                    panic!("Could not convert ChessPosition {chess_col}{chess_line} to Position")
                 });
 
             if piece_type == PieceType::King {

@@ -20,7 +20,7 @@ impl TryFrom<char> for Color {
         match value {
             'W' => Ok(Color::White),
             'B' => Ok(Color::Black),
-            _ => Err(format!("Invalid color character: {}", value)),
+            _ => Err(format!("Invalid color character: {value}")),
         }
     }
 }

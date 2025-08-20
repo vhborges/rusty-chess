@@ -33,7 +33,7 @@ impl Piece {
         origin: Position,
         destination: Position,
     ) -> Result<bool, MoveError> {
-        Self::validate_move(origin, destination)?;
+        self.validate_move(origin, destination, board.get_piece(destination), false)?;
 
         match self.piece_type {
             PieceType::King => Ok(king::can_castle(self, board, origin, destination)),
@@ -48,8 +48,7 @@ impl Piece {
         origin: Position,
         destination: Position,
     ) -> Result<bool, MoveError> {
-        Self::validate_move(origin, destination)?;
-        self.validate_capture(board.get_piece(destination), false)?;
+        self.validate_move(origin, destination, board.get_piece(destination), false)?;
 
         match self.piece_type {
             PieceType::Bishop => Ok(bishop::can_move(board, origin, destination)),
@@ -62,19 +61,16 @@ impl Piece {
         }
     }
 
-    // TODO check if the destination square contains a piece of the opposite color
     pub fn attacks(
         &self,
         board: &Board,
         origin: Position,
         destination: Position,
         capture: bool,
+        validated: bool,
     ) -> Result<bool, MoveError> {
-        Self::validate_move(origin, destination)?;
-        // TODO review this logic
-        if capture {
-            // TODO this function purpose is not clear considering the last argument
-            self.validate_capture(board.get_piece(destination), true)?;
+        if validated {
+            self.validate_move(origin, destination, board.get_piece(destination), capture)?;
         }
 
         match self.piece_type {
@@ -88,7 +84,18 @@ impl Piece {
         }
     }
 
-    fn validate_capture(&self, dest_piece: Option<Piece>, capture: bool) -> Result<(), MoveError> {
+    fn validate_move(
+        &self,
+        origin: Position,
+        destination: Position,
+        dest_piece: Option<Piece>,
+        capture: bool,
+    ) -> Result<(), MoveError> {
+        if origin == destination {
+            return Err(MoveError::InvalidMove(
+                "The piece should not stay where it is",
+            ));
+        }
         if capture {
             if dest_piece.is_none() {
                 return Err(MoveError::InvalidCapture("Destination square is empty"));
@@ -104,16 +111,6 @@ impl Piece {
         }
         else if dest_piece.is_some() && dest_piece.unwrap().color == self.color {
             return Err(MoveError::SquareOccupied);
-        }
-
-        Ok(())
-    }
-
-    fn validate_move(origin: Position, destination: Position) -> Result<(), MoveError> {
-        if origin == destination {
-            return Err(MoveError::InvalidMove(
-                "The piece should not stay where it is",
-            ));
         }
 
         Ok(())

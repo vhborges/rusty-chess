@@ -23,15 +23,14 @@ impl Display for PgnError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::EmptyInput => write!(f, "Empty input"),
-            Self::MissingCharacter(position) => write!(f, "Missing {} character", position),
-            Self::InvalidPiece(piece) => write!(f, "Invalid piece character: {}", piece),
-            Self::InvalidCharacter(character) => write!(f, "Invalid character: {}", character),
-            Self::InvalidPosition(err) => write!(f, "Invalid position: {}", err),
-            Self::InvalidChessPosition(err) => write!(f, "Invalid chess position: {}", err),
+            Self::MissingCharacter(position) => write!(f, "Missing {position} character"),
+            Self::InvalidPiece(piece) => write!(f, "Invalid piece character: {piece}"),
+            Self::InvalidCharacter(character) => write!(f, "Invalid character: {character}"),
+            Self::InvalidPosition(err) => write!(f, "Invalid position: {err}"),
+            Self::InvalidChessPosition(err) => write!(f, "Invalid chess position: {err}"),
             Self::MissingCaptureCharacter => write!(
                 f,
-                "Attempted to capture a piece without the '{}' PGN character",
-                CAPTURE
+                "Attempted to capture a piece without the '{CAPTURE}' PGN character",
             ),
         }
     }

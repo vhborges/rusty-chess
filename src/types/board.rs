@@ -63,12 +63,12 @@ impl Board {
 
     pub fn print_board(&self) {
         for (line, line_chess) in (0..BOARD_SIZE).zip(LINES.iter()) {
-            print!("{} ", line_chess);
+            print!("{line_chess} ");
             for column in 0..BOARD_SIZE {
                 let maybe_piece = self.board[line][column];
                 match maybe_piece {
-                    Some(piece) => print!("{} ", piece),
-                    None => print!("{} ", BLANK_SQUARE),
+                    Some(piece) => print!("{piece} "),
+                    None => print!("{BLANK_SQUARE} "),
                 }
             }
             println!();
@@ -77,7 +77,7 @@ impl Board {
         print!("  ");
 
         for col_chess in COLUMNS {
-            print!("{} ", col_chess);
+            print!("{col_chess} ");
         }
     }
 

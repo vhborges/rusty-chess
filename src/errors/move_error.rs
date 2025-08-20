@@ -29,10 +29,10 @@ impl Display for MoveError {
             Self::KingWouldBeInCheck => {
                 write!(f, "Invalid move: this would put your King in check")
             }
-            Self::InvalidCapture(err) => write!(f, "Invalid capture: {}", err),
-            Self::InvalidMove(err) => write!(f, "Invalid move: {}", err),
-            Self::InvalidPgn(err) => write!(f, "Invalid PGN: {}", err),
-            Self::InvalidCastle(err) => write!(f, "Unable to castle: {}", err),
+            Self::InvalidCapture(err) => write!(f, "Invalid capture: {err}"),
+            Self::InvalidMove(err) => write!(f, "Invalid move: {err}"),
+            Self::InvalidPgn(err) => write!(f, "Invalid PGN: {err}"),
+            Self::InvalidCastle(err) => write!(f, "Unable to castle: {err}"),
         }
     }
 }

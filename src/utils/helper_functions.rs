@@ -18,5 +18,5 @@ pub fn perform_move(move_: Move, board: &mut Board) {
 pub fn get_next_char(line: &String, chars: &mut Chars) -> char {
     chars
         .next()
-        .unwrap_or_else(|| panic!("Line {} is incomplete", line))
+        .unwrap_or_else(|| panic!("Line {line} is incomplete"))
 }

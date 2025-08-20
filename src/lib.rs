@@ -17,14 +17,14 @@ pub fn run(game_state: &mut GameState) {
             Ok(next_move) => {
                 if let Err(move_err) = game_state.handle_move(next_move.as_str()) {
                     ui::print_game(game_state);
-                    println!("{}", next_move);
-                    println!("{}", move_err);
+                    println!("{next_move}");
+                    println!("{move_err}");
                     continue;
                 }
             }
             Err(move_err) => {
                 ui::print_game(game_state);
-                println!("{}", move_err);
+                println!("{move_err}");
                 continue;
             }
         }

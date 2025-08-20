@@ -19,13 +19,13 @@ pub fn print_game(game_state: &GameState) {
     println!();
 
     for piece in game_state.captured_white_pieces() {
-        print!("{} ", piece)
+        print!("{piece} ")
     }
 
     println!();
 
     for piece in game_state.captured_black_pieces() {
-        print!("{} ", piece)
+        print!("{piece} ")
     }
 
     println!();
