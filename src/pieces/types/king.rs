@@ -1,4 +1,4 @@
-use crate::piece::Piece;
+use crate::pieces::Piece;
 use crate::types::board::constants::{BLACK_CASTLING_LINE, WHITE_CASTLING_LINE};
 use crate::types::{Board, Color, Position, PositionI8};
 pub const SYMBOLS: [char; 2] = ['\u{2654}', '\u{265A}'];

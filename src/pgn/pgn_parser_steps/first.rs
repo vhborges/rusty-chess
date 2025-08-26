@@ -4,7 +4,7 @@ use crate::GameState;
 use crate::errors::constants::INTERNAL_ERROR_03;
 use crate::errors::{MoveError, PgnError};
 use crate::pgn::constants::QUEEN_SIDE_CASTLING;
-use crate::piece::PieceType;
+use crate::pieces::PieceType;
 
 pub struct First<'a> {
     pgn_len: usize,

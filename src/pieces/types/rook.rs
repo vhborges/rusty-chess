@@ -1,4 +1,4 @@
-use crate::piece::Piece;
+use crate::pieces::Piece;
 use crate::types::board::constants::{BLACK_CASTLING_LINE, WHITE_CASTLING_LINE};
 use crate::types::{Board, Color, Position, PositionI8};
 use std::cmp::max;

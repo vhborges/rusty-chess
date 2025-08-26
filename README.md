@@ -8,16 +8,15 @@ This project was created with the purpose of learning and practicing Rust concep
 - [ ] PGN movement and validations
   - [x] Basic movement
   - [x] Capture symbol support
-  - [x] Disambiguation symbol support (e.g. N**f**e5)
+  - [x] Disambiguation symbol support (e.g., N**f**e5)
   - [x] Invalid move validation
   - [x] Castling support
-  - [ ] Check symbol support
   - [ ] Checkmate support
   - [ ] Stalemate support
 - [x] Tests
   - [x] Integration tests
-  - [ ] Unit tests (in progress)
-- [ ] Graphical interface & mouse support
+  - [x] Unit tests
+- [ ] Graphical interface and mouse support
 - [ ] AI engine
 - [ ] Multiplayer
 
@@ -39,7 +38,7 @@ Turns alternate between white and black, in that order. In each turn, the game e
 - Nfe5 (the *f*-column Knight goes to *e5* - assuming both Knights can go to *e5*)
 
 ## Customization
-To customize the inicial board configuration, simply edit the file located in *res/positions/initial_positions.txt*.
+To customize the initial board configuration, edit the file located in *res/positions/initial_positions.txt*.
 
 Each line represents a given piece starting on a specific square.
 

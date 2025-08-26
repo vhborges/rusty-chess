@@ -4,7 +4,7 @@ use crate::GameState;
 use crate::errors::constants::INTERNAL_ERROR_03;
 use crate::errors::{MoveError, PgnError};
 use crate::pgn::constants::CAPTURE;
-use crate::piece::PieceType;
+use crate::pieces::PieceType;
 use crate::types::board::constants::{COL_RANGE, LINE_RANGE};
 use crate::types::{ChessPosition, Move};
 

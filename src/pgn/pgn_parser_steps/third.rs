@@ -4,7 +4,7 @@ use crate::GameState;
 use crate::errors::constants::INTERNAL_ERROR_03;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
 use crate::pgn::constants::CAPTURE;
-use crate::piece::PieceType;
+use crate::pieces::PieceType;
 use crate::types::{ChessPosition, Move};
 
 const STEP: &str = "third";

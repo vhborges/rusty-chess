@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
-use super::pieces::{bishop, king, knight, pawn, queen, rook};
+use super::types::{bishop, king, knight, pawn, queen, rook};
 use crate::errors::constants::INTERNAL_ERROR_04;
 use crate::errors::{MoveError, PgnError};
-use crate::piece::piece_type::PieceType;
+use crate::pieces::piece_type::PieceType;
 use crate::types::{Board, Color, Position};
 
 #[derive(Copy, Clone)]

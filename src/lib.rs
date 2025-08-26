@@ -2,7 +2,7 @@ pub mod errors;
 mod game_state;
 mod io;
 mod pgn;
-mod piece;
+mod pieces;
 pub mod types;
 mod utils;
 

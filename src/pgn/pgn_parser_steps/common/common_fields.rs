@@ -1,4 +1,4 @@
-use crate::piece::PieceType;
+use crate::pieces::PieceType;
 use std::str::Chars;
 
 /// Store common data for all steps.

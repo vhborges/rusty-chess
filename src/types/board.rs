@@ -15,7 +15,7 @@ pub mod constants {
     pub const COL_RANGE: RangeInclusive<char> = 'a'..='h';
 }
 
-use crate::piece::Piece;
+use crate::pieces::Piece;
 use crate::types::board::constants::{BLANK_SQUARE, BOARD_SIZE, COLUMNS, LINES};
 use crate::types::{Direction, Position, PositionI8};
 
