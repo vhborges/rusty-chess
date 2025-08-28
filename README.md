@@ -11,8 +11,9 @@ This project was created with the purpose of learning and practicing Rust concep
   - [x] Disambiguation symbol support (e.g., N**f**e5)
   - [x] Invalid move validation
   - [x] Castling support
-  - [ ] Checkmate support
+  - [x] Checkmate support
   - [ ] Stalemate support
+  - [ ] En passant support
 - [x] Tests
   - [x] Integration tests
   - [x] Unit tests
