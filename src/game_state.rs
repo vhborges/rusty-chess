@@ -1,15 +1,15 @@
+use crate::Board;
 use crate::errors::MoveError;
 use crate::errors::constants::{INTERNAL_ERROR_01, INTERNAL_ERROR_02};
 use crate::io::file_manager::initial_positions;
+use crate::movement::{ChessPosition, Move, Position};
 use crate::pgn::pgn_parser::parse_move;
-use crate::pieces::types::rook::{
-    ROOK_LONG_CASTLING_INITIAL_COLUMN, ROOK_SHORT_CASTLING_INITIAL_COLUMN,
-};
-use crate::pieces::types::{king, rook};
+use crate::pieces::types::{King, Rook};
+use crate::pieces::utils::Color;
 use crate::pieces::{Piece, PieceType};
-use crate::types::{Board, ChessPosition, Color, Move, Position};
 use crate::utils::helper_functions::{get_next_char, perform_move};
 use std::mem::swap;
+use std::process::exit;
 
 pub struct GameState {
     board: Board,
@@ -127,7 +127,7 @@ impl GameState {
 
     /// Find and return the King and Rook moves (in that order) needed for castling
     pub fn find_castling_move(&self, is_short_castle: bool) -> Result<Move, MoveError> {
-        let (king_source, king_destination) = king::get_castle_move(self.turn, is_short_castle);
+        let (king_source, king_destination) = King::get_castle_move(self.turn, is_short_castle);
         let king = self
             .board
             .get_piece(king_source)
@@ -135,7 +135,7 @@ impl GameState {
                 "The King is no longer on its original square",
             ))?;
 
-        let (rook_source, rook_destination) = rook::get_castle_move(self.turn, is_short_castle);
+        let (rook_source, rook_destination) = Rook::get_castle_move(self.turn, is_short_castle);
         let rook = self
             .board
             .get_piece(rook_source)
@@ -172,11 +172,16 @@ impl GameState {
 
         self.update_king_position(next_move);
 
-        self.update_castling_rights(next_move.source());
+        self.board.update_piece_state(next_move.source());
 
         self.update_captured_pieces_list(next_move.destination());
 
         perform_move(next_move, &mut self.board);
+
+        if self.is_checkmate() {
+            println!("Checkmate!");
+            exit(0)
+        }
 
         self.turn.flip();
 
@@ -208,7 +213,7 @@ impl GameState {
 
     fn update_king_position(&mut self, next_move: Move) {
         let source_piece = self.board.get_piece(next_move.source()).unwrap();
-        if source_piece.piece_type == PieceType::King {
+        if let PieceType::King(_) = source_piece.piece_type {
             match self.turn {
                 Color::White => self.white_king_position = next_move.destination(),
                 Color::Black => self.black_king_position = next_move.destination(),
@@ -217,14 +222,12 @@ impl GameState {
     }
 
     fn get_king_pos(&self, temporary_board: Board, destination: Position) -> Position {
-        if temporary_board.get_piece(destination).unwrap().piece_type == PieceType::King {
-            destination
-        }
-        else {
-            match self.turn {
+        match temporary_board.get_piece(destination).unwrap().piece_type {
+            PieceType::King(_) => destination,
+            _ => match self.turn {
                 Color::White => self.white_king_position,
                 Color::Black => self.black_king_position,
-            }
+            },
         }
     }
 
@@ -265,7 +268,7 @@ impl GameState {
                     panic!("Could not convert ChessPosition {chess_col}{chess_line} to Position")
                 });
 
-            if piece_type == PieceType::King {
+            if let PieceType::King(_) = piece_type {
                 match piece_color {
                     Color::White => self.white_king_position = piece_position,
                     Color::Black => self.black_king_position = piece_position,
@@ -276,25 +279,6 @@ impl GameState {
                 .add_piece(Piece::new(piece_type, piece_color), piece_position);
         }
         self.initialized = true;
-    }
-
-    fn update_castling_rights(&mut self, pos: Position) {
-        let mut piece = self.board.get_piece(pos).unwrap();
-
-        if piece.piece_type == PieceType::King {
-            piece.long_castling_available = false;
-            piece.short_castling_available = false;
-        }
-        else if piece.piece_type == PieceType::Rook {
-            if pos.col == ROOK_LONG_CASTLING_INITIAL_COLUMN {
-                piece.long_castling_available = false;
-            }
-            else if pos.col == ROOK_SHORT_CASTLING_INITIAL_COLUMN {
-                piece.short_castling_available = false;
-            }
-        }
-
-        self.board.update_piece(pos, piece);
     }
 
     fn validate_castling_path(&self, mut next_move: Move) -> Result<(), MoveError> {
@@ -312,49 +296,62 @@ impl GameState {
 
         Ok(())
     }
+
+    fn is_checkmate(&self) -> bool {
+        let king_pos = match self.turn {
+            Color::White => self.black_king_position,
+            Color::Black => self.white_king_position,
+        };
+
+        if !self.is_king_in_check(&self.board, king_pos) {
+            return false;
+        }
+
+        // check if the King has a valid move to get out of check
+        let king = self.board.get_piece(king_pos).unwrap();
+        for dest in king.get_possible_moves(&self.board, king_pos) {
+            let mut temporary_board = self.board;
+            let next_move = Move::new(king_pos, dest);
+            perform_move(next_move, &mut temporary_board);
+
+            if !self.is_king_in_check(&temporary_board, dest) {
+                return false;
+            }
+        }
+
+        // check if any other piece can cover the check
+        for (piece, source) in &self.board {
+            if piece.color == self.turn || matches!(piece.piece_type, PieceType::King(_)) {
+                continue;
+            }
+
+            // get the piece possible movements
+            let possible_movements = piece.get_possible_moves(&self.board, source);
+
+            // check if any of them can cover the check
+            for dest in possible_movements {
+                let mut temporary_board = self.board;
+                let next_move = Move::new(source, dest);
+                perform_move(next_move, &mut temporary_board);
+
+                if !self.is_king_in_check(&temporary_board, king_pos) {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::test_helper::setup;
-
-    #[test]
-    fn test_update_castling_rights_king_move() {
-        let mut game_state = setup(None);
-
-        game_state.update_castling_rights(Position::new(0, 4));
-
-        let piece = game_state.board.get_piece(Position::new(0, 4)).unwrap();
-        assert!(!piece.short_castling_available);
-        assert!(!piece.long_castling_available);
-    }
-
-    #[test]
-    fn test_update_castling_rights_long_rook_move() {
-        let mut game_state = setup(None);
-
-        game_state.update_castling_rights(Position::new(0, 0));
-
-        let piece = game_state.board.get_piece(Position::new(0, 0)).unwrap();
-        assert!(piece.short_castling_available);
-        assert!(!piece.long_castling_available);
-    }
-
-    #[test]
-    fn test_update_castling_rights_short_rook_move() {
-        let mut game_state = setup(None);
-
-        game_state.update_castling_rights(Position::new(0, 7));
-
-        let piece = game_state.board.get_piece(Position::new(0, 7)).unwrap();
-        assert!(!piece.short_castling_available);
-        assert!(piece.long_castling_available);
-    }
+    use crate::utils::test_helper::setup_game_state;
 
     #[test]
     fn test_validate_castling_path_short_castle_success() {
-        let game_state = setup(Some("tests/validate_castling_path_success.txt"));
+        let game_state = setup_game_state(Some("tests/validate_castling_path_success.txt"));
 
         let king_source = Position::new(7, 4);
         let king_destination = Position::new(7, 6);
@@ -369,7 +366,7 @@ mod tests {
 
     #[test]
     fn test_validate_castling_path_short_castle_fail() {
-        let game_state = setup(Some("tests/validate_castling_path_fail.txt"));
+        let game_state = setup_game_state(Some("tests/validate_castling_path_fail.txt"));
 
         let king_source = Position::new(7, 4);
         let king_destination = Position::new(7, 6);
@@ -385,7 +382,7 @@ mod tests {
 
     #[test]
     fn test_validate_castling_path_long_castle_success() {
-        let game_state = setup(Some("tests/validate_castling_path_success.txt"));
+        let game_state = setup_game_state(Some("tests/validate_castling_path_success.txt"));
 
         let king_source = Position::new(7, 4);
         let king_destination = Position::new(7, 2);
@@ -400,7 +397,7 @@ mod tests {
 
     #[test]
     fn test_validate_castling_path_long_castle_fail() {
-        let game_state = setup(Some("tests/validate_castling_path_fail.txt"));
+        let game_state = setup_game_state(Some("tests/validate_castling_path_fail.txt"));
 
         let king_source = Position::new(7, 4);
         let king_destination = Position::new(7, 2);

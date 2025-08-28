@@ -3,7 +3,7 @@ use super::pgn_parser_steps::common::{PgnParserStep, StepResult};
 use crate::errors::MoveError;
 use crate::errors::constants::INTERNAL_ERROR_05;
 use crate::game_state::GameState;
-use crate::types::Move;
+use crate::movement::Move;
 
 pub fn parse_move(game_state: &GameState, pgn_move: &str) -> Result<Move, MoveError> {
     let first_step = First::new(pgn_move);
@@ -22,11 +22,11 @@ pub fn parse_move(game_state: &GameState, pgn_move: &str) -> Result<Move, MoveEr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::test_helper::setup;
+    use crate::utils::test_helper::setup_game_state;
 
     #[test]
     fn test_disambiguation_same_column() -> Result<(), MoveError> {
-        let game_state = setup(Some("tests/validate_disambiguation_same_column.txt"));
+        let game_state = setup_game_state(Some("tests/validate_disambiguation_same_column.txt"));
 
         let result = parse_move(&game_state, "N3d4")?;
 
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn test_disambiguation_same_line() -> Result<(), MoveError> {
-        let game_state = setup(Some("tests/validate_disambiguation_same_line.txt"));
+        let game_state = setup_game_state(Some("tests/validate_disambiguation_same_line.txt"));
 
         let result = parse_move(&game_state, "Ncd5")?;
 

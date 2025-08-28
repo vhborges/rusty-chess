@@ -1,6 +1,6 @@
 use chess::GameState;
 use chess::errors::{ChessPositionError, MoveError, PgnError};
-use chess::types::Position;
+use chess::movement::Position;
 
 macro_rules! setup_board {
         ( $game_state:expr, $( $x:expr ),* ) => {

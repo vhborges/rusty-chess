@@ -1,6 +1,7 @@
 pub mod constants {
     use std::ops::RangeInclusive;
 
+    // TODO increase this number just to see what happens
     pub const BOARD_SIZE: usize = 8;
 
     pub const WHITE_CASTLING_LINE: usize = BOARD_SIZE - 1;
@@ -15,9 +16,9 @@ pub mod constants {
     pub const COL_RANGE: RangeInclusive<char> = 'a'..='h';
 }
 
+use crate::board::constants::{BLANK_SQUARE, BOARD_SIZE, COLUMNS, LINES};
+use crate::movement::{Direction, Position, PositionI8};
 use crate::pieces::Piece;
-use crate::types::board::constants::{BLANK_SQUARE, BOARD_SIZE, COLUMNS, LINES};
-use crate::types::{Direction, Position, PositionI8};
 
 type InternalBoard = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
@@ -41,6 +42,10 @@ impl Board {
 
     pub fn get_piece(&self, position: Position) -> Option<Piece> {
         self.board[position.line][position.col]
+    }
+
+    pub fn get_piece_as_mut(&mut self, position: Position) -> Option<&mut Piece> {
+        self.board[position.line][position.col].as_mut()
     }
 
     pub fn update_piece(&mut self, position: Position, piece: Piece) {
@@ -102,6 +107,13 @@ impl Board {
 
         true
     }
+
+    pub fn update_piece_state(&mut self, pos: Position) {
+        let piece = self.get_piece_as_mut(pos).unwrap();
+
+        piece.deny_castling_rights(pos);
+        piece.deny_two_rows();
+    }
 }
 
 pub struct BoardPieceIterator<'a> {
@@ -134,5 +146,44 @@ impl Iterator for BoardPieceIterator<'_> {
         }
 
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::test_helper::setup_board;
+
+    #[test]
+    fn test_update_castling_rights_king_move() {
+        let mut board = setup_board(None);
+
+        board.update_piece_state(Position::new(0, 4));
+
+        let piece = board.get_piece(Position::new(0, 4)).unwrap();
+        assert!(!piece.is_short_castling_available());
+        assert!(!piece.is_long_castling_available());
+    }
+
+    #[test]
+    fn test_update_castling_rights_long_rook_move() {
+        let mut board = setup_board(None);
+
+        board.update_piece_state(Position::new(0, 0));
+
+        let piece = board.get_piece(Position::new(0, 0)).unwrap();
+        assert!(piece.is_short_castling_available());
+        assert!(!piece.is_long_castling_available());
+    }
+
+    #[test]
+    fn test_update_castling_rights_short_rook_move() {
+        let mut board = setup_board(None);
+
+        board.update_piece_state(Position::new(0, 7));
+
+        let piece = board.get_piece(Position::new(0, 7)).unwrap();
+        assert!(!piece.is_short_castling_available());
+        assert!(piece.is_long_castling_available());
     }
 }

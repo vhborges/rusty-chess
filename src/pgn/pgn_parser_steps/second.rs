@@ -1,12 +1,12 @@
 use super::Third;
 use super::common::{CommonIters, ParserState, PgnParserStep, StepResult};
 use crate::GameState;
+use crate::board::constants::{COL_RANGE, LINE_RANGE};
 use crate::errors::constants::INTERNAL_ERROR_03;
 use crate::errors::{MoveError, PgnError};
+use crate::movement::{ChessPosition, Move};
 use crate::pgn::constants::CAPTURE;
 use crate::pieces::PieceType;
-use crate::types::board::constants::{COL_RANGE, LINE_RANGE};
-use crate::types::{ChessPosition, Move};
 
 const STEP: &str = "second";
 
@@ -65,7 +65,7 @@ where
     fn handle_capture(mut self, piece_type: PieceType) -> Result<StepResult<'b>, MoveError> {
         self.state.capture = true;
 
-        if piece_type != PieceType::Pawn {
+        if !matches!(piece_type, PieceType::Pawn(_)) {
             self.state.disambiguation = None;
         }
 
@@ -117,7 +117,7 @@ impl PgnParserStep for Second<'_> {
             self.handle_capture(piece_type)
         }
         else if self.pgn_len > 3
-            && piece_type != PieceType::Pawn
+            && !matches!(piece_type, PieceType::Pawn(_))
             && (LINE_RANGE.contains(&current_pgn_char) || COL_RANGE.contains(&current_pgn_char))
         {
             self.handle_disambiguation(current_pgn_char)

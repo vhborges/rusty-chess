@@ -1,4 +1,5 @@
-use crate::types::{Board, Move};
+use crate::Board;
+use crate::movement::Move;
 use std::str::Chars;
 
 pub fn perform_move(move_: Move, board: &mut Board) {

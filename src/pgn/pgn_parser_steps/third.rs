@@ -3,9 +3,9 @@ use super::common::{CommonIters, ParserState, PgnParserStep, StepResult};
 use crate::GameState;
 use crate::errors::constants::INTERNAL_ERROR_03;
 use crate::errors::{ChessPositionError, MoveError, PgnError};
+use crate::movement::{ChessPosition, Move};
 use crate::pgn::constants::CAPTURE;
 use crate::pieces::PieceType;
-use crate::types::{ChessPosition, Move};
 
 const STEP: &str = "third";
 
@@ -90,7 +90,7 @@ impl PgnParserStep for Third<'_> {
         else if current_pgn_char == CAPTURE {
             self.handle_capture()
         }
-        else if current_pgn_char.is_ascii_digit() && piece_type != PieceType::Pawn {
+        else if current_pgn_char.is_ascii_digit() && !matches!(piece_type, PieceType::Pawn(_)) {
             self.handle_digit(game_state, piece_type, current_pgn_char)
         }
         else if current_pgn_char.is_lowercase() {

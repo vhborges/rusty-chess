@@ -1,10 +1,12 @@
-use crate::types::PositionI8;
+use crate::movement::PositionI8;
 
 pub struct Direction {
     pub horizontal: i8,
     pub vertical: i8,
 }
 
+// TODO implement a iterator for this struct
+// TODO use this iterator in the piece types
 impl Direction {
     pub fn new(horizontal: i8, vertical: i8) -> Self {
         Self {

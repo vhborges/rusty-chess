@@ -32,11 +32,9 @@ impl PgnParserStep for First<'_> {
         let current_pgn_char = self.iters.pgn_chars.next().ok_or(PgnError::EmptyInput)?;
         let piece_type: PieceType = current_pgn_char.try_into()?;
 
-        self.state.dest_col = if piece_type == PieceType::Pawn {
-            Some(current_pgn_char)
-        }
-        else {
-            None
+        self.state.dest_col = match piece_type {
+            PieceType::Pawn(_) => Some(current_pgn_char),
+            _ => None,
         };
 
         self.state.disambiguation = self.state.dest_col; //Possibly, could be used by the second step

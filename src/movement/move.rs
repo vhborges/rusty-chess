@@ -1,4 +1,4 @@
-use crate::types::Position;
+use crate::movement::Position;
 
 #[derive(Copy, Clone)]
 /// Represents a single piece move

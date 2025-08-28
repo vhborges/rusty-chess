@@ -1,5 +1,5 @@
+use crate::board::constants::{BOARD_SIZE, COL_RANGE, LINE_RANGE};
 use crate::errors::{ChessPositionError, PositionError};
-use crate::types::board::constants::{BOARD_SIZE, COL_RANGE, LINE_RANGE};
 
 #[derive(Copy, Clone, Debug, PartialEq, Default)]
 pub struct Position {
@@ -61,10 +61,10 @@ impl TryFrom<Position> for ChessPosition {
 
     fn try_from(position: Position) -> Result<Self, Self::Error> {
         if !(0..BOARD_SIZE).contains(&position.line) {
-            return Err(PositionError::InvalidLine(position.line));
+            return Err(PositionError::InvalidLine(position.line as i8));
         }
         if !(0..BOARD_SIZE).contains(&position.col) {
-            return Err(PositionError::InvalidColumn(position.col));
+            return Err(PositionError::InvalidColumn(position.col as i8));
         }
 
         let chess_line = ((BOARD_SIZE - position.line) as u8 + b'0') as char;
@@ -97,6 +97,21 @@ impl Iterator for Position {
         }
 
         Some(*self)
+    }
+}
+
+impl TryFrom<PositionI8> for Position {
+    type Error = PositionError;
+
+    fn try_from(value: PositionI8) -> Result<Self, Self::Error> {
+        if !(0..BOARD_SIZE as i8).contains(&value.line) {
+            return Err(PositionError::InvalidLine(value.line));
+        }
+        if !(0..BOARD_SIZE as i8).contains(&value.col) {
+            return Err(PositionError::InvalidColumn(value.col));
+        }
+
+        Ok(Position::new(value.line as usize, value.col as usize))
     }
 }
 

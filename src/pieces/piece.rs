@@ -1,29 +1,55 @@
-use std::fmt::Display;
-
-use super::types::{bishop, king, knight, pawn, queen, rook};
+use super::types::{King, Pawn, Rook, bishop, king, knight, pawn, queen, rook};
+use super::utils::Color;
+use crate::Board;
 use crate::errors::constants::INTERNAL_ERROR_04;
 use crate::errors::{MoveError, PgnError};
+use crate::movement::Position;
 use crate::pieces::piece_type::PieceType;
-use crate::types::{Board, Color, Position};
+use std::fmt::Display;
 
 #[derive(Copy, Clone)]
 pub struct Piece {
     pub piece_type: PieceType,
     pub color: Color,
-    pub short_castling_available: bool,
-    pub long_castling_available: bool,
     symbol: char,
 }
 
 impl Piece {
     pub fn new(piece_type: PieceType, color: Color) -> Self {
-        let castling_available = matches!(piece_type, PieceType::King | PieceType::Rook);
         Self {
             piece_type,
             color,
-            short_castling_available: castling_available,
-            long_castling_available: castling_available,
             symbol: Self::get_symbol(&piece_type, &color),
+        }
+    }
+
+    pub fn is_short_castling_available(&self) -> bool {
+        match self.piece_type {
+            PieceType::King(k) => k.short_castling_available,
+            PieceType::Rook(r) => r.short_castling_available,
+            _ => false,
+        }
+    }
+
+    pub fn is_long_castling_available(&self) -> bool {
+        match self.piece_type {
+            PieceType::King(k) => k.long_castling_available,
+            PieceType::Rook(r) => r.long_castling_available,
+            _ => false,
+        }
+    }
+
+    pub fn deny_castling_rights(&mut self, pos: Position) {
+        match &mut self.piece_type {
+            PieceType::King(k) => k.deny_castling_rights(),
+            PieceType::Rook(r) => r.deny_castling_rights(pos),
+            _ => (),
+        }
+    }
+
+    pub fn deny_two_rows(&mut self) {
+        if let PieceType::Pawn(p) = &mut self.piece_type {
+            p.allow_two_rows = false;
         }
     }
 
@@ -36,8 +62,8 @@ impl Piece {
         self.validate_move(origin, destination, board.get_piece(destination), false)?;
 
         match self.piece_type {
-            PieceType::King => Ok(king::can_castle(self, board, origin, destination)),
-            PieceType::Rook => Ok(rook::can_castle(self, board, origin, destination)),
+            PieceType::King(k) => Ok(k.can_castle(self.color, board, origin, destination)),
+            PieceType::Rook(r) => Ok(r.can_castle(board, origin, destination)),
             _ => Err(MoveError::InvalidCastle("Invalid piece for castling")),
         }
     }
@@ -52,11 +78,11 @@ impl Piece {
 
         match self.piece_type {
             PieceType::Bishop => Ok(bishop::can_move(board, origin, destination)),
-            PieceType::King => Ok(king::can_move(origin, destination)),
+            PieceType::King(_) => Ok(King::can_move(origin, destination)),
             PieceType::Knight => Ok(knight::can_move(origin, destination)),
-            PieceType::Pawn => Ok(pawn::can_move(self, board, origin, destination)),
+            PieceType::Pawn(p) => Ok(p.can_move(self, board, origin, destination)),
             PieceType::Queen => Ok(queen::can_move(board, origin, destination)),
-            PieceType::Rook => Ok(rook::can_move(board, origin, destination)),
+            PieceType::Rook(_) => Ok(Rook::can_move(board, origin, destination)),
             PieceType::None => panic!("{}", INTERNAL_ERROR_04),
         }
     }
@@ -75,11 +101,23 @@ impl Piece {
 
         match self.piece_type {
             PieceType::Bishop => Ok(bishop::attacks(board, origin, destination)),
-            PieceType::King => Ok(king::attacks(origin, destination)),
+            PieceType::King(_) => Ok(King::attacks(origin, destination)),
             PieceType::Knight => Ok(knight::attacks(origin, destination)),
-            PieceType::Pawn => Ok(pawn::attacks(self.color, origin, destination)),
+            PieceType::Pawn(_) => Ok(Pawn::attacks(self.color, origin, destination)),
             PieceType::Queen => Ok(queen::attacks(board, origin, destination)),
-            PieceType::Rook => Ok(rook::attacks(board, origin, destination)),
+            PieceType::Rook(_) => Ok(Rook::attacks(board, origin, destination)),
+            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
+        }
+    }
+
+    pub fn get_possible_moves(&self, board: &Board, pos: Position) -> Vec<Position> {
+        match self.piece_type {
+            PieceType::Bishop => bishop::get_possible_moves(board, pos),
+            PieceType::King(_) => King::get_possible_moves(board, pos),
+            PieceType::Knight => knight::get_possible_moves(board, pos),
+            PieceType::Pawn(p) => p.get_possible_moves(self.color, board, pos),
+            PieceType::Queen => queen::get_possible_moves(board, pos),
+            PieceType::Rook(_) => Rook::get_possible_moves(board, pos),
             PieceType::None => panic!("{}", INTERNAL_ERROR_04),
         }
     }
@@ -119,11 +157,11 @@ impl Piece {
     fn get_symbol(piece_type: &PieceType, color: &Color) -> char {
         let symbols = match piece_type {
             PieceType::Bishop => bishop::SYMBOLS,
-            PieceType::King => king::SYMBOLS,
+            PieceType::King(_) => king::SYMBOLS,
             PieceType::Knight => knight::SYMBOLS,
-            PieceType::Pawn => pawn::SYMBOLS,
+            PieceType::Pawn(_) => pawn::SYMBOLS,
             PieceType::Queen => queen::SYMBOLS,
-            PieceType::Rook => rook::SYMBOLS,
+            PieceType::Rook(_) => rook::SYMBOLS,
             PieceType::None => panic!("{}", INTERNAL_ERROR_04),
         };
 

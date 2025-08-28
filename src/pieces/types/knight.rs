@@ -1,4 +1,5 @@
-use crate::types::{Position, PositionI8};
+use crate::Board;
+use crate::movement::{Position, PositionI8};
 
 pub const SYMBOLS: [char; 2] = ['\u{2658}', '\u{265E}'];
 
@@ -15,4 +16,38 @@ pub fn can_move(source: Position, destination: Position) -> bool {
 
 pub fn attacks(origin: Position, destination: Position) -> bool {
     can_move(origin, destination)
+}
+
+pub fn get_possible_moves(board: &Board, source: Position) -> Vec<Position> {
+    let mut result = Vec::new();
+
+    for dx in (-2..=2).step_by(4) {
+        for dy in (-1..=1).step_by(2) {
+            let dest =
+                match PositionI8::new(source.line as i8 + dy, source.col as i8 + dx).try_into() {
+                    Ok(pos) => pos,
+                    Err(_) => continue,
+                };
+
+            if !board.is_position_occupied(dest) {
+                result.push(dest);
+            }
+        }
+    }
+
+    for dx in (-1..=1).step_by(2) {
+        for dy in (-2..=2).step_by(4) {
+            let dest =
+                match PositionI8::new(source.line as i8 + dy, source.col as i8 + dx).try_into() {
+                    Ok(pos) => pos,
+                    Err(_) => continue,
+                };
+
+            if !board.is_position_occupied(dest) {
+                result.push(dest);
+            }
+        }
+    }
+
+    result
 }

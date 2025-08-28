@@ -4,8 +4,8 @@ use std::fmt::Display;
 #[derive(Debug, PartialEq)]
 #[non_exhaustive]
 pub enum PositionError {
-    InvalidLine(usize),
-    InvalidColumn(usize),
+    InvalidLine(i8),
+    InvalidColumn(i8),
 }
 
 impl Error for PositionError {}

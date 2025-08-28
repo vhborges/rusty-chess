@@ -1,13 +1,16 @@
 use crate::errors::PgnError;
+use crate::pieces::types::King as KingStruct;
+use crate::pieces::types::Pawn as PawnStruct;
+use crate::pieces::types::Rook as RookStruct;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum PieceType {
     Bishop,
-    King,
+    King(KingStruct),
     Knight,
-    Pawn,
+    Pawn(PawnStruct),
     Queen,
-    Rook,
+    Rook(RookStruct),
     None,
 }
 
@@ -17,11 +20,11 @@ impl TryFrom<char> for PieceType {
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
             'B' => Ok(PieceType::Bishop),
-            'K' => Ok(PieceType::King),
+            'K' => Ok(PieceType::King(KingStruct::new())),
             'N' => Ok(PieceType::Knight),
-            'a'..='h' | 'P' => Ok(PieceType::Pawn),
+            'a'..='h' | 'P' => Ok(PieceType::Pawn(PawnStruct::new())),
             'Q' => Ok(PieceType::Queen),
-            'R' => Ok(PieceType::Rook),
+            'R' => Ok(PieceType::Rook(RookStruct::new())),
             'O' => Ok(PieceType::None),
             _ => Err(PgnError::InvalidPiece(value)),
         }

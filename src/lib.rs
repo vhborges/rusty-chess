@@ -1,12 +1,14 @@
+mod board;
 pub mod errors;
 mod game_state;
 mod io;
+pub mod movement;
 mod pgn;
 mod pieces;
-pub mod types;
 mod utils;
 
 use crate::io::ui;
+pub use board::Board;
 pub use game_state::GameState;
 
 pub fn run(game_state: &mut GameState) {
