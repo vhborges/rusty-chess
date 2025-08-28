@@ -1,5 +1,5 @@
+use super::Color;
 use super::types::{King, Pawn, Rook, bishop, king, knight, pawn, queen, rook};
-use super::utils::Color;
 use crate::Board;
 use crate::errors::constants::INTERNAL_ERROR_04;
 use crate::errors::{MoveError, PgnError};

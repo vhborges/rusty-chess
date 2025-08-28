@@ -1,5 +1,5 @@
+use super::super::Color;
 use super::super::Piece;
-use super::super::utils::Color;
 use crate::Board;
 use crate::movement::{Position, PositionI8};
 

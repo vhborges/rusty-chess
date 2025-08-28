@@ -1,4 +1,4 @@
-use super::super::utils::Color;
+use super::super::Color;
 use crate::Board;
 use crate::board::constants::{BLACK_CASTLING_LINE, WHITE_CASTLING_LINE};
 use crate::movement::{Position, PositionI8};

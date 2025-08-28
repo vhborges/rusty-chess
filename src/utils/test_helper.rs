@@ -1,7 +1,6 @@
 use crate::io::file_manager::initial_positions;
 use crate::movement::ChessPosition;
-use crate::pieces::utils::Color;
-use crate::pieces::{Piece, PieceType};
+use crate::pieces::{Color, Piece, PieceType};
 use crate::utils::helper_functions::get_next_char;
 use crate::{Board, GameState};
 
