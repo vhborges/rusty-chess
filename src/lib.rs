@@ -10,6 +10,7 @@ mod utils;
 use crate::io::ui;
 pub use board::Board;
 pub use game_state::GameState;
+use std::process::exit;
 
 pub fn run(game_state: &mut GameState) {
     ui::print_game(game_state);
@@ -22,6 +23,10 @@ pub fn run(game_state: &mut GameState) {
                     println!("{next_move}");
                     println!("{move_err}");
                     continue;
+                }
+                if game_state.is_checkmate() {
+                    println!("Checkmate!");
+                    exit(0)
                 }
             }
             Err(move_err) => {

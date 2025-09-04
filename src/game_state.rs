@@ -8,7 +8,6 @@ use crate::pieces::types::{King, Rook};
 use crate::pieces::{Color, Piece, PieceType};
 use crate::utils::helper_functions::{get_next_char, perform_move};
 use std::mem::{discriminant, swap};
-use std::process::exit;
 
 pub struct GameState {
     board: Board,
@@ -177,11 +176,6 @@ impl GameState {
 
         perform_move(next_move, &mut self.board);
 
-        if self.is_checkmate() {
-            println!("Checkmate!");
-            exit(0)
-        }
-
         self.turn.flip();
 
         Ok(())
@@ -295,7 +289,7 @@ impl GameState {
         Ok(())
     }
 
-    fn is_checkmate(&self) -> bool {
+    pub fn is_checkmate(&self) -> bool {
         let (color, king_pos) = match self.turn {
             Color::White => (Color::Black, self.black_king_position),
             Color::Black => (Color::White, self.white_king_position),
