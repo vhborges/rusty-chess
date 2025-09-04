@@ -7,7 +7,7 @@ use crate::pgn::pgn_parser::parse_move;
 use crate::pieces::types::{King, Rook};
 use crate::pieces::{Color, Piece, PieceType};
 use crate::utils::helper_functions::{get_next_char, perform_move};
-use std::mem::swap;
+use std::mem::{discriminant, swap};
 use std::process::exit;
 
 pub struct GameState {
@@ -109,7 +109,7 @@ impl GameState {
         destination: Position,
         capture: bool,
     ) -> Result<bool, MoveError> {
-        if piece.piece_type != piece_type {
+        if discriminant(&piece.piece_type) != discriminant(&piece_type) {
             return Ok(false);
         }
         if piece.color != self.turn {
@@ -193,7 +193,7 @@ impl GameState {
 
         let king_pos = self.get_king_pos(temporary_board, next_move.destination());
 
-        if self.is_king_in_check(&temporary_board, king_pos) {
+        if self.is_king_in_check(&temporary_board, king_pos, self.turn) {
             return Err(MoveError::KingWouldBeInCheck);
         }
 
@@ -230,12 +230,11 @@ impl GameState {
         }
     }
 
-    fn is_king_in_check(&self, board: &Board, king_pos: Position) -> bool {
-        for (piece, pos) in board {
-            if piece.color != self.turn
-                && piece
-                    .attacks(board, pos, king_pos, false, false)
-                    .expect(INTERNAL_ERROR_02)
+    fn is_king_in_check(&self, board: &Board, king_pos: Position, color: Color) -> bool {
+        for (piece, pos) in board.into_iter().filter(|(piece, _)| piece.color != color) {
+            if piece
+                .attacks(board, pos, king_pos, false, false)
+                .expect(INTERNAL_ERROR_02)
             {
                 return true;
             }
@@ -297,12 +296,12 @@ impl GameState {
     }
 
     fn is_checkmate(&self) -> bool {
-        let king_pos = match self.turn {
-            Color::White => self.black_king_position,
-            Color::Black => self.white_king_position,
+        let (color, king_pos) = match self.turn {
+            Color::White => (Color::Black, self.black_king_position),
+            Color::Black => (Color::White, self.white_king_position),
         };
 
-        if !self.is_king_in_check(&self.board, king_pos) {
+        if !self.is_king_in_check(&self.board, king_pos, color) {
             return false;
         }
 
@@ -313,7 +312,7 @@ impl GameState {
             let next_move = Move::new(king_pos, dest);
             perform_move(next_move, &mut temporary_board);
 
-            if !self.is_king_in_check(&temporary_board, dest) {
+            if !self.is_king_in_check(&temporary_board, dest, color) {
                 return false;
             }
         }
@@ -333,7 +332,7 @@ impl GameState {
                 let next_move = Move::new(source, dest);
                 perform_move(next_move, &mut temporary_board);
 
-                if !self.is_king_in_check(&temporary_board, king_pos) {
+                if !self.is_king_in_check(&temporary_board, king_pos, color) {
                     return false;
                 }
             }

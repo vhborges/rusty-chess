@@ -1,6 +1,7 @@
 use chess::GameState;
 use chess::errors::{ChessPositionError, MoveError, PgnError};
 use chess::movement::Position;
+use std::mem::discriminant;
 
 macro_rules! setup_board {
         ( $game_state:expr, $( $x:expr ),* ) => {
@@ -34,8 +35,8 @@ fn make_and_validate_move(
     assert!(dest_piece.is_some());
 
     assert_eq!(
-        origin_piece.unwrap().piece_type,
-        dest_piece.unwrap().piece_type
+        discriminant(&origin_piece.unwrap().piece_type),
+        discriminant(&dest_piece.unwrap().piece_type)
     );
     assert_eq!(origin_piece.unwrap().color, dest_piece.unwrap().color);
 
