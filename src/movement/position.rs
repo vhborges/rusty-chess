@@ -23,6 +23,10 @@ impl PositionI8 {
     pub fn new(line: i8, col: i8) -> Self {
         Self { line, col }
     }
+
+    pub fn is_position_valid(&self) -> bool {
+        (0..BOARD_SIZE as i8).contains(&self.line) && (0..BOARD_SIZE as i8).contains(&self.col)
+    }
 }
 
 pub struct ChessPosition {

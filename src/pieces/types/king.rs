@@ -98,14 +98,10 @@ impl King {
                     continue;
                 }
 
-                let dest = match PositionI8::new(source.line as i8 + dy, source.col as i8 + dx)
-                    .try_into()
+                let dest_i8 = PositionI8::new(source.line as i8 + dy, source.col as i8 + dx);
+                if let Ok(dest) = dest_i8.try_into()
+                    && !board.is_position_occupied(dest)
                 {
-                    Ok(pos) => pos,
-                    Err(_) => continue,
-                };
-
-                if !board.is_position_occupied(dest) {
                     result.push(dest);
                 }
             }

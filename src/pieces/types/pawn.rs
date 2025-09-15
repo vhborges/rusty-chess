@@ -44,7 +44,7 @@ impl Pawn {
 
         vertical_distance == 1
             || (self.allow_two_rows && vertical_distance == 2)
-                && board.is_path_clear(src, dest, vertical_distance)
+                && board.is_path_clear(src, dest, vertical_distance as usize)
     }
 
     pub fn attacks(piece_color: Color, source: Position, destination: Position) -> bool {
@@ -75,27 +75,24 @@ impl Pawn {
 
         let mut dest_i8: PositionI8 = source.into();
 
-        // 1 square
+        // 1 row
         dest_i8.line += direction;
-        match dest_i8.try_into() {
-            Ok(dest) => {
-                if !board.is_position_occupied(dest) {
-                    result.push(dest)
-                }
-            }
-            Err(_) => return result,
+        if let Ok(dest) = dest_i8.try_into()
+            && !board.is_position_occupied(dest)
+        {
+            result.push(dest)
+        }
+        else {
+            return result;
         }
 
-        // 2 squares
+        // 2 rows
         if self.allow_two_rows {
             dest_i8.line += direction;
-            match dest_i8.try_into() {
-                Ok(dest) => {
-                    if !board.is_position_occupied(dest) {
-                        result.push(dest)
-                    }
-                }
-                Err(_) => return result,
+            if let Ok(dest) = dest_i8.try_into()
+                && !board.is_position_occupied(dest)
+            {
+                result.push(dest)
             }
         }
 

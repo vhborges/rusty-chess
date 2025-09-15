@@ -1,7 +1,7 @@
 use super::super::Color;
 use crate::Board;
 use crate::board::constants::{BLACK_CASTLING_LINE, WHITE_CASTLING_LINE};
-use crate::movement::{Position, PositionI8};
+use crate::movement::{Direction, Position, PositionI8};
 use std::cmp::max;
 
 pub const SYMBOLS: [char; 2] = ['\u{2656}', '\u{265C}'];
@@ -35,7 +35,7 @@ impl Rook {
         let src: PositionI8 = source.into();
         let dest: PositionI8 = destination.into();
 
-        let nr_of_squares = max((dest.col - src.col).abs(), (dest.line - src.line).abs());
+        let nr_of_squares = max((dest.col - src.col).abs(), (dest.line - src.line).abs()) as usize;
 
         Self::can_move_internal(board, src, dest, nr_of_squares)
     }
@@ -44,45 +44,31 @@ impl Rook {
         let src: PositionI8 = source.into();
         let dest: PositionI8 = destination.into();
 
-        let nr_of_squares = max((dest.col - src.col).abs(), (dest.line - src.line).abs()) - 1;
+        let nr_of_squares =
+            (max((dest.col - src.col).abs(), (dest.line - src.line).abs()) - 1) as usize;
 
         Self::can_move_internal(board, src, dest, nr_of_squares)
     }
 
     pub fn get_possible_moves(board: &Board, source: Position) -> Vec<Position> {
         let mut result = Vec::new();
+        let pos_i8 = source.into();
 
         for direction in (-1..=1).step_by(2) {
-            // Vertical
-            let mut dest =
-                match PositionI8::new(source.line as i8 + direction, source.col as i8).try_into() {
-                    Ok(pos) => pos,
-                    Err(_) => continue,
-                };
-
-            while !board.is_position_occupied(dest) {
-                result.push(dest);
-                dest = match PositionI8::new(dest.line as i8 + direction, dest.col as i8).try_into()
-                {
-                    Ok(pos) => pos,
-                    Err(_) => break,
-                };
+            let vertical_dir = Direction::new(0, direction, pos_i8);
+            for pos in vertical_dir {
+                if board.is_position_occupied(pos) {
+                    break;
+                }
+                result.push(pos);
             }
 
-            // Horizontal
-            dest = match PositionI8::new(source.line as i8, source.col as i8 + direction).try_into()
-            {
-                Ok(pos) => pos,
-                Err(_) => continue,
-            };
-
-            while !board.is_position_occupied(dest) {
-                result.push(dest);
-                dest = match PositionI8::new(dest.line as i8, dest.col as i8 + direction).try_into()
-                {
-                    Ok(pos) => pos,
-                    Err(_) => break,
-                };
+            let horizontal_dir = Direction::new(direction, 0, pos_i8);
+            for pos in horizontal_dir {
+                if board.is_position_occupied(pos) {
+                    break;
+                }
+                result.push(pos);
             }
         }
 
@@ -93,7 +79,7 @@ impl Rook {
         board: &Board,
         source: PositionI8,
         destination: PositionI8,
-        nr_of_squares: i8,
+        nr_of_squares: usize,
     ) -> bool {
         // Logical XNOR
         if (source.line == destination.line) == (source.col == destination.col) {

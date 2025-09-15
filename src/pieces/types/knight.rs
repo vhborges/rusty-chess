@@ -23,13 +23,10 @@ pub fn get_possible_moves(board: &Board, source: Position) -> Vec<Position> {
 
     for dx in (-2..=2).step_by(4) {
         for dy in (-1..=1).step_by(2) {
-            let dest =
-                match PositionI8::new(source.line as i8 + dy, source.col as i8 + dx).try_into() {
-                    Ok(pos) => pos,
-                    Err(_) => continue,
-                };
-
-            if !board.is_position_occupied(dest) {
+            let dest_i8 = PositionI8::new(source.line as i8 + dy, source.col as i8 + dx);
+            if let Ok(dest) = dest_i8.try_into()
+                && !board.is_position_occupied(dest)
+            {
                 result.push(dest);
             }
         }
@@ -37,13 +34,10 @@ pub fn get_possible_moves(board: &Board, source: Position) -> Vec<Position> {
 
     for dx in (-1..=1).step_by(2) {
         for dy in (-2..=2).step_by(4) {
-            let dest =
-                match PositionI8::new(source.line as i8 + dy, source.col as i8 + dx).try_into() {
-                    Ok(pos) => pos,
-                    Err(_) => continue,
-                };
-
-            if !board.is_position_occupied(dest) {
+            let dest_i8 = PositionI8::new(source.line as i8 + dy, source.col as i8 + dx);
+            if let Ok(dest) = dest_i8.try_into()
+                && !board.is_position_occupied(dest)
+            {
                 result.push(dest);
             }
         }

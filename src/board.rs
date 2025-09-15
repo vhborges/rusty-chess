@@ -90,19 +90,14 @@ impl Board {
         self,
         source: PositionI8,
         destination: PositionI8,
-        nr_of_squares: i8,
+        nr_of_squares: usize,
     ) -> bool {
         let direction = Direction::from_position_i8(source, destination);
 
-        let mut i = (source.line + direction.vertical) as usize;
-        let mut j = (source.col + direction.horizontal) as usize;
-        for _ in 0..nr_of_squares {
-            if self.is_position_occupied(Position::new(i, j)) {
+        for pos in direction.into_iter().take(nr_of_squares) {
+            if self.is_position_occupied(pos) {
                 return false;
             }
-
-            i = (i as i8 + direction.vertical) as usize;
-            j = (j as i8 + direction.horizontal) as usize;
         }
 
         true

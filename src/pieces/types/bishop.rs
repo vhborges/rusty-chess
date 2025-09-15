@@ -1,5 +1,5 @@
 use crate::Board;
-use crate::movement::{Position, PositionI8};
+use crate::movement::{Direction, Position, PositionI8};
 
 pub const SYMBOLS: [char; 2] = ['\u{2657}', '\u{265D}'];
 
@@ -7,7 +7,7 @@ pub fn can_move(board: &Board, source: Position, destination: Position) -> bool 
     let src: PositionI8 = source.into();
     let dest: PositionI8 = destination.into();
 
-    let nr_of_squares = (dest.col - src.col).abs();
+    let nr_of_squares = (dest.col - src.col).unsigned_abs() as usize;
 
     is_move_valid(src, dest) && board.is_path_clear(src, dest, nr_of_squares)
 }
@@ -16,7 +16,7 @@ pub fn attacks(board: &Board, source: Position, destination: Position) -> bool {
     let src: PositionI8 = source.into();
     let dest: PositionI8 = destination.into();
 
-    let nr_of_squares = (dest.col - src.col).abs() - 1;
+    let nr_of_squares = ((dest.col - src.col).abs() - 1) as usize;
 
     is_move_valid(src, dest) && board.is_path_clear(src, dest, nr_of_squares)
 }
@@ -24,21 +24,17 @@ pub fn attacks(board: &Board, source: Position, destination: Position) -> bool {
 // TODO unit test this function with a source in the edges of the board
 pub fn get_possible_moves(board: &Board, source: Position) -> Vec<Position> {
     let mut result = Vec::new();
+    let pos_i8 = source.into();
 
     for dx in (-1..=1).step_by(2) {
         for dy in (-1..=1).step_by(2) {
-            let mut dest =
-                match PositionI8::new(source.line as i8 + dx, source.col as i8 + dy).try_into() {
-                    Ok(pos) => pos,
-                    Err(_) => continue,
-                };
+            let direction = Direction::new(dx, dy, pos_i8);
 
-            while !board.is_position_occupied(dest) {
-                result.push(dest);
-                dest = match PositionI8::new(dest.line as i8 + dx, dest.col as i8 + dy).try_into() {
-                    Ok(pos) => pos,
-                    Err(_) => break,
-                };
+            for pos in direction {
+                if board.is_position_occupied(pos) {
+                    break;
+                }
+                result.push(pos);
             }
         }
     }
