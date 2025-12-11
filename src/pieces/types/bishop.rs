@@ -21,7 +21,6 @@ pub fn attacks(board: &Board, source: Position, destination: Position) -> bool {
     is_move_valid(src, dest) && board.is_path_clear(src, dest, nr_of_squares)
 }
 
-// TODO unit test this function with a source in the edges of the board
 pub fn get_possible_moves(board: &Board, source: Position) -> Vec<Position> {
     let mut result = Vec::new();
     let pos_i8 = source.into();
@@ -52,4 +51,102 @@ fn is_move_valid(source: PositionI8, destination: PositionI8) -> bool {
     }
 
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::test_helper::setup_board;
+
+    #[test]
+    fn test_get_possible_moves_empty_board_bottom_left() {
+        let board = setup_board(Some("tests/bishop/only_bishop_bottom_left.txt"));
+        let source = Position::new(7, 0);
+
+        let expected = vec![
+            Position::new(6, 1),
+            Position::new(5, 2),
+            Position::new(4, 3),
+            Position::new(3, 4),
+            Position::new(2, 5),
+            Position::new(1, 6),
+            Position::new(0, 7),
+        ];
+
+        let result = get_possible_moves(&board, source);
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn test_get_possible_moves_empty_board_top_right() {
+        let board = setup_board(Some("tests/bishop/only_bishop_top_right.txt"));
+        let source = Position::new(0, 7);
+
+        let expected = vec![
+            Position::new(1, 6),
+            Position::new(2, 5),
+            Position::new(3, 4),
+            Position::new(4, 3),
+            Position::new(5, 2),
+            Position::new(6, 1),
+            Position::new(7, 0),
+        ];
+
+        let result = get_possible_moves(&board, source);
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn test_get_possible_moves_empty_board_top_left() {
+        let board = setup_board(Some("tests/bishop/only_bishop_top_left.txt"));
+        let source = Position::new(0, 0);
+
+        let expected = vec![
+            Position::new(1, 1),
+            Position::new(2, 2),
+            Position::new(3, 3),
+            Position::new(4, 4),
+            Position::new(5, 5),
+            Position::new(6, 6),
+            Position::new(7, 7),
+        ];
+
+        let result = get_possible_moves(&board, source);
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn test_get_possible_moves_empty_board_bottom_right() {
+        let board = setup_board(Some("tests/bishop/only_bishop_bottom_right.txt"));
+        let source = Position::new(7, 7);
+
+        let expected = vec![
+            Position::new(6, 6),
+            Position::new(5, 5),
+            Position::new(4, 4),
+            Position::new(3, 3),
+            Position::new(2, 2),
+            Position::new(1, 1),
+            Position::new(0, 0),
+        ];
+
+        let result = get_possible_moves(&board, source);
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn test_get_possible_moves_initial_position() {
+        let board = setup_board(None);
+        let source = Position::new(7, 2);
+
+        let expected = Vec::new();
+
+        let result = get_possible_moves(&board, source);
+
+        assert_eq!(result, expected)
+    }
 }

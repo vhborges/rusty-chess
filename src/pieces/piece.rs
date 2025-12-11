@@ -1,7 +1,7 @@
 use super::Color;
 use super::types::{King, Pawn, Rook, bishop, king, knight, pawn, queen, rook};
 use crate::Board;
-use crate::errors::constants::INTERNAL_ERROR_04;
+use crate::errors::constants;
 use crate::errors::{MoveError, PgnError};
 use crate::movement::Position;
 use crate::pieces::piece_type::PieceType;
@@ -83,7 +83,7 @@ impl Piece {
             PieceType::Pawn(p) => Ok(p.can_move(self, board, origin, destination)),
             PieceType::Queen => Ok(queen::can_move(board, origin, destination)),
             PieceType::Rook(_) => Ok(Rook::can_move(board, origin, destination)),
-            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
+            PieceType::None => panic!("{}", constants::INTERNAL_ERROR_04),
         }
     }
 
@@ -106,11 +106,20 @@ impl Piece {
             PieceType::Pawn(_) => Ok(Pawn::attacks(self.color, origin, destination)),
             PieceType::Queen => Ok(queen::attacks(board, origin, destination)),
             PieceType::Rook(_) => Ok(Rook::attacks(board, origin, destination)),
-            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
+            PieceType::None => panic!("{}", constants::INTERNAL_ERROR_04),
         }
     }
 
     pub fn get_possible_moves(&self, board: &Board, pos: Position) -> Vec<Position> {
+        match board.get_piece(pos) {
+            Some(piece) => {
+                if piece.piece_type != self.piece_type {
+                    panic!("{}", constants::INTERNAL_ERROR_06)
+                }
+            }
+            None => panic!("{}", constants::INTERNAL_ERROR_07),
+        }
+
         match self.piece_type {
             PieceType::Bishop => bishop::get_possible_moves(board, pos),
             PieceType::King(_) => King::get_possible_moves(board, pos),
@@ -118,7 +127,7 @@ impl Piece {
             PieceType::Pawn(p) => p.get_possible_moves(self.color, board, pos),
             PieceType::Queen => queen::get_possible_moves(board, pos),
             PieceType::Rook(_) => Rook::get_possible_moves(board, pos),
-            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
+            PieceType::None => panic!("{}", constants::INTERNAL_ERROR_04),
         }
     }
 
@@ -162,7 +171,7 @@ impl Piece {
             PieceType::Pawn(_) => pawn::SYMBOLS,
             PieceType::Queen => queen::SYMBOLS,
             PieceType::Rook(_) => rook::SYMBOLS,
-            PieceType::None => panic!("{}", INTERNAL_ERROR_04),
+            PieceType::None => panic!("{}", constants::INTERNAL_ERROR_04),
         };
 
         Self::get_symbol_for_color(color, symbols)
