@@ -1,7 +1,6 @@
 pub mod constants {
     use std::ops::RangeInclusive;
 
-    // TODO increase this number just to see what happens
     pub const BOARD_SIZE: usize = 8;
 
     pub const WHITE_CASTLING_LINE: usize = BOARD_SIZE - 1;

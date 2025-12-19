@@ -88,7 +88,6 @@ impl King {
         Self::can_move(origin, destination)
     }
 
-    // TODO unit test this function with a source in the edges of the board
     pub fn get_possible_moves(board: &Board, source: Position) -> Vec<Position> {
         let mut result = Vec::new();
 
@@ -151,5 +150,55 @@ impl King {
     pub fn deny_castling_rights(&mut self) {
         self.short_castling_available = false;
         self.long_castling_available = false;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::utils::test_helper::setup_board;
+
+    #[test]
+    fn test_get_possible_moves_empty_board_bottom_left() {
+        let board = setup_board(Some("tests/king/only_king_bottom_left.txt"));
+        let source = Position::new(7, 0);
+
+        let expected = vec![
+            Position::new(6, 0),
+            Position::new(6, 1),
+            Position::new(7, 1),
+        ];
+
+        let result = King::get_possible_moves(&board, source);
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn test_get_possible_moves_empty_board_top_right() {
+        let board = setup_board(Some("tests/king/only_king_top_right.txt"));
+        let source = Position::new(0, 7);
+
+        let expected = vec![
+            Position::new(0, 6),
+            Position::new(1, 6),
+            Position::new(1, 7),
+        ];
+
+        let result = King::get_possible_moves(&board, source);
+
+        assert_eq!(result, expected)
+    }
+
+    #[test]
+    fn test_get_possible_moves_initial_position() {
+        let board = setup_board(None);
+        let source = Position::new(7, 4);
+
+        let expected = Vec::new();
+
+        let result = King::get_possible_moves(&board, source);
+
+        assert_eq!(result, expected)
     }
 }
