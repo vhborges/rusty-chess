@@ -28,6 +28,10 @@ pub fn run(game_state: &mut GameState) {
                     println!("Checkmate!");
                     exit(0)
                 }
+                if game_state.is_stalemate() {
+                    println!("Stalemate!");
+                    exit(0);
+                }
             }
             Err(move_err) => {
                 ui::print_game(game_state);

@@ -12,7 +12,7 @@ This project was created with the purpose of learning and practicing Rust concep
   - [x] Invalid move validation
   - [x] Castling support
   - [x] Checkmate support
-  - [ ] Stalemate support
+  - [x] Stalemate support
   - [ ] En passant support
 - [x] Tests
   - [x] Integration tests

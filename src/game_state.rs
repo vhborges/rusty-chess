@@ -334,6 +334,20 @@ impl GameState {
 
         true
     }
+
+    pub fn is_stalemate(&self) -> bool {
+        for (piece, pos) in self
+            .board
+            .into_iter()
+            .filter(|(piece_, _)| piece_.color == self.turn)
+        {
+            if !piece.get_possible_moves(self.board(), pos).is_empty() {
+                return false;
+            }
+        }
+
+        true
+    }
 }
 
 #[cfg(test)]
@@ -401,5 +415,19 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), MoveError::KingWouldBeInCheck);
+    }
+
+    #[test]
+    fn test_stalemate() {
+        let game_state = setup_game_state(Some("tests/validate_stalemate.txt"));
+
+        assert!(game_state.is_stalemate())
+    }
+
+    #[test]
+    fn test_not_stalemate() {
+        let game_state = setup_game_state(Some("tests/validate_castling_path_fail.txt"));
+
+        assert!(!game_state.is_stalemate())
     }
 }
