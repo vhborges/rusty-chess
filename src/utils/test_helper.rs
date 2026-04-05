@@ -34,6 +34,12 @@ pub fn setup_board(positions_file: Option<&str>) -> Board {
                 panic!("Could not convert ChessPosition {chess_col}{chess_line} to Position")
             });
 
+        if board.is_position_occupied(piece_position) {
+            panic!(
+                "Duplicate piece position in initial setup: {chess_col}{chess_line} (line: {line})"
+            );
+        }
+
         board.add_piece(Piece::new(piece_type, piece_color), piece_position);
     }
 

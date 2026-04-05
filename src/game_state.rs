@@ -6,9 +6,10 @@ use crate::movement::{ChessPosition, Move, Position};
 use crate::pgn::pgn_parser::parse_move;
 use crate::pieces::types::{King, Rook};
 use crate::pieces::{Color, Piece, PieceType};
-use crate::utils::helper_functions::{get_next_char, perform_move};
+use crate::utils::helper_functions::get_next_char;
 use std::mem::{discriminant, swap};
 
+#[derive(Clone, PartialEq, Debug)]
 pub struct GameState {
     board: Board,
     captured_white_pieces: Vec<Piece>,
@@ -171,23 +172,30 @@ impl GameState {
         self.update_king_position(next_move);
 
         self.board.update_piece_state(next_move.source());
+        if let Some(additional_move) = next_move.additional {
+            self.board.update_piece_state(additional_move.source);
+        }
 
         self.update_captured_pieces_list(next_move.destination());
 
-        perform_move(next_move, &mut self.board);
+        self.board.perform_move(next_move);
 
         self.turn.flip();
 
         Ok(())
     }
 
-    fn verify_king_in_check(&self, next_move: Move) -> Result<(), MoveError> {
-        let mut temporary_board = self.board;
-        perform_move(next_move, &mut temporary_board);
+    fn verify_king_in_check(&mut self, next_move: Move) -> Result<(), MoveError> {
+        let captured_piece = self.board.get_piece(next_move.destination());
 
-        let king_pos = self.get_king_pos(temporary_board, next_move.destination());
+        self.board.perform_move(next_move);
 
-        if self.is_king_in_check(&temporary_board, king_pos, self.turn) {
+        let king_pos = self.get_king_pos(next_move.destination());
+        let king_in_check = self.is_king_in_check(king_pos, self.turn);
+
+        self.board.undo_move(next_move, captured_piece);
+
+        if king_in_check {
             return Err(MoveError::KingWouldBeInCheck);
         }
 
@@ -214,8 +222,8 @@ impl GameState {
         }
     }
 
-    fn get_king_pos(&self, temporary_board: Board, destination: Position) -> Position {
-        match temporary_board.get_piece(destination).unwrap().piece_type {
+    fn get_king_pos(&self, destination: Position) -> Position {
+        match self.board.get_piece(destination).unwrap().piece_type {
             PieceType::King(_) => destination,
             _ => match self.turn {
                 Color::White => self.white_king_position,
@@ -224,10 +232,14 @@ impl GameState {
         }
     }
 
-    fn is_king_in_check(&self, board: &Board, king_pos: Position, color: Color) -> bool {
-        for (piece, pos) in board.into_iter().filter(|(piece, _)| piece.color != color) {
+    fn is_king_in_check(&self, king_pos: Position, color: Color) -> bool {
+        for (piece, pos) in self
+            .board
+            .into_iter()
+            .filter(|(piece, _)| piece.color != color)
+        {
             if piece
-                .attacks(board, pos, king_pos, false, false)
+                .attacks(&self.board, pos, king_pos, false, false)
                 .expect(INTERNAL_ERROR_02)
             {
                 return true;
@@ -267,13 +279,19 @@ impl GameState {
                 }
             }
 
+            if self.board.is_position_occupied(piece_position) {
+                panic!(
+                    "Duplicate piece position in initial setup: {chess_col}{chess_line} (line: {line})"
+                );
+            }
+
             self.board
                 .add_piece(Piece::new(piece_type, piece_color), piece_position);
         }
         self.initialized = true;
     }
 
-    fn validate_castling_path(&self, mut next_move: Move) -> Result<(), MoveError> {
+    fn validate_castling_path(&mut self, mut next_move: Move) -> Result<(), MoveError> {
         next_move.additional = None;
 
         let (mut start, mut end) = (next_move.source().col, next_move.destination().col);
@@ -289,44 +307,54 @@ impl GameState {
         Ok(())
     }
 
-    pub fn is_checkmate(&self) -> bool {
+    pub fn verify_checkmate(&mut self) -> bool {
         let (color, king_pos) = match self.turn {
-            Color::White => (Color::Black, self.black_king_position),
-            Color::Black => (Color::White, self.white_king_position),
+            Color::White => (Color::White, self.white_king_position),
+            Color::Black => (Color::Black, self.black_king_position),
         };
 
-        if !self.is_king_in_check(&self.board, king_pos, color) {
+        if !self.is_king_in_check(king_pos, color) {
             return false;
         }
 
         // check if the King has a valid move to get out of check
         let king = self.board.get_piece(king_pos).unwrap();
         for dest in king.get_possible_moves(&self.board, king_pos) {
-            let mut temporary_board = self.board;
             let next_move = Move::new(king_pos, dest);
-            perform_move(next_move, &mut temporary_board);
+            let captured_piece = self.board.get_piece(next_move.destination());
 
-            if !self.is_king_in_check(&temporary_board, dest, color) {
+            self.board.perform_move(next_move);
+            let king_in_check = self.is_king_in_check(dest, color);
+            self.board.undo_move(next_move, captured_piece);
+
+            if !king_in_check {
                 return false;
             }
         }
 
         // check if any other piece can cover the check
-        for (piece, source) in &self.board {
-            if piece.color == self.turn || matches!(piece.piece_type, PieceType::King(_)) {
-                continue;
-            }
+        let pieces_to_check: Vec<(Piece, Position)> = self
+            .board
+            .into_iter()
+            .filter(|(piece, _)| {
+                piece.color == self.turn && !matches!(piece.piece_type, PieceType::King(_))
+            })
+            .collect();
 
+        for (piece, source) in pieces_to_check {
             // get the piece possible movements
             let possible_movements = piece.get_possible_moves(&self.board, source);
 
             // check if any of them can cover the check
             for dest in possible_movements {
-                let mut temporary_board = self.board;
                 let next_move = Move::new(source, dest);
-                perform_move(next_move, &mut temporary_board);
+                let captured_piece = self.board.get_piece(next_move.destination());
 
-                if !self.is_king_in_check(&temporary_board, king_pos, color) {
+                self.board.perform_move(next_move);
+                let king_in_check = self.is_king_in_check(king_pos, color);
+                self.board.undo_move(next_move, captured_piece);
+
+                if !king_in_check {
                     return false;
                 }
             }
@@ -357,7 +385,7 @@ mod tests {
 
     #[test]
     fn test_validate_castling_path_short_castle_success() {
-        let game_state = setup_game_state(Some("tests/validate_castling_path_success.txt"));
+        let mut game_state = setup_game_state(Some("tests/validate_castling_path_success.txt"));
 
         let king_source = Position::new(7, 4);
         let king_destination = Position::new(7, 6);
@@ -372,7 +400,7 @@ mod tests {
 
     #[test]
     fn test_validate_castling_path_short_castle_fail() {
-        let game_state = setup_game_state(Some("tests/validate_castling_path_fail.txt"));
+        let mut game_state = setup_game_state(Some("tests/validate_castling_path_fail.txt"));
 
         let king_source = Position::new(7, 4);
         let king_destination = Position::new(7, 6);
@@ -388,7 +416,7 @@ mod tests {
 
     #[test]
     fn test_validate_castling_path_long_castle_success() {
-        let game_state = setup_game_state(Some("tests/validate_castling_path_success.txt"));
+        let mut game_state = setup_game_state(Some("tests/validate_castling_path_success.txt"));
 
         let king_source = Position::new(7, 4);
         let king_destination = Position::new(7, 2);
@@ -403,7 +431,7 @@ mod tests {
 
     #[test]
     fn test_validate_castling_path_long_castle_fail() {
-        let game_state = setup_game_state(Some("tests/validate_castling_path_fail.txt"));
+        let mut game_state = setup_game_state(Some("tests/validate_castling_path_fail.txt"));
 
         let king_source = Position::new(7, 4);
         let king_destination = Position::new(7, 2);
@@ -419,15 +447,89 @@ mod tests {
 
     #[test]
     fn test_stalemate() {
-        let game_state = setup_game_state(Some("tests/validate_stalemate.txt"));
+        let mut game_state = setup_game_state(Some("tests/validate_stalemate.txt"));
 
-        assert!(game_state.is_stalemate())
+        assert!(game_state.is_stalemate());
+        assert!(!game_state.verify_checkmate());
     }
 
     #[test]
-    fn test_not_stalemate() {
-        let game_state = setup_game_state(Some("tests/validate_castling_path_fail.txt"));
+    fn test_not_stalemate_when_other_legal_move_exists() {
+        let game_state = setup_game_state(Some("tests/validate_not_stalemate_with_legal_move.txt"));
 
-        assert!(!game_state.is_stalemate())
+        assert!(!game_state.is_stalemate());
+    }
+
+    #[test]
+    fn test_undo_move_integrity() {
+        let mut game_state = setup_game_state(None);
+
+        let m = Move::new(Position::new(6, 4), Position::new(4, 4)); // e2 to e4
+        let captured = game_state.board().get_piece(m.destination());
+
+        let initial_board_snapshot = *game_state.board();
+        game_state.board.perform_move(m);
+        game_state.board.undo_move(m, captured);
+
+        assert_eq!(game_state.board(), &initial_board_snapshot);
+    }
+
+    #[test]
+    fn test_checkmate_scholars_mate() {
+        let mut game_state = setup_game_state(Some("tests/scholars_mate.txt"));
+
+        game_state.turn.flip();
+
+        assert!(game_state.verify_checkmate());
+    }
+
+    #[test]
+    fn test_checkmate_blocked_by_piece() {
+        let mut game_state = setup_game_state(Some("tests/check_can_be_blocked.txt"));
+
+        game_state.turn.flip();
+
+        assert!(!game_state.verify_checkmate());
+    }
+
+    #[test]
+    fn test_checkmate_king_escapes() {
+        let mut game_state = setup_game_state(Some("tests/king_can_escape.txt"));
+
+        game_state.turn.flip();
+
+        assert!(!game_state.verify_checkmate());
+    }
+
+    #[test]
+    #[should_panic(expected = "Duplicate piece position in initial setup")]
+    fn test_initialize_panics_on_duplicate_square() {
+        let _ = setup_game_state(Some("tests/duplicate_square.txt"));
+    }
+
+    #[test]
+    fn test_capture_updates_captured_pieces_and_board_state() -> Result<(), MoveError> {
+        let mut game_state = setup_game_state(None);
+        game_state.handle_move("e4")?;
+        game_state.handle_move("d5")?;
+
+        let source = Position::new(4, 4);
+        let destination = Position::new(3, 3);
+        let moving_piece = game_state.get_piece(source).unwrap();
+
+        game_state.handle_move("exd5")?;
+
+        let destination_piece = game_state.get_piece(destination).unwrap();
+
+        assert_eq!(
+            discriminant(&moving_piece.piece_type),
+            discriminant(&destination_piece.piece_type)
+        );
+        assert_eq!(moving_piece.color, destination_piece.color);
+        assert!(game_state.get_piece(source).is_none());
+        assert_eq!(game_state.captured_black_pieces().len(), 1);
+        assert_eq!(game_state.captured_white_pieces().len(), 0);
+
+        Ok(())
     }
 }

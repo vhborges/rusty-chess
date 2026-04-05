@@ -8,7 +8,7 @@ macro_rules! setup_board {
             {
                 $(
                     $game_state.handle_move($x)
-                        .expect(format!("Something's wrong, {} is not a invalid move!", $x).as_str());
+                        .expect(format!("Something's wrong, {} is not an invalid move!", $x).as_str());
                 )*
             }
         };
@@ -18,6 +18,26 @@ pub fn setup() -> GameState {
     let mut game_state = GameState::new();
     game_state.initialize(None);
     game_state
+}
+
+pub fn setup_with_positions(file: &str) -> GameState {
+    let mut game_state = GameState::new();
+    game_state.initialize(Some(file));
+    game_state
+}
+
+fn assert_failed_move_preserves_state(
+    game_state: &mut GameState,
+    pgn_move: &str,
+    expected_error: MoveError,
+) {
+    let snapshot = game_state.clone();
+
+    let result = game_state.handle_move(pgn_move);
+
+    assert!(result.is_err());
+    assert_eq!(result.unwrap_err(), expected_error);
+    assert_eq!(*game_state, snapshot);
 }
 
 fn make_and_validate_move(
@@ -39,6 +59,7 @@ fn make_and_validate_move(
         discriminant(&dest_piece.unwrap().piece_type)
     );
     assert_eq!(origin_piece.unwrap().color, dest_piece.unwrap().color);
+    assert!(game_state.get_piece(source).is_none());
 
     Ok(())
 }
@@ -225,22 +246,17 @@ fn test_more_than_one_piece_available_error() {
 fn test_square_occupied_error() {
     let mut game_state = setup();
 
-    let result = game_state.handle_move("Ke2");
-
-    assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), MoveError::SquareOccupied);
+    assert_failed_move_preserves_state(&mut game_state, "Ke2", MoveError::SquareOccupied);
 }
 
 #[test]
 fn test_destination_square_empty_error() {
     let mut game_state = setup();
 
-    let result = game_state.handle_move("exd3");
-
-    assert!(result.is_err());
-    assert_eq!(
-        result.unwrap_err(),
-        MoveError::InvalidCapture("Destination square is empty")
+    assert_failed_move_preserves_state(
+        &mut game_state,
+        "exd3",
+        MoveError::InvalidCapture("Destination square is empty"),
     );
 }
 
@@ -248,18 +264,22 @@ fn test_destination_square_empty_error() {
 fn test_same_color_piece_capture_error() {
     let mut game_state = setup();
 
-    let result = game_state.handle_move("Kxe2");
-
-    assert!(result.is_err());
-    assert_eq!(
-        result.unwrap_err(),
-        MoveError::InvalidCapture("Cannot capture a piece of the same color")
+    assert_failed_move_preserves_state(
+        &mut game_state,
+        "Kxe2",
+        MoveError::InvalidCapture("Cannot capture a piece of the same color"),
     );
 }
 
 #[test]
 fn test_missing_second_character_error() {
     let mut game_state = setup();
+
+    assert_failed_move_preserves_state(
+        &mut game_state,
+        "e",
+        PgnError::MissingCharacter("second").into(),
+    );
 
     let result = game_state.handle_move("e");
 
@@ -271,23 +291,36 @@ fn test_missing_second_character_error() {
 }
 
 #[test]
-fn test_invalid_character_error() {
+fn test_invalid_character_error_on_destination() {
     let mut game_state = setup();
 
-    let result = game_state.handle_move("eK");
+    assert_failed_move_preserves_state(
+        &mut game_state,
+        "eK",
+        PgnError::InvalidCharacter('K').into(),
+    );
+}
 
-    assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('K').into());
+#[test]
+fn test_invalid_character_error_on_capture_destination() {
+    let mut game_state = setup();
 
-    let result = game_state.handle_move("KxI");
+    assert_failed_move_preserves_state(
+        &mut game_state,
+        "KxI",
+        PgnError::InvalidCharacter('I').into(),
+    );
+}
 
-    assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('I').into());
+#[test]
+fn test_invalid_character_error_on_fifth_character() {
+    let mut game_state = setup();
 
-    let result = game_state.handle_move("KxdL");
-
-    assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), PgnError::InvalidCharacter('L').into());
+    assert_failed_move_preserves_state(
+        &mut game_state,
+        "KxdL",
+        PgnError::InvalidCharacter('L').into(),
+    );
 }
 
 #[test]
@@ -367,3 +400,167 @@ fn test_uninitialized_game_state() {
     let mut game_state = GameState::new();
     let _ = game_state.handle_move("Nd5");
 }
+
+#[test]
+fn test_scholars_mate_full_game() {
+    let mut game_state = setup();
+
+    setup_board!(game_state, "e4", "e5", "Bc4", "Nc6", "Qh5", "Nf6", "Qxf7");
+
+    assert!(game_state.verify_checkmate());
+}
+
+#[test]
+fn test_castling_rights_persistence_after_failed_move() -> Result<(), MoveError> {
+    let mut game_state = setup();
+
+    // Clear paths for castling
+    setup_board!(game_state, "e4", "e5", "Nf3", "Nf6", "Bc4", "Bc5");
+
+    assert_failed_move_preserves_state(&mut game_state, "Kd2", MoveError::SquareOccupied);
+
+    // Now verify we can STILL castle successfully
+    game_state.handle_move("O-O")?;
+
+    Ok(())
+}
+
+#[test]
+fn test_short_castling_success_on_fixture() -> Result<(), MoveError> {
+    let mut game_state = setup_with_positions("tests/validate_castling_path_success.txt");
+    let king_source = Position::new(7, 4);
+    let rook_source = Position::new(7, 7);
+
+    let king = game_state.get_piece(king_source).unwrap();
+    let rook = game_state.get_piece(rook_source).unwrap();
+
+    game_state.handle_move("O-O")?;
+
+    let king_dest = game_state.get_piece(Position::new(7, 6)).unwrap();
+    let rook_dest = game_state.get_piece(Position::new(7, 5)).unwrap();
+
+    assert_eq!(
+        discriminant(&king.piece_type),
+        discriminant(&king_dest.piece_type)
+    );
+
+    assert_eq!(king.color, king_dest.color);
+    assert_eq!(
+        discriminant(&rook.piece_type),
+        discriminant(&rook_dest.piece_type)
+    );
+    assert_eq!(rook.color, rook_dest.color);
+
+    assert!(game_state.get_piece(king_source).is_none());
+    assert!(game_state.get_piece(rook_source).is_none());
+
+    assert!(!king_dest.is_short_castling_available());
+    assert!(!king_dest.is_long_castling_available());
+    assert!(!rook_dest.is_short_castling_available());
+    assert!(!rook_dest.is_long_castling_available());
+
+    Ok(())
+}
+
+#[test]
+fn test_long_castling_success_on_fixture() -> Result<(), MoveError> {
+    let mut game_state = setup_with_positions("tests/validate_castling_path_success.txt");
+    let king_source = Position::new(7, 4);
+    let rook_source = Position::new(7, 0);
+
+    let king = game_state.get_piece(king_source).unwrap();
+    let rook = game_state.get_piece(rook_source).unwrap();
+
+    game_state.handle_move("O-O-O")?;
+
+    let king_dest = game_state.get_piece(Position::new(7, 2)).unwrap();
+    let rook_dest = game_state.get_piece(Position::new(7, 3)).unwrap();
+
+    assert_eq!(
+        discriminant(&king.piece_type),
+        discriminant(&king_dest.piece_type)
+    );
+    assert_eq!(king.color, king_dest.color);
+    assert_eq!(
+        discriminant(&rook.piece_type),
+        discriminant(&rook_dest.piece_type)
+    );
+    assert_eq!(rook.color, rook_dest.color);
+    assert!(game_state.get_piece(king_source).is_none());
+    assert!(game_state.get_piece(rook_source).is_none());
+
+    assert!(!king_dest.is_short_castling_available());
+    assert!(!king_dest.is_long_castling_available());
+    assert!(!rook_dest.is_short_castling_available());
+    assert!(!rook_dest.is_long_castling_available());
+
+    Ok(())
+}
+
+#[test]
+fn test_move_that_exposes_king_is_rejected() {
+    let mut game_state = setup_with_positions("tests/pinned_piece_exposes_king.txt");
+
+    assert_failed_move_preserves_state(&mut game_state, "Rf2", MoveError::KingWouldBeInCheck);
+}
+
+#[test]
+fn test_castling_fails_after_king_has_moved() {
+    let mut game_state = setup();
+    setup_board!(
+        game_state, "e4", "e5", "Nf3", "Nc6", "Bd3", "Nf6", "Ke2", "Be7", "Ke1", "O-O"
+    );
+
+    assert_failed_move_preserves_state(
+        &mut game_state,
+        "O-O",
+        MoveError::InvalidCastle("This move is not allowed"),
+    );
+}
+
+#[test]
+fn test_castling_fails_after_rook_has_moved() {
+    let mut game_state = setup();
+    setup_board!(
+        game_state, "Nf3", "Nf6", "g3", "g6", "Bg2", "Bg7", "h3", "h6", "Rh2", "Rh7", "Rh1", "Rh8"
+    );
+
+    assert_failed_move_preserves_state(
+        &mut game_state,
+        "O-O",
+        MoveError::InvalidCastle("This move is not allowed"),
+    );
+}
+//
+// #[test]
+// fn test_trailing_alphabetic_characters_are_rejected() {
+//     let mut game_state = setup();
+//
+//     assert_failed_move_preserves_state(
+//         &mut game_state,
+//         "e4abc",
+//         PgnError::InvalidCharacter('a').into(),
+//     );
+// }
+//
+// #[test]
+// fn test_trailing_symbol_characters_are_rejected() {
+//     let mut game_state = setup();
+//
+//     assert_failed_move_preserves_state(
+//         &mut game_state,
+//         "e4?",
+//         PgnError::InvalidCharacter('?').into(),
+//     );
+// }
+//
+// #[test]
+// fn test_trailing_characters_after_long_castle_are_rejected() {
+//     let mut game_state = setup_with_positions("tests/validate_castling_path_success.txt");
+//
+//     assert_failed_move_preserves_state(
+//         &mut game_state,
+//         "O-O-Oxyz",
+//         PgnError::InvalidCharacter('x').into(),
+//     );
+// }

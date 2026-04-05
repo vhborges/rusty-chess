@@ -135,12 +135,8 @@ impl Rook {
         (origin, destination)
     }
 
-    pub fn deny_castling_rights(&mut self, pos: Position) {
-        if pos.col == ROOK_LONG_CASTLING_INITIAL_COLUMN {
-            self.long_castling_available = false;
-        }
-        else if pos.col == ROOK_SHORT_CASTLING_INITIAL_COLUMN {
-            self.short_castling_available = false;
-        }
+    pub fn deny_castling_rights(&mut self) {
+        self.long_castling_available = false;
+        self.short_castling_available = false;
     }
 }

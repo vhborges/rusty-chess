@@ -24,7 +24,7 @@ pub fn run(game_state: &mut GameState) {
                     println!("{move_err}");
                     continue;
                 }
-                if game_state.is_checkmate() {
+                if game_state.verify_checkmate() {
                     println!("Checkmate!");
                     exit(0)
                 }

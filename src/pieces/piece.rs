@@ -7,7 +7,7 @@ use crate::movement::Position;
 use crate::pieces::piece_type::PieceType;
 use std::fmt::Display;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Piece {
     pub piece_type: PieceType,
     pub color: Color,
@@ -39,10 +39,10 @@ impl Piece {
         }
     }
 
-    pub fn deny_castling_rights(&mut self, pos: Position) {
+    pub fn deny_castling_rights(&mut self) {
         match &mut self.piece_type {
             PieceType::King(k) => k.deny_castling_rights(),
-            PieceType::Rook(r) => r.deny_castling_rights(pos),
+            PieceType::Rook(r) => r.deny_castling_rights(),
             _ => (),
         }
     }

@@ -16,12 +16,12 @@ pub mod constants {
 }
 
 use crate::board::constants::{BLANK_SQUARE, BOARD_SIZE, COLUMNS, LINES};
-use crate::movement::{Direction, Position, PositionI8};
+use crate::movement::{Direction, Move, Position, PositionI8};
 use crate::pieces::Piece;
 
 type InternalBoard = [[Option<Piece>; BOARD_SIZE]; BOARD_SIZE];
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Board {
     board: InternalBoard,
 }
@@ -105,8 +105,36 @@ impl Board {
     pub fn update_piece_state(&mut self, pos: Position) {
         let piece = self.get_piece_as_mut(pos).unwrap();
 
-        piece.deny_castling_rights(pos);
+        piece.deny_castling_rights();
         piece.deny_two_rows();
+    }
+
+    pub fn perform_move(&mut self, move_: Move) {
+        if move_.source() != move_.destination() {
+            self.move_piece(move_.source(), move_.destination());
+        }
+
+        if let Some(additional) = move_.additional
+            && additional.source != additional.destination
+        {
+            self.move_piece(additional.source, additional.destination);
+        }
+    }
+
+    pub fn undo_move(&mut self, move_: Move, captured_piece: Option<Piece>) {
+        if move_.source() != move_.destination() {
+            self.move_piece(move_.destination(), move_.source());
+        }
+
+        if let Some(additional) = move_.additional
+            && additional.source != additional.destination
+        {
+            self.move_piece(additional.destination, additional.source);
+        }
+
+        if let Some(piece) = captured_piece {
+            self.add_piece(piece, move_.destination())
+        }
     }
 }
 
@@ -166,7 +194,7 @@ mod tests {
         board.update_piece_state(Position::new(0, 0));
 
         let piece = board.get_piece(Position::new(0, 0)).unwrap();
-        assert!(piece.is_short_castling_available());
+        assert!(!piece.is_short_castling_available());
         assert!(!piece.is_long_castling_available());
     }
 
@@ -178,6 +206,12 @@ mod tests {
 
         let piece = board.get_piece(Position::new(0, 7)).unwrap();
         assert!(!piece.is_short_castling_available());
-        assert!(piece.is_long_castling_available());
+        assert!(!piece.is_long_castling_available());
+    }
+
+    #[test]
+    #[should_panic(expected = "Duplicate piece position in initial setup")]
+    fn test_setup_board_panics_on_duplicate_square() {
+        let _ = setup_board(Some("tests/duplicate_square.txt"));
     }
 }
