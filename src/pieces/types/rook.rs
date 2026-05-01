@@ -140,3 +140,267 @@ impl Rook {
         self.short_castling_available = false;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::pieces::Piece;
+    use crate::pieces::PieceType;
+    use crate::pieces::types::pawn::Pawn;
+    use crate::utils::test_helper::setup_board;
+
+    #[test]
+    fn test_can_move_horizontal() {
+        let board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        assert!(Rook::can_move(&board, source, Position::new(4, 0)));
+        assert!(Rook::can_move(&board, source, Position::new(4, 7)));
+        assert!(Rook::can_move(&board, source, Position::new(4, 2)));
+    }
+
+    #[test]
+    fn test_can_move_vertical() {
+        let board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        assert!(Rook::can_move(&board, source, Position::new(0, 4)));
+        assert!(Rook::can_move(&board, source, Position::new(7, 4)));
+        assert!(Rook::can_move(&board, source, Position::new(2, 4)));
+    }
+
+    #[test]
+    fn test_can_move_diagonal_returns_false() {
+        let board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        assert!(!Rook::can_move(&board, source, Position::new(2, 2)));
+        assert!(!Rook::can_move(&board, source, Position::new(6, 6)));
+        assert!(!Rook::can_move(&board, source, Position::new(3, 5)));
+    }
+
+    #[test]
+    fn test_can_move_same_square_returns_false() {
+        let board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        assert!(!Rook::can_move(&board, source, source));
+    }
+
+    #[test]
+    fn test_can_move_blocked_path_returns_false() {
+        let mut board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        board.add_piece(
+            Piece::new(PieceType::Pawn(Pawn::new()), Color::White),
+            Position::new(4, 6),
+        );
+
+        assert!(!Rook::can_move(&board, source, Position::new(4, 7)));
+        assert!(Rook::can_move(&board, source, Position::new(4, 5)));
+    }
+
+    #[test]
+    fn test_attacks_vs_can_move_difference() {
+        let mut board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        board.add_piece(
+            Piece::new(PieceType::Pawn(Pawn::new()), Color::Black),
+            Position::new(4, 6),
+        );
+
+        assert!(!Rook::can_move(&board, source, Position::new(4, 6)));
+        assert!(Rook::attacks(&board, source, Position::new(4, 6)));
+    }
+
+    #[test]
+    fn test_attacks_clear_path() {
+        let board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        assert!(Rook::attacks(&board, source, Position::new(4, 6)));
+        assert!(Rook::attacks(&board, source, Position::new(2, 4)));
+    }
+
+    #[test]
+    fn test_get_possible_moves_from_corner() {
+        let board = setup_board(Some("tests/rook/only_rook_corner.txt"));
+        let source = Position::new(7, 0);
+
+        let result = Rook::get_possible_moves(&board, source);
+
+        assert_eq!(result.len(), 14);
+    }
+
+    #[test]
+    fn test_get_possible_moves_from_center() {
+        let board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        let result = Rook::get_possible_moves(&board, source);
+
+        assert_eq!(result.len(), 14);
+    }
+
+    #[test]
+    fn test_get_possible_moves_with_blockers() {
+        let mut board = setup_board(Some("tests/rook/only_rook_center.txt"));
+        let source = Position::new(4, 4);
+
+        board.add_piece(
+            Piece::new(PieceType::Pawn(Pawn::new()), Color::White),
+            Position::new(4, 5),
+        );
+        board.add_piece(
+            Piece::new(PieceType::Pawn(Pawn::new()), Color::White),
+            Position::new(3, 4),
+        );
+
+        let result = Rook::get_possible_moves(&board, source);
+
+        assert_eq!(result.len(), 7);
+        assert!(!result.contains(&Position::new(4, 5)));
+        assert!(!result.contains(&Position::new(3, 4)));
+    }
+
+    #[test]
+    fn test_is_valid_castling_short_rook() {
+        let rook = Rook::new();
+        let origin = Position::new(7, ROOK_SHORT_CASTLING_INITIAL_COLUMN);
+
+        assert!(rook.is_valid_castling(origin));
+    }
+
+    #[test]
+    fn test_is_valid_castling_long_rook() {
+        let rook = Rook::new();
+        let origin = Position::new(7, ROOK_LONG_CASTLING_INITIAL_COLUMN);
+
+        assert!(rook.is_valid_castling(origin));
+    }
+
+    #[test]
+    fn test_is_valid_castling_non_initial_position() {
+        let rook = Rook::new();
+        let origin = Position::new(7, 3);
+
+        assert!(!rook.is_valid_castling(origin));
+    }
+
+    #[test]
+    fn test_is_valid_castling_denied_short() {
+        let mut rook = Rook::new();
+        rook.short_castling_available = false;
+        let origin = Position::new(7, ROOK_SHORT_CASTLING_INITIAL_COLUMN);
+
+        assert!(!rook.is_valid_castling(origin));
+    }
+
+    #[test]
+    fn test_is_valid_castling_denied_long() {
+        let mut rook = Rook::new();
+        rook.long_castling_available = false;
+        let origin = Position::new(7, ROOK_LONG_CASTLING_INITIAL_COLUMN);
+
+        assert!(!rook.is_valid_castling(origin));
+    }
+
+    #[test]
+    fn test_can_castle_success() {
+        let board = setup_board(Some("tests/rook/only_rook_castling.txt"));
+        let rook = Rook::new();
+        let source = Position::new(7, ROOK_SHORT_CASTLING_INITIAL_COLUMN);
+        let destination = Position::new(7, ROOK_SHORT_CASTLING_COLUMN);
+
+        assert!(rook.can_castle(&board, source, destination));
+    }
+
+    #[test]
+    fn test_can_castle_blocked_path() {
+        let mut board = setup_board(Some("tests/rook/only_rook_castling.txt"));
+        let rook = Rook::new();
+        let source = Position::new(7, ROOK_SHORT_CASTLING_INITIAL_COLUMN);
+        let destination = Position::new(7, ROOK_SHORT_CASTLING_COLUMN);
+
+        board.add_piece(
+            Piece::new(PieceType::Pawn(Pawn::new()), Color::White),
+            Position::new(7, 5),
+        );
+
+        assert!(!rook.can_castle(&board, source, destination));
+    }
+
+    #[test]
+    fn test_can_castle_denied_rights() {
+        let board = setup_board(Some("tests/rook/only_rook_castling.txt"));
+        let mut rook = Rook::new();
+        rook.short_castling_available = false;
+        let source = Position::new(7, ROOK_SHORT_CASTLING_INITIAL_COLUMN);
+        let destination = Position::new(7, ROOK_SHORT_CASTLING_COLUMN);
+
+        assert!(!rook.can_castle(&board, source, destination));
+    }
+
+    #[test]
+    fn test_get_castle_move_white_short() {
+        let (source, destination) = Rook::get_castle_move(Color::White, true);
+
+        assert_eq!(source, Position::new(7, 7));
+        assert_eq!(destination, Position::new(7, 5));
+    }
+
+    #[test]
+    fn test_get_castle_move_white_long() {
+        let (source, destination) = Rook::get_castle_move(Color::White, false);
+
+        assert_eq!(source, Position::new(7, 0));
+        assert_eq!(destination, Position::new(7, 3));
+    }
+
+    #[test]
+    fn test_get_castle_move_black_short() {
+        let (source, destination) = Rook::get_castle_move(Color::Black, true);
+
+        assert_eq!(source, Position::new(0, 7));
+        assert_eq!(destination, Position::new(0, 5));
+    }
+
+    #[test]
+    fn test_get_castle_move_black_long() {
+        let (source, destination) = Rook::get_castle_move(Color::Black, false);
+
+        assert_eq!(source, Position::new(0, 0));
+        assert_eq!(destination, Position::new(0, 3));
+    }
+
+    #[test]
+    fn test_deny_castling_rights() {
+        let mut rook = Rook::new();
+
+        assert!(rook.short_castling_available);
+        assert!(rook.long_castling_available);
+
+        rook.deny_castling_rights();
+
+        assert!(!rook.short_castling_available);
+        assert!(!rook.long_castling_available);
+    }
+
+    #[test]
+    fn test_rook_new_has_both_castling_rights() {
+        let rook = Rook::new();
+
+        assert!(rook.short_castling_available);
+        assert!(rook.long_castling_available);
+    }
+
+    #[test]
+    fn test_rook_default_has_both_castling_rights() {
+        let rook = Rook::default();
+
+        assert!(rook.short_castling_available);
+        assert!(rook.long_castling_available);
+    }
+}

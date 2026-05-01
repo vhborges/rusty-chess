@@ -42,9 +42,8 @@ impl Pawn {
             return false;
         }
 
-        vertical_distance == 1
-            || (self.allow_two_rows && vertical_distance == 2)
-                && board.is_path_clear(src, dest, vertical_distance as usize)
+        (vertical_distance == 1 || (self.allow_two_rows && vertical_distance == 2))
+            && board.is_path_clear(src, dest, vertical_distance as usize)
     }
 
     pub fn attacks(piece_color: Color, source: Position, destination: Position) -> bool {
@@ -69,8 +68,8 @@ impl Pawn {
         let mut result = Vec::new();
 
         let direction = match piece_color {
-            Color::White => 1,
-            Color::Black => -1,
+            Color::White => -1,
+            Color::Black => 1,
         };
 
         let mut dest_i8: PositionI8 = source.into();
@@ -97,5 +96,210 @@ impl Pawn {
         }
 
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::pieces::PieceType;
+    use crate::pieces::types::Rook;
+    use crate::utils::test_helper::setup_board;
+
+    #[test]
+    fn test_white_pawn_single_step() {
+        let board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let pawn = Pawn::new();
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::White);
+        let source = Position::new(6, 4);
+        let destination = Position::new(5, 4);
+
+        assert!(pawn.can_move(&piece, &board, source, destination));
+    }
+
+    #[test]
+    fn test_white_pawn_double_step_from_start() {
+        let board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let pawn = Pawn::new();
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::White);
+        let source = Position::new(6, 4);
+        let destination = Position::new(4, 4);
+
+        assert!(pawn.can_move(&piece, &board, source, destination));
+    }
+
+    #[test]
+    fn test_black_pawn_single_step() {
+        let board = setup_board(Some("tests/pawn/only_black_pawn.txt"));
+        let pawn = Pawn::new();
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::Black);
+        let source = Position::new(1, 4);
+        let destination = Position::new(2, 4);
+
+        assert!(pawn.can_move(&piece, &board, source, destination));
+    }
+
+    #[test]
+    fn test_black_pawn_double_step_from_start() {
+        let board = setup_board(Some("tests/pawn/only_black_pawn.txt"));
+        let pawn = Pawn::new();
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::Black);
+        let source = Position::new(1, 4);
+        let destination = Position::new(3, 4);
+
+        assert!(pawn.can_move(&piece, &board, source, destination));
+    }
+
+    #[test]
+    fn test_pawn_sideways_move_returns_false() {
+        let board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let pawn = Pawn::new();
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::White);
+        let source = Position::new(6, 4);
+        let destination = Position::new(6, 5);
+
+        assert!(!pawn.can_move(&piece, &board, source, destination));
+    }
+
+    #[test]
+    fn test_pawn_backward_move_returns_false() {
+        let board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let pawn = Pawn::new();
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::White);
+        let source = Position::new(6, 4);
+        let destination = Position::new(7, 4);
+
+        assert!(!pawn.can_move(&piece, &board, source, destination));
+    }
+
+    #[test]
+    fn test_pawn_blocked_by_piece_in_front() {
+        let mut board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let pawn = Pawn::new();
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::White);
+        let source = Position::new(6, 4);
+
+        board.add_piece(
+            Piece::new(PieceType::Rook(Rook::new()), Color::Black),
+            Position::new(5, 4),
+        );
+
+        assert!(!pawn.can_move(&piece, &board, source, Position::new(5, 4)));
+    }
+
+    #[test]
+    fn test_pawn_double_step_mid_path_blocked() {
+        let mut board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let pawn = Pawn::new();
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::White);
+        let source = Position::new(6, 4);
+
+        board.add_piece(
+            Piece::new(PieceType::Rook(Rook::new()), Color::Black),
+            Position::new(5, 4),
+        );
+
+        assert!(!pawn.can_move(&piece, &board, source, Position::new(4, 4)));
+    }
+
+    #[test]
+    fn test_pawn_allow_two_rows_false_blocks_double_step() {
+        let board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let mut pawn = Pawn::new();
+        pawn.allow_two_rows = false;
+        let piece = Piece::new(PieceType::Pawn(pawn), Color::White);
+        let source = Position::new(6, 4);
+
+        assert!(pawn.can_move(&piece, &board, source, Position::new(5, 4)));
+        assert!(!pawn.can_move(&piece, &board, source, Position::new(4, 4)));
+    }
+
+    #[test]
+    fn test_white_pawn_attacks_diagonal() {
+        assert!(Pawn::attacks(
+            Color::White,
+            Position::new(4, 4),
+            Position::new(3, 3)
+        ));
+        assert!(Pawn::attacks(
+            Color::White,
+            Position::new(4, 4),
+            Position::new(3, 5)
+        ));
+    }
+
+    #[test]
+    fn test_black_pawn_attacks_diagonal() {
+        assert!(Pawn::attacks(
+            Color::Black,
+            Position::new(4, 4),
+            Position::new(5, 3)
+        ));
+        assert!(Pawn::attacks(
+            Color::Black,
+            Position::new(4, 4),
+            Position::new(5, 5)
+        ));
+    }
+
+    #[test]
+    fn test_pawn_attacks_non_diagonal_returns_false() {
+        assert!(!Pawn::attacks(
+            Color::White,
+            Position::new(4, 4),
+            Position::new(5, 4)
+        ));
+        assert!(!Pawn::attacks(
+            Color::Black,
+            Position::new(4, 4),
+            Position::new(3, 4)
+        ));
+        assert!(!Pawn::attacks(
+            Color::White,
+            Position::new(4, 4),
+            Position::new(4, 5)
+        ));
+    }
+
+    #[test]
+    fn test_get_possible_moves_unblocked_white_pawn() {
+        let board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let pawn = Pawn::new();
+        let source = Position::new(6, 4);
+
+        let result = pawn.get_possible_moves(Color::White, &board, source);
+
+        assert_eq!(result.len(), 2);
+        assert!(result.contains(&Position::new(5, 4)));
+        assert!(result.contains(&Position::new(4, 4)));
+    }
+
+    #[test]
+    fn test_get_possible_moves_blocked_white_pawn() {
+        let mut board = setup_board(Some("tests/pawn/only_white_pawn.txt"));
+        let pawn = Pawn::new();
+        let source = Position::new(6, 4);
+
+        board.add_piece(
+            Piece::new(PieceType::Rook(Rook::new()), Color::Black),
+            Position::new(5, 4),
+        );
+
+        let result = pawn.get_possible_moves(Color::White, &board, source);
+
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_get_possible_moves_after_first_move() {
+        let board = setup_board(Some("tests/pawn/only_white_pawn_moved.txt"));
+        let mut pawn = Pawn::new();
+        pawn.allow_two_rows = false;
+        let source = Position::new(5, 4);
+
+        let result = pawn.get_possible_moves(Color::White, &board, source);
+
+        assert_eq!(result.len(), 1);
+        assert!(result.contains(&Position::new(4, 4)));
     }
 }
